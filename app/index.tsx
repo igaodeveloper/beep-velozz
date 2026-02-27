@@ -41,12 +41,14 @@ export default function HomeScreen() {
     loadSessions().then(setSessions);
   }, []);
 
-  const handleStartSession = (operatorName: string, driverName: string, declaredCount: number) => {
+  const handleStartSession = (operatorName: string, driverName: string, declaredCounts: { shopee: number; mercadoLivre: number; avulso: number }) => {
+    const totalDeclared = declaredCounts.shopee + declaredCounts.mercadoLivre + declaredCounts.avulso;
     const session: Session = {
       id: generateId(),
       operatorName,
       driverName,
-      declaredCount,
+      declaredCount: totalDeclared,
+      declaredCounts,
       packages: [],
       startedAt: new Date().toISOString(),
       hasDivergence: false,

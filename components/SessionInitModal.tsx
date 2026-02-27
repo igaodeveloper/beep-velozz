@@ -14,32 +14,48 @@ import { theme } from '@/utils/theme';
 
 interface SessionInitModalProps {
   visible: boolean;
-  onStart: (operatorName: string, driverName: string, declaredCount: number) => void;
+  onStart: (operatorName: string, driverName: string, declaredCounts: { shopee: number; mercadoLivre: number; avulso: number }) => void;
 }
 
 export default function SessionInitModal({ visible, onStart }: SessionInitModalProps) {
   const [operatorName, setOperatorName] = useState('');
   const [driverName, setDriverName] = useState('');
-  const [declaredCount, setDeclaredCount] = useState('');
+  const [shopeeCount, setShopeeCount] = useState('');
+  const [mercadoLivreCount, setMercadoLivreCount] = useState('');
+  const [avulsoCount, setAvulsoCount] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!operatorName.trim()) newErrors.operatorName = 'Campo obrigatório';
     if (!driverName.trim()) newErrors.driverName = 'Campo obrigatório';
-    if (!declaredCount || isNaN(Number(declaredCount)) || Number(declaredCount) < 1) {
-      newErrors.declaredCount = 'Informe um número válido';
+    
+    const shopee = Number(shopeeCount) || 0;
+    const mercadoLivre = Number(mercadoLivreCount) || 0;
+    const avulso = Number(avulsoCount) || 0;
+    const total = shopee + mercadoLivre + avulso;
+    
+    if (total < 1) {
+      newErrors.total = 'Informe pelo menos um pacote';
     }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleStart = () => {
     if (!validate()) return;
-    onStart(operatorName.trim(), driverName.trim(), Number(declaredCount));
+    const declaredCounts = {
+      shopee: Number(shopeeCount) || 0,
+      mercadoLivre: Number(mercadoLivreCount) || 0,
+      avulso: Number(avulsoCount) || 0,
+    };
+    onStart(operatorName.trim(), driverName.trim(), declaredCounts);
     setOperatorName('');
     setDriverName('');
-    setDeclaredCount('');
+    setShopeeCount('');
+    setMercadoLivreCount('');
+    setAvulsoCount('');
     setErrors({});
   };
 
@@ -125,31 +141,112 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                 )}
               </View>
 
-              {/* Declared Count */}
+              {/* Declared Counts */}
               <View style={{ marginBottom: 28 }}>
-                <Text style={{ color: '#94a3b8', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
-                  Qtd. Declarada
+                <Text style={{ color: '#94a3b8', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 12, textTransform: 'uppercase' }}>
+                  Qtd. Declarada por Tipo
                 </Text>
-                <TextInput
-                  value={declaredCount}
-                  onChangeText={setDeclaredCount}
-                  placeholder="0"
-                  placeholderTextColor="#334155"
-                  keyboardType="numeric"
-                  style={{
-                    backgroundColor: '#1e293b',
-                    borderWidth: 1,
-                    borderColor: errors.declaredCount ? '#ef4444' : '#334155',
-                    borderRadius: 10,
-                    padding: 14,
-                    color: '#fff',
-                    fontSize: 28,
-                    fontWeight: '700',
-                    textAlign: 'center',
-                  }}
-                />
-                {errors.declaredCount && (
-                  <Text style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.declaredCount}</Text>
+                
+                <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+                  {/* Shopee */}
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: '#fb923c', fontSize: 10, fontWeight: '600', marginBottom: 6, textAlign: 'center' }}>
+                      � SHOPEE
+                    </Text>
+                    <TextInput
+                      value={shopeeCount}
+                      onChangeText={setShopeeCount}
+                      placeholder="0"
+                      placeholderTextColor="#334155"
+                      keyboardType="numeric"
+                      style={{
+                        backgroundColor: '#1e293b',
+                        borderWidth: 1,
+                        borderColor: errors.shopee ? '#ef4444' : '#334155',
+                        borderRadius: 10,
+                        padding: 12,
+                        color: '#fff',
+                        fontSize: 20,
+                        fontWeight: '700',
+                        textAlign: 'center',
+                      }}
+                    />
+                  </View>
+                  
+                  {/* Mercado Livre */}
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '600', marginBottom: 6, textAlign: 'center' }}>
+                      🟨 MERCADO LIVRE
+                    </Text>
+                    <TextInput
+                      value={mercadoLivreCount}
+                      onChangeText={setMercadoLivreCount}
+                      placeholder="0"
+                      placeholderTextColor="#334155"
+                      keyboardType="numeric"
+                      style={{
+                        backgroundColor: '#1e293b',
+                        borderWidth: 1,
+                        borderColor: errors.mercadoLivre ? '#ef4444' : '#334155',
+                        borderRadius: 10,
+                        padding: 12,
+                        color: '#fff',
+                        fontSize: 20,
+                        fontWeight: '700',
+                        textAlign: 'center',
+                      }}
+                    />
+                  </View>
+                  
+                  {/* Avulso */}
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: '#22c55e', fontSize: 10, fontWeight: '600', marginBottom: 6, textAlign: 'center' }}>
+                      🟩 AVULSO
+                    </Text>
+                    <TextInput
+                      value={avulsoCount}
+                      onChangeText={setAvulsoCount}
+                      placeholder="0"
+                      placeholderTextColor="#334155"
+                      keyboardType="numeric"
+                      style={{
+                        backgroundColor: '#1e293b',
+                        borderWidth: 1,
+                        borderColor: errors.avulso ? '#ef4444' : '#334155',
+                        borderRadius: 10,
+                        padding: 12,
+                        color: '#fff',
+                        fontSize: 20,
+                        fontWeight: '700',
+                        textAlign: 'center',
+                      }}
+                    />
+                  </View>
+                </View>
+                
+                {/* Total */}
+                <View style={{
+                  backgroundColor: '#0f172a',
+                  borderRadius: 10,
+                  padding: 12,
+                  borderWidth: 1,
+                  borderColor: '#334155',
+                  alignItems: 'center',
+                }}>
+                  <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '600', marginBottom: 4 }}>
+                    TOTAL DECLARADO
+                  </Text>
+                  <Text style={{ 
+                    color: theme.colors.primary, 
+                    fontSize: 24, 
+                    fontWeight: '800',
+                  }}>
+                    {(Number(shopeeCount) || 0) + (Number(mercadoLivreCount) || 0) + (Number(avulsoCount) || 0)}
+                  </Text>
+                </View>
+                
+                {errors.total && (
+                  <Text style={{ color: '#ef4444', fontSize: 12, marginTop: 8, textAlign: 'center' }}>{errors.total}</Text>
                 )}
               </View>
 

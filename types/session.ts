@@ -12,6 +12,11 @@ export interface Session {
   operatorName: string;
   driverName: string;
   declaredCount: number;
+  declaredCounts: {
+    shopee: number;
+    mercadoLivre: number;
+    avulso: number;
+  };
   packages: ScannedPackage[];
   startedAt: string;
   completedAt?: string;

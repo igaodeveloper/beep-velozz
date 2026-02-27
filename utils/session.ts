@@ -1,15 +1,31 @@
 import { PackageType, ScannedPackage, Session } from '@/types/session';
 
 export function classifyPackage(code: string): PackageType {
-  const upper = code.toUpperCase();
-  if (upper.startsWith('SP') || upper.includes('SHOPEE') || /^[0-9]{20}$/.test(code)) {
+  const normalized = (code ?? '').trim();
+  const cleaned = normalized.replace(/[^0-9a-zA-Z]/g, '');
+  const upper = cleaned.toUpperCase();
+
+  if (upper.startsWith('BR')) {
     return 'shopee';
   }
+
+  if (upper.startsWith('20000') || upper.startsWith('46') || upper.startsWith('45')) {
+    return 'mercado_livre';
+  }
+
+  if (upper.startsWith('LM')) {
+    return 'avulso';
+  }
+
+  if (upper.startsWith('SP') || upper.includes('SHOPEE') || /^[0-9]{20}$/.test(cleaned)) {
+    return 'shopee';
+  }
+
   if (
     upper.startsWith('ML') ||
     upper.includes('MELI') ||
     upper.includes('MERCADO') ||
-    /^[A-Z]{2}[0-9]{9}[A-Z]{2}$/.test(code)
+    /^[A-Z]{2}[0-9]{9}[A-Z]{2}$/.test(cleaned)
   ) {
     return 'mercado_livre';
   }

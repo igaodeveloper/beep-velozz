@@ -1,5 +1,7 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
+import * as Haptics from 'expo-haptics';
 import { ScannedPackage } from '@/types/session';
 import { formatTimestamp, packageTypeLabel, packageTypeBadgeColors } from '@/utils/session';
 
@@ -10,6 +12,23 @@ interface PackageListProps {
 }
 
 export default function PackageList({ packages, expanded, onToggle }: PackageListProps) {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopy = async (pkg: ScannedPackage) => {
+    try {
+      await Clipboard.setStringAsync(pkg.code);
+      setCopiedId(pkg.id);
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      }
+      setTimeout(() => setCopiedId(current => (current === pkg.id ? null : current)), 1200);
+    } catch {
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+      }
+    }
+  };
+
   return (
     <View style={{
       backgroundColor: '#0a0f1e',
@@ -56,6 +75,7 @@ export default function PackageList({ packages, expanded, onToggle }: PackageLis
           ) : (
             [...packages].reverse().map((pkg, idx) => {
               const badge = packageTypeBadgeColors(pkg.type);
+              const isCopied = copiedId === pkg.id;
               return (
                 <View
                   key={pkg.id}
@@ -81,6 +101,30 @@ export default function PackageList({ packages, expanded, onToggle }: PackageLis
                       {formatTimestamp(pkg.scannedAt)}
                     </Text>
                   </View>
+
+                  <TouchableOpacity
+                    onPress={() => handleCopy(pkg)}
+                    activeOpacity={0.85}
+                    style={{
+                      backgroundColor: isCopied ? 'rgba(16,185,129,0.15)' : 'rgba(51,65,85,0.35)',
+                      borderWidth: 1,
+                      borderColor: isCopied ? 'rgba(16,185,129,0.55)' : '#334155',
+                      borderRadius: 10,
+                      paddingHorizontal: 10,
+                      paddingVertical: 8,
+                      marginRight: 10,
+                    }}
+                  >
+                    <Text style={{
+                      color: isCopied ? '#10b981' : '#cbd5e1',
+                      fontSize: 11,
+                      fontWeight: '800',
+                      letterSpacing: 0.4,
+                    }}>
+                      {isCopied ? 'COPIADO' : 'COPIAR'}
+                    </Text>
+                  </TouchableOpacity>
+
                   {/* Badge */}
                   <View style={{
                     backgroundColor: badge.bg,

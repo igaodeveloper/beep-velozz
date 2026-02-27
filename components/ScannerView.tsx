@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as Haptics from 'expo-haptics';
 import { ScannedPackage } from '@/types/session';
 import { classifyPackage, packageTypeLabel, packageTypeBadgeColors, generateId } from '@/utils/session';
 
@@ -31,9 +32,36 @@ export default function ScannerView({
   const [showFeedback, setShowFeedback] = useState(false);
   const feedbackAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const scanLineAnim = useRef(new Animated.Value(0)).current;
   const [permission, requestPermission] = useCameraPermissions();
   const [barcodeLocked, setBarcodeLocked] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
+  const [facing, setFacing] = useState<'back' | 'front'>('back');
+  const lastAcceptedRef = useRef<{ code: string; at: number } | null>(null);
+
+  const normalizeCode = (raw: string) => {
+    const trimmed = (raw ?? '').trim();
+    const upperRaw = trimmed.toUpperCase();
+
+    const extracted =
+      upperRaw.match(/(BR[0-9A-Z]{6,})/)?.[1] ||
+      upperRaw.match(/(20000[0-9]{6,})/)?.[1] ||
+      upperRaw.match(/(46[0-9]{6,})/)?.[1] ||
+      upperRaw.match(/(45[0-9]{6,})/)?.[1] ||
+      upperRaw.match(/(LM[0-9A-Z]{2,})/)?.[1];
+
+    if (extracted) return extracted;
+
+    const cleaned = trimmed.replace(/[^0-9a-zA-Z]/g, '');
+    return cleaned.toUpperCase();
+  };
+
+  const forceTypeByPrefix = (upperCleaned: string) => {
+    if (upperCleaned.startsWith('BR')) return 'shopee' as const;
+    if (upperCleaned.startsWith('20000') || upperCleaned.startsWith('46')) return 'mercado_livre' as const;
+    if (upperCleaned.startsWith('LM')) return 'avulso' as const;
+    return null;
+  };
 
   // Pulse animation for reticle
   useEffect(() => {
@@ -57,6 +85,27 @@ export default function ScannerView({
     return () => pulse.stop();
   }, []);
 
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(scanLineAnim, {
+          toValue: 1,
+          duration: 1100,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(scanLineAnim, {
+          toValue: 0,
+          duration: 1100,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, []);
+
   // Feedback flash when scanned
   useEffect(() => {
     if (lastScanned) {
@@ -77,17 +126,21 @@ export default function ScannerView({
   }, [permission, requestPermission]);
 
   const handleManualSubmit = () => {
-    const code = manualCode.trim().toUpperCase();
+    const code = normalizeCode(manualCode);
     if (!code) return;
 
     const duplicate = packages.find(p => p.code === code);
     if (duplicate) {
       onDuplicate(code);
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+      }
       setManualCode('');
       return;
     }
 
-    const type = classifyPackage(code);
+    const forced = forceTypeByPrefix(code);
+    const type = forced ?? classifyPackage(code);
     const pkg: ScannedPackage = {
       id: generateId(),
       code,
@@ -95,20 +148,33 @@ export default function ScannerView({
       scannedAt: new Date().toISOString(),
     };
     onScan(pkg);
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    }
     setManualCode('');
   };
 
   const handleScannedCode = (raw: string) => {
-    const code = (raw ?? '').trim().toUpperCase();
+    const code = normalizeCode(raw);
     if (!code) return;
+
+    const now = Date.now();
+    const lastAccepted = lastAcceptedRef.current;
+    if (lastAccepted && lastAccepted.code === code && now - lastAccepted.at < 2000) {
+      return;
+    }
 
     const duplicate = packages.find(p => p.code === code);
     if (duplicate) {
       onDuplicate(code);
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+      }
       return;
     }
 
-    const type = classifyPackage(code);
+    const forced = forceTypeByPrefix(code);
+    const type = forced ?? classifyPackage(code);
     const pkg: ScannedPackage = {
       id: generateId(),
       code,
@@ -116,6 +182,10 @@ export default function ScannerView({
       scannedAt: new Date().toISOString(),
     };
     onScan(pkg);
+    lastAcceptedRef.current = { code, at: now };
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    }
   };
 
   const handleBarcodeScanned = (event: any) => {
@@ -144,7 +214,7 @@ export default function ScannerView({
         {Platform.OS !== 'web' && permission?.granted && (
           <CameraView
             style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
-            facing="back"
+            facing={facing}
             enableTorch={torchEnabled}
             barcodeScannerSettings={{
               barcodeTypes: [
@@ -189,6 +259,23 @@ export default function ScannerView({
                 {torchEnabled ? 'FLASH ON' : 'FLASH OFF'}
               </Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setFacing(v => (v === 'back' ? 'front' : 'back'))}
+              activeOpacity={0.85}
+              style={{
+                backgroundColor: 'rgba(15,23,42,0.9)',
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                borderWidth: 1,
+                borderColor: '#334155',
+              }}
+            >
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800', letterSpacing: 0.5 }}>
+                {facing === 'back' ? 'CÂMERA TRAS.' : 'CÂMERA FRNT.'}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -226,6 +313,28 @@ export default function ScannerView({
           alignItems: 'center',
           justifyContent: 'center',
         }}>
+          <View style={{
+            position: 'absolute',
+            top: -180,
+            left: -220,
+            right: -220,
+            bottom: -180,
+            backgroundColor: 'rgba(2,6,23,0.55)',
+            borderRadius: 18,
+          }} />
+
+          <View style={{
+            position: 'absolute',
+            top: -8,
+            left: -8,
+            right: -8,
+            bottom: -8,
+            backgroundColor: 'rgba(16,185,129,0.03)',
+            borderWidth: 1,
+            borderColor: 'rgba(16,185,129,0.35)',
+            borderRadius: 18,
+          }} />
+
           {/* Corner brackets */}
           {[
             { top: 0, left: 0 },
@@ -249,11 +358,19 @@ export default function ScannerView({
           ))}
 
           {/* Scan line */}
-          <View style={{
+          <Animated.View style={{
             position: 'absolute',
-            left: 8, right: 8, height: 2,
+            left: 10,
+            right: 10,
+            height: 2,
             backgroundColor: '#10b981',
-            opacity: 0.7,
+            opacity: 0.75,
+            transform: [{
+              translateY: scanLineAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-52, 52],
+              }),
+            }],
           }} />
 
           {/* Center dot */}
@@ -269,6 +386,49 @@ export default function ScannerView({
         }}>
           Posicione o QR Code ou código de barras
         </Text>
+
+        {lastScanned && lastBadge && (
+          <View style={{
+            position: 'absolute',
+            left: 14,
+            right: 14,
+            bottom: 14,
+            backgroundColor: 'rgba(15,23,42,0.92)',
+            borderWidth: 1,
+            borderColor: '#1e293b',
+            borderRadius: 14,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+          }}>
+            <View style={{
+              backgroundColor: lastBadge.bg,
+              paddingHorizontal: 10,
+              paddingVertical: 5,
+              borderRadius: 999,
+            }}>
+              <Text style={{ color: lastBadge.text, fontSize: 11, fontWeight: '800' }}>
+                {packageTypeLabel(lastScanned.type)}
+              </Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }} numberOfLines={1}>
+                {lastScanned.code}
+              </Text>
+              <Text style={{ color: '#64748b', fontSize: 11, fontWeight: '600' }}>
+                Último lido
+              </Text>
+            </View>
+            <View style={{
+              width: 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: '#10b981',
+            }} />
+          </View>
+        )}
 
         {/* Status: camera not available on web, show manual entry hint */}
         <View style={{

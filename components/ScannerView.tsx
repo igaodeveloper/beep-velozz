@@ -8,6 +8,7 @@ import {
   Easing,
   Platform,
 } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { ScannedPackage } from '@/types/session';
 import { classifyPackage, packageTypeLabel, packageTypeBadgeColors, generateId } from '@/utils/session';
 
@@ -30,6 +31,9 @@ export default function ScannerView({
   const [showFeedback, setShowFeedback] = useState(false);
   const feedbackAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const [permission, requestPermission] = useCameraPermissions();
+  const [barcodeLocked, setBarcodeLocked] = useState(false);
+  const [torchEnabled, setTorchEnabled] = useState(false);
 
   // Pulse animation for reticle
   useEffect(() => {
@@ -64,6 +68,14 @@ export default function ScannerView({
     }
   }, [lastScanned]);
 
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    if (!permission) return;
+    if (permission.status === 'undetermined') {
+      requestPermission();
+    }
+  }, [permission, requestPermission]);
+
   const handleManualSubmit = () => {
     const code = manualCode.trim().toUpperCase();
     if (!code) return;
@@ -86,6 +98,37 @@ export default function ScannerView({
     setManualCode('');
   };
 
+  const handleScannedCode = (raw: string) => {
+    const code = (raw ?? '').trim().toUpperCase();
+    if (!code) return;
+
+    const duplicate = packages.find(p => p.code === code);
+    if (duplicate) {
+      onDuplicate(code);
+      return;
+    }
+
+    const type = classifyPackage(code);
+    const pkg: ScannedPackage = {
+      id: generateId(),
+      code,
+      type,
+      scannedAt: new Date().toISOString(),
+    };
+    onScan(pkg);
+  };
+
+  const handleBarcodeScanned = (event: any) => {
+    if (barcodeLocked) return;
+    setBarcodeLocked(true);
+
+    handleScannedCode(event?.data);
+
+    setTimeout(() => {
+      setBarcodeLocked(false);
+    }, 900);
+  };
+
   const lastBadge = lastScanned ? packageTypeBadgeColors(lastScanned.type) : null;
 
   return (
@@ -98,6 +141,57 @@ export default function ScannerView({
         alignItems: 'center',
         position: 'relative',
       }}>
+        {Platform.OS !== 'web' && permission?.granted && (
+          <CameraView
+            style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
+            facing="back"
+            enableTorch={torchEnabled}
+            barcodeScannerSettings={{
+              barcodeTypes: [
+                'qr',
+                'code128',
+                'code39',
+                'ean13',
+                'ean8',
+                'upc_a',
+                'upc_e',
+                'pdf417',
+                'aztec',
+                'datamatrix',
+              ],
+            }}
+            onBarcodeScanned={handleBarcodeScanned}
+          />
+        )}
+
+        {Platform.OS !== 'web' && permission?.granted && (
+          <View style={{
+            position: 'absolute',
+            top: 14,
+            right: 14,
+            flexDirection: 'row',
+            gap: 10,
+            alignItems: 'center',
+          }}>
+            <TouchableOpacity
+              onPress={() => setTorchEnabled(v => !v)}
+              activeOpacity={0.85}
+              style={{
+                backgroundColor: torchEnabled ? '#f59e0b' : 'rgba(15,23,42,0.9)',
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                borderWidth: 1,
+                borderColor: torchEnabled ? '#fbbf24' : '#334155',
+              }}
+            >
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800', letterSpacing: 0.5 }}>
+                {torchEnabled ? 'FLASH ON' : 'FLASH OFF'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Grid lines overlay */}
         <View style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
@@ -173,7 +267,7 @@ export default function ScannerView({
           color: '#334155', fontSize: 12, marginTop: 20,
           fontWeight: '500', letterSpacing: 0.5,
         }}>
-          Posicione o código de barras
+          Posicione o QR Code ou código de barras
         </Text>
 
         {/* Status: camera not available on web, show manual entry hint */}
@@ -183,9 +277,35 @@ export default function ScannerView({
           borderRadius: 8,
           paddingHorizontal: 12, paddingVertical: 6,
         }}>
-          <Text style={{ color: '#475569', fontSize: 11, fontWeight: '600' }}>
-            📱 Use a entrada manual abaixo
-          </Text>
+          {Platform.OS === 'web' ? (
+            <Text style={{ color: '#475569', fontSize: 11, fontWeight: '600' }}>
+              📱 Câmera não disponível no Web. Use a entrada manual abaixo
+            </Text>
+          ) : permission?.granted ? (
+            <Text style={{ color: '#475569', fontSize: 11, fontWeight: '600' }}>
+              📷 Aponte para o QR Code ou código de barras
+            </Text>
+          ) : (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Text style={{ color: '#475569', fontSize: 11, fontWeight: '600', flex: 1 }}>
+                🔒 Permissão de câmera necessária. Você pode usar a entrada manual, ou liberar a câmera.
+              </Text>
+              <TouchableOpacity
+                onPress={() => requestPermission()}
+                activeOpacity={0.85}
+                style={{
+                  backgroundColor: '#10b981',
+                  borderRadius: 8,
+                  paddingHorizontal: 10,
+                  paddingVertical: 8,
+                }}
+              >
+                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '800' }}>
+                  PERMITIR
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Last scanned feedback overlay */}

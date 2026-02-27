@@ -1,0 +1,173 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
+
+interface SessionInitModalProps {
+  visible: boolean;
+  onStart: (operatorName: string, driverName: string, declaredCount: number) => void;
+}
+
+export default function SessionInitModal({ visible, onStart }: SessionInitModalProps) {
+  const [operatorName, setOperatorName] = useState('');
+  const [driverName, setDriverName] = useState('');
+  const [declaredCount, setDeclaredCount] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!operatorName.trim()) newErrors.operatorName = 'Campo obrigatório';
+    if (!driverName.trim()) newErrors.driverName = 'Campo obrigatório';
+    if (!declaredCount || isNaN(Number(declaredCount)) || Number(declaredCount) < 1) {
+      newErrors.declaredCount = 'Informe um número válido';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleStart = () => {
+    if (!validate()) return;
+    onStart(operatorName.trim(), driverName.trim(), Number(declaredCount));
+    setOperatorName('');
+    setDriverName('');
+    setDeclaredCount('');
+    setErrors({});
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="fade">
+      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center' }}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ width: '100%', paddingHorizontal: 20 }}>
+          <ScrollView keyboardShouldPersistTaps="handled">
+            {/* Header */}
+            <View style={{ alignItems: 'center', marginBottom: 32, marginTop: 20 }}>
+              <View style={{
+                width: 64, height: 64, borderRadius: 16,
+                backgroundColor: '#10b981', alignItems: 'center', justifyContent: 'center', marginBottom: 16
+              }}>
+                <Text style={{ fontSize: 30 }}>📦</Text>
+              </View>
+              <Text style={{ color: '#fff', fontSize: 22, fontWeight: '800', letterSpacing: 1 }}>
+                NOVA SESSÃO
+              </Text>
+              <Text style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>
+                Preencha os dados antes de iniciar
+              </Text>
+            </View>
+
+            {/* Form Card */}
+            <View style={{
+              backgroundColor: '#0f172a', borderRadius: 16,
+              borderWidth: 1, borderColor: '#1e293b', padding: 24,
+            }}>
+              {/* Operator Name */}
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ color: '#94a3b8', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
+                  Operador
+                </Text>
+                <TextInput
+                  value={operatorName}
+                  onChangeText={setOperatorName}
+                  placeholder="Nome do operador"
+                  placeholderTextColor="#334155"
+                  style={{
+                    backgroundColor: '#1e293b',
+                    borderWidth: 1,
+                    borderColor: errors.operatorName ? '#ef4444' : '#334155',
+                    borderRadius: 10,
+                    padding: 14,
+                    color: '#fff',
+                    fontSize: 16,
+                    fontWeight: '500',
+                  }}
+                />
+                {errors.operatorName && (
+                  <Text style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.operatorName}</Text>
+                )}
+              </View>
+
+              {/* Driver Name */}
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ color: '#94a3b8', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
+                  Motorista
+                </Text>
+                <TextInput
+                  value={driverName}
+                  onChangeText={setDriverName}
+                  placeholder="Nome do motorista"
+                  placeholderTextColor="#334155"
+                  style={{
+                    backgroundColor: '#1e293b',
+                    borderWidth: 1,
+                    borderColor: errors.driverName ? '#ef4444' : '#334155',
+                    borderRadius: 10,
+                    padding: 14,
+                    color: '#fff',
+                    fontSize: 16,
+                    fontWeight: '500',
+                  }}
+                />
+                {errors.driverName && (
+                  <Text style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.driverName}</Text>
+                )}
+              </View>
+
+              {/* Declared Count */}
+              <View style={{ marginBottom: 28 }}>
+                <Text style={{ color: '#94a3b8', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
+                  Qtd. Declarada
+                </Text>
+                <TextInput
+                  value={declaredCount}
+                  onChangeText={setDeclaredCount}
+                  placeholder="0"
+                  placeholderTextColor="#334155"
+                  keyboardType="numeric"
+                  style={{
+                    backgroundColor: '#1e293b',
+                    borderWidth: 1,
+                    borderColor: errors.declaredCount ? '#ef4444' : '#334155',
+                    borderRadius: 10,
+                    padding: 14,
+                    color: '#fff',
+                    fontSize: 28,
+                    fontWeight: '700',
+                    textAlign: 'center',
+                  }}
+                />
+                {errors.declaredCount && (
+                  <Text style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.declaredCount}</Text>
+                )}
+              </View>
+
+              {/* Start Button */}
+              <TouchableOpacity
+                onPress={handleStart}
+                activeOpacity={0.85}
+                style={{
+                  backgroundColor: '#10b981',
+                  borderRadius: 12,
+                  padding: 18,
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ color: '#fff', fontSize: 17, fontWeight: '800', letterSpacing: 1 }}>
+                  INICIAR CONFERÊNCIA
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ height: 40 }} />
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
+    </Modal>
+  );
+}

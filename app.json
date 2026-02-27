@@ -21,7 +21,8 @@
       },
       "permissions": [
         "CAMERA"
-      ]
+      ],
+      "package": "com.igaonamikaze.testtempo"
     },
     "web": {
       "bundler": "metro",
@@ -44,6 +45,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f4819179-45f8-4d20-af4d-6ccc206ab57f"
+      }
     }
   }
 }

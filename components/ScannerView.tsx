@@ -7,11 +7,14 @@ import {
   Animated,
   Easing,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { ScannedPackage } from '@/types/session';
 import { classifyPackage, packageTypeLabel, packageTypeBadgeColors, generateId } from '@/utils/session';
+import { theme } from '@/utils/theme';
+import { playBeep, playError, preloadSounds, unloadSounds } from '@/utils/sound';
 
 interface ScannerViewProps {
   onScan: (pkg: ScannedPackage) => void;
@@ -28,6 +31,7 @@ export default function ScannerView({
   lastScanned,
   onEndSession,
 }: ScannerViewProps) {
+  const { width: windowWidth } = useWindowDimensions();
   const [manualCode, setManualCode] = useState('');
   const [showFeedback, setShowFeedback] = useState(false);
   const feedbackAnim = useRef(new Animated.Value(0)).current;
@@ -86,6 +90,13 @@ export default function ScannerView({
   }, []);
 
   useEffect(() => {
+    preloadSounds();
+    return () => {
+      unloadSounds();
+    };
+  }, []);
+
+  useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(scanLineAnim, {
@@ -132,6 +143,7 @@ export default function ScannerView({
     const duplicate = packages.find(p => p.code === code);
     if (duplicate) {
       onDuplicate(code);
+      playError();
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       }
@@ -148,6 +160,7 @@ export default function ScannerView({
       scannedAt: new Date().toISOString(),
     };
     onScan(pkg);
+    playBeep();
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     }
@@ -167,6 +180,7 @@ export default function ScannerView({
     const duplicate = packages.find(p => p.code === code);
     if (duplicate) {
       onDuplicate(code);
+      playError();
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       }
@@ -182,6 +196,7 @@ export default function ScannerView({
       scannedAt: new Date().toISOString(),
     };
     onScan(pkg);
+    playBeep();
     lastAcceptedRef.current = { code, at: now };
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -201,12 +216,17 @@ export default function ScannerView({
 
   const lastBadge = lastScanned ? packageTypeBadgeColors(lastScanned.type) : null;
 
+  const reticleWidth = Math.max(200, Math.min(windowWidth - 64, 320));
+  const reticleHeight = Math.max(120, Math.min(reticleWidth * 0.62, 220));
+  const overlayExtraX = Math.min(260, Math.max(180, Math.round(reticleWidth * 1.15)));
+  const overlayExtraY = Math.min(220, Math.max(160, Math.round(reticleHeight * 1.3)));
+
   return (
-    <View style={{ flex: 1, backgroundColor: '#080d18', position: 'relative' }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.bg, position: 'relative' }}>
       {/* Camera area (mock/placeholder for web compat) */}
       <View style={{
         flex: 1,
-        backgroundColor: '#0a0f1e',
+        backgroundColor: theme.colors.surface2,
         justifyContent: 'center',
         alignItems: 'center',
         position: 'relative',
@@ -247,12 +267,12 @@ export default function ScannerView({
               onPress={() => setTorchEnabled(v => !v)}
               activeOpacity={0.85}
               style={{
-                backgroundColor: torchEnabled ? '#f59e0b' : 'rgba(15,23,42,0.9)',
+                backgroundColor: torchEnabled ? theme.colors.primary : 'rgba(15,23,42,0.9)',
                 borderRadius: 10,
                 paddingHorizontal: 12,
                 paddingVertical: 10,
                 borderWidth: 1,
-                borderColor: torchEnabled ? '#fbbf24' : '#334155',
+                borderColor: torchEnabled ? theme.colors.primary2 : theme.colors.border2,
               }}
             >
               <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800', letterSpacing: 0.5 }}>
@@ -269,7 +289,7 @@ export default function ScannerView({
                 paddingHorizontal: 12,
                 paddingVertical: 10,
                 borderWidth: 1,
-                borderColor: '#334155',
+                borderColor: theme.colors.border2,
               }}
             >
               <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800', letterSpacing: 0.5 }}>
@@ -290,7 +310,7 @@ export default function ScannerView({
               left: 0, right: 0,
               top: `${(i + 1) * 12}%` as any,
               height: 1,
-              backgroundColor: '#10b981',
+              backgroundColor: theme.colors.primary,
             }} />
           ))}
           {[...Array(5)].map((_, i) => (
@@ -299,15 +319,15 @@ export default function ScannerView({
               top: 0, bottom: 0,
               left: `${(i + 1) * 16}%` as any,
               width: 1,
-              backgroundColor: '#10b981',
+              backgroundColor: theme.colors.primary,
             }} />
           ))}
         </View>
 
         {/* Scanner Reticle */}
         <Animated.View style={{
-          width: 220,
-          height: 140,
+          width: reticleWidth,
+          height: reticleHeight,
           transform: [{ scale: pulseAnim }],
           position: 'relative',
           alignItems: 'center',
@@ -315,10 +335,10 @@ export default function ScannerView({
         }}>
           <View style={{
             position: 'absolute',
-            top: -180,
-            left: -220,
-            right: -220,
-            bottom: -180,
+            top: -overlayExtraY,
+            left: -overlayExtraX,
+            right: -overlayExtraX,
+            bottom: -overlayExtraY,
             backgroundColor: 'rgba(2,6,23,0.55)',
             borderRadius: 18,
           }} />
@@ -329,9 +349,9 @@ export default function ScannerView({
             left: -8,
             right: -8,
             bottom: -8,
-            backgroundColor: 'rgba(16,185,129,0.03)',
+            backgroundColor: 'rgba(249,115,22,0.05)',
             borderWidth: 1,
-            borderColor: 'rgba(16,185,129,0.35)',
+            borderColor: 'rgba(249,115,22,0.4)',
             borderRadius: 18,
           }} />
 
@@ -348,7 +368,7 @@ export default function ScannerView({
                 position: 'absolute',
                 width: 24, height: 24,
                 ...pos,
-                borderColor: '#10b981',
+                borderColor: theme.colors.primary,
                 borderTopWidth: i < 2 ? 3 : 0,
                 borderBottomWidth: i >= 2 ? 3 : 0,
                 borderLeftWidth: i === 0 || i === 2 ? 3 : 0,
@@ -363,12 +383,12 @@ export default function ScannerView({
             left: 10,
             right: 10,
             height: 2,
-            backgroundColor: '#10b981',
+            backgroundColor: theme.colors.primary,
             opacity: 0.75,
             transform: [{
               translateY: scanLineAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: [-52, 52],
+                outputRange: [-(reticleHeight * 0.35), reticleHeight * 0.35],
               }),
             }],
           }} />
@@ -376,7 +396,7 @@ export default function ScannerView({
           {/* Center dot */}
           <View style={{
             width: 8, height: 8, borderRadius: 4,
-            backgroundColor: '#10b981', opacity: 0.8,
+            backgroundColor: theme.colors.primary, opacity: 0.8,
           }} />
         </Animated.View>
 
@@ -425,7 +445,7 @@ export default function ScannerView({
               width: 8,
               height: 8,
               borderRadius: 4,
-              backgroundColor: '#10b981',
+              backgroundColor: theme.colors.primary,
             }} />
           </View>
         )}
@@ -454,7 +474,7 @@ export default function ScannerView({
                 onPress={() => requestPermission()}
                 activeOpacity={0.85}
                 style={{
-                  backgroundColor: '#10b981',
+                  backgroundColor: theme.colors.primary,
                   borderRadius: 8,
                   paddingHorizontal: 10,
                   paddingVertical: 8,
@@ -482,12 +502,12 @@ export default function ScannerView({
               backgroundColor: '#052e16',
               borderRadius: 12,
               borderWidth: 1,
-              borderColor: '#10b981',
+              borderColor: theme.colors.success,
               padding: 16,
               alignItems: 'center',
             }}>
               <Text style={{ fontSize: 28 }}>✅</Text>
-              <Text style={{ color: '#10b981', fontSize: 14, fontWeight: '700', marginTop: 4 }}>
+              <Text style={{ color: theme.colors.success, fontSize: 14, fontWeight: '700', marginTop: 4 }}>
                 ESCANEADO
               </Text>
               <View style={{
@@ -505,9 +525,9 @@ export default function ScannerView({
 
       {/* Manual Input Bar */}
       <View style={{
-        backgroundColor: '#0f172a',
+        backgroundColor: theme.colors.surface,
         borderTopWidth: 1,
-        borderTopColor: '#1e293b',
+        borderTopColor: theme.colors.border,
         padding: 16,
         flexDirection: 'row',
         gap: 10,
@@ -537,7 +557,7 @@ export default function ScannerView({
           onPress={handleManualSubmit}
           activeOpacity={0.85}
           style={{
-            backgroundColor: '#10b981',
+            backgroundColor: theme.colors.primary,
             borderRadius: 10,
             padding: 13,
             justifyContent: 'center',
@@ -550,7 +570,7 @@ export default function ScannerView({
 
       {/* End Session Button */}
       <View style={{
-        backgroundColor: '#0f172a',
+        backgroundColor: theme.colors.surface,
         paddingHorizontal: 16,
         paddingBottom: 16,
         paddingTop: 4,
@@ -567,7 +587,7 @@ export default function ScannerView({
             borderColor: '#334155',
           }}
         >
-          <Text style={{ color: '#f59e0b', fontSize: 14, fontWeight: '700', letterSpacing: 0.5 }}>
+          <Text style={{ color: theme.colors.primary, fontSize: 14, fontWeight: '700', letterSpacing: 0.5 }}>
             ⏹ ENCERRAR SESSÃO
           </Text>
         </TouchableOpacity>

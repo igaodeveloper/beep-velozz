@@ -3,6 +3,7 @@ import { View, Text, SafeAreaView, StatusBar } from 'react-native';
 import { Session, ScannedPackage } from '@/types/session';
 import { getSessionMetrics, generateId } from '@/utils/session';
 import { addSession, loadSessions } from '@/utils/storage';
+import { theme } from '@/utils/theme';
 
 import SessionInitModal from '@/components/SessionInitModal';
 import ScannerView from '@/components/ScannerView';
@@ -65,6 +66,13 @@ export default function HomeScreen() {
     };
     setCurrentSession(updated);
     setLastScanned(pkg);
+    
+    // Check if divergence is resolved
+    const scannedCount = updated.packages.length;
+    const declaredCount = updated.declaredCount;
+    if (scannedCount === declaredCount) {
+      setDivergenceVisible(false);
+    }
   };
 
   const handleDuplicate = (code: string) => {
@@ -101,10 +109,6 @@ export default function HomeScreen() {
     setScreen('report');
   };
 
-  const handleDivergenceConfirm = () => {
-    finalizeSession(true);
-  };
-
   const handleDivergenceCancel = () => {
     setDivergenceVisible(false);
   };
@@ -126,8 +130,8 @@ export default function HomeScreen() {
     : { shopee: 0, mercadoLivre: 0, avulsos: 0, total: 0 };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#080d18' }}>
-      <StatusBar barStyle="light-content" backgroundColor="#080d18" />
+    <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <StatusBar barStyle="light-content" backgroundColor={theme.colors.bg} />
       <SafeAreaView style={{ flex: 1 }}>
         {/* App Header */}
         {screen !== 'history' && screen !== 'report' && (
@@ -138,11 +142,11 @@ export default function HomeScreen() {
             paddingTop: 8,
             paddingBottom: 10,
             borderBottomWidth: 1,
-            borderBottomColor: '#1e293b',
+            borderBottomColor: theme.colors.border,
           }}>
             <View style={{
               width: 32, height: 32, borderRadius: 8,
-              backgroundColor: '#10b981',
+              backgroundColor: theme.colors.primary,
               alignItems: 'center', justifyContent: 'center',
               marginRight: 10,
             }}>
@@ -160,7 +164,7 @@ export default function HomeScreen() {
             </View>
             <View style={{
               width: 8, height: 8, borderRadius: 4,
-              backgroundColor: currentSession ? '#10b981' : '#334155',
+              backgroundColor: currentSession ? theme.colors.primary : theme.colors.border2,
             }} />
           </View>
         )}
@@ -231,7 +235,6 @@ export default function HomeScreen() {
             visible={divergenceVisible}
             scannedCount={currentSession.packages.length}
             declaredCount={currentSession.declaredCount}
-            onConfirm={handleDivergenceConfirm}
             onCancel={handleDivergenceCancel}
           />
         )}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { SessionMetrics } from '@/types/session';
+import { theme } from '@/utils/theme';
 
 interface MetricCardProps {
   label: string;
@@ -51,7 +52,7 @@ export default function MetricsDashboard({ metrics, declaredCount }: MetricsDash
             PROGRESSO
           </Text>
           <Text style={{
-            color: isComplete ? '#10b981' : isOver ? '#ef4444' : '#f59e0b',
+            color: isComplete ? theme.colors.success : isOver ? theme.colors.danger : theme.colors.primary,
             fontSize: 11, fontWeight: '700'
           }}>
             {metrics.total} / {declaredCount}
@@ -61,7 +62,7 @@ export default function MetricsDashboard({ metrics, declaredCount }: MetricsDash
           <View style={{
             height: 6,
             width: `${progressPct}%` as any,
-            backgroundColor: isComplete ? '#10b981' : isOver ? '#ef4444' : '#f59e0b',
+            backgroundColor: isComplete ? theme.colors.success : isOver ? theme.colors.danger : theme.colors.primary,
             borderRadius: 3,
           }} />
         </View>
@@ -72,7 +73,7 @@ export default function MetricsDashboard({ metrics, declaredCount }: MetricsDash
         <MetricCard label="SHOPEE" value={metrics.shopee} color="#ff5722" emoji="🛍️" />
         <MetricCard label="MERC. LIVRE" value={metrics.mercadoLivre} color="#ffe600" emoji="🟡" />
         <MetricCard label="AVULSOS" value={metrics.avulsos} color="#64748b" emoji="📦" />
-        <MetricCard label="TOTAL" value={metrics.total} color="#10b981" emoji="✅" />
+        <MetricCard label="TOTAL" value={metrics.total} color={theme.colors.primary} emoji="✅" />
       </View>
     </View>
   );

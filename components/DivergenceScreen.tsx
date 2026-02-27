@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
+import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import { theme } from '@/utils/theme';
 
 interface DivergenceScreenProps {
   visible: boolean;
   scannedCount: number;
   declaredCount: number;
-  onConfirm: () => void;
   onCancel: () => void;
 }
 
@@ -13,7 +14,6 @@ export default function DivergenceScreen({
   visible,
   scannedCount,
   declaredCount,
-  onConfirm,
   onCancel,
 }: DivergenceScreenProps) {
   const delta = scannedCount - declaredCount;
@@ -21,23 +21,31 @@ export default function DivergenceScreen({
 
   return (
     <Modal visible={visible} transparent animationType="slide">
-      <View style={{
-        flex: 1,
-        backgroundColor: 'rgba(245,158,11,0.08)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-      }}>
-        <View style={{
-          backgroundColor: '#0f0e0a',
-          borderRadius: 20,
-          borderWidth: 2,
-          borderColor: '#f59e0b',
-          padding: 28,
-          width: '100%',
-          maxWidth: 400,
+      <Animated.View
+        entering={FadeIn.duration(140)}
+        exiting={FadeOut.duration(120)}
+        style={{
+          flex: 1,
+          backgroundColor: 'rgba(245,158,11,0.08)',
+          justifyContent: 'center',
           alignItems: 'center',
-        }}>
+          padding: 20,
+        }}
+      >
+        <Animated.View
+          entering={SlideInDown.duration(260)}
+          exiting={SlideOutDown.duration(200)}
+          style={{
+            backgroundColor: '#0f0e0a',
+            borderRadius: 20,
+            borderWidth: 2,
+            borderColor: theme.colors.primary,
+            padding: 28,
+            width: '100%',
+            maxWidth: 400,
+            alignItems: 'center',
+          }}
+        >
           {/* Warning icon */}
           <View style={{
             width: 72, height: 72, borderRadius: 36,
@@ -49,7 +57,7 @@ export default function DivergenceScreen({
           </View>
 
           <Text style={{
-            color: '#f59e0b', fontSize: 20, fontWeight: '800',
+            color: theme.colors.primary, fontSize: 20, fontWeight: '800',
             letterSpacing: 1, marginBottom: 8, textAlign: 'center',
           }}>
             DIVERGÊNCIA DETECTADA
@@ -58,7 +66,7 @@ export default function DivergenceScreen({
           <Text style={{
             color: '#94a3b8', fontSize: 13, textAlign: 'center', marginBottom: 24,
           }}>
-            A quantidade conferida não corresponde à declarada. Confirma o encerramento?
+            A quantidade conferida não corresponde à declarada. Continue bipando até corrigir.
           </Text>
 
           {/* Delta display */}
@@ -81,7 +89,7 @@ export default function DivergenceScreen({
                 <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '700', letterSpacing: 1 }}>
                   CONFERIDO
                 </Text>
-                <Text style={{ color: '#10b981', fontSize: 28, fontWeight: '800', marginTop: 4 }}>
+                <Text style={{ color: theme.colors.primary, fontSize: 28, fontWeight: '800', marginTop: 4 }}>
                   {scannedCount}
                 </Text>
               </View>
@@ -92,7 +100,7 @@ export default function DivergenceScreen({
               backgroundColor: '#78350f', borderRadius: 10,
               paddingHorizontal: 16, paddingVertical: 8,
             }}>
-              <Text style={{ color: '#f59e0b', fontSize: 22, fontWeight: '800', textAlign: 'center' }}>
+              <Text style={{ color: theme.colors.primary, fontSize: 22, fontWeight: '800', textAlign: 'center' }}>
                 Δ {delta > 0 ? '+' : ''}{delta}
               </Text>
               <Text style={{ color: '#d97706', fontSize: 11, textAlign: 'center', marginTop: 2 }}>
@@ -101,44 +109,24 @@ export default function DivergenceScreen({
             </View>
           </View>
 
-          {/* Action buttons */}
-          <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
-            <TouchableOpacity
-              onPress={onCancel}
-              activeOpacity={0.85}
-              style={{
-                flex: 1,
-                backgroundColor: '#1e293b',
-                borderRadius: 12,
-                padding: 14,
-                alignItems: 'center',
-                borderWidth: 1,
-                borderColor: '#334155',
-              }}
-            >
-              <Text style={{ color: '#94a3b8', fontSize: 14, fontWeight: '700' }}>
-                CANCELAR
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={onConfirm}
-              activeOpacity={0.85}
-              style={{
-                flex: 1,
-                backgroundColor: '#f59e0b',
-                borderRadius: 12,
-                padding: 14,
-                alignItems: 'center',
-              }}
-            >
-              <Text style={{ color: '#000', fontSize: 14, fontWeight: '800' }}>
-                CONFIRMAR
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+          {/* Action button */}
+          <TouchableOpacity
+            onPress={onCancel}
+            activeOpacity={0.85}
+            style={{
+              backgroundColor: theme.colors.primary,
+              borderRadius: 12,
+              padding: 16,
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Text style={{ color: '#000', fontSize: 16, fontWeight: '800' }}>
+              CONTINUAR BIPANDO
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </Animated.View>
     </Modal>
   );
 }

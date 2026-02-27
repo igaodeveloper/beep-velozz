@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { ScannedPackage } from '@/types/session';
 import { formatTimestamp } from '@/utils/session';
+import Animated, { FadeIn, FadeOut, ZoomIn, ZoomOut } from 'react-native-reanimated';
+import { theme } from '@/utils/theme';
 
 interface DuplicateModalProps {
   visible: boolean;
@@ -20,16 +22,20 @@ export default function DuplicateModal({ visible, code, originalPackage, onDismi
         alignItems: 'center',
         padding: 20,
       }}>
-        <View style={{
-          backgroundColor: '#0f0a0a',
-          borderRadius: 20,
-          borderWidth: 2,
-          borderColor: '#ef4444',
-          padding: 28,
-          width: '100%',
-          maxWidth: 400,
-          alignItems: 'center',
-        }}>
+        <Animated.View entering={FadeIn.duration(140)} exiting={FadeOut.duration(120)} style={{ width: '100%', maxWidth: 400 }}>
+          <Animated.View
+            entering={ZoomIn.duration(220)}
+            exiting={ZoomOut.duration(180)}
+            style={{
+              backgroundColor: '#0f0a0a',
+              borderRadius: 20,
+              borderWidth: 2,
+              borderColor: '#ef4444',
+              padding: 28,
+              width: '100%',
+              alignItems: 'center',
+            }}
+          >
           {/* Alert icon */}
           <View style={{
             width: 72, height: 72, borderRadius: 36,
@@ -77,7 +83,7 @@ export default function DuplicateModal({ visible, code, originalPackage, onDismi
               <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '700', letterSpacing: 1, marginBottom: 4 }}>
                 PRIMEIRO ESCANEAMENTO
               </Text>
-              <Text style={{ color: '#f59e0b', fontSize: 16, fontWeight: '700' }}>
+              <Text style={{ color: theme.colors.primary, fontSize: 16, fontWeight: '700' }}>
                 {formatTimestamp(originalPackage.scannedAt)}
               </Text>
             </View>
@@ -98,7 +104,8 @@ export default function DuplicateModal({ visible, code, originalPackage, onDismi
               DISPENSAR
             </Text>
           </TouchableOpacity>
-        </View>
+          </Animated.View>
+        </Animated.View>
       </View>
     </Modal>
   );

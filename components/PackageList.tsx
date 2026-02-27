@@ -4,6 +4,8 @@ import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { ScannedPackage } from '@/types/session';
 import { formatTimestamp, packageTypeLabel, packageTypeBadgeColors } from '@/utils/session';
+import Animated, { FadeInDown, FadeOutDown, Layout } from 'react-native-reanimated';
+import { theme } from '@/utils/theme';
 
 interface PackageListProps {
   packages: ScannedPackage[];
@@ -55,7 +57,7 @@ export default function PackageList({ packages, expanded, onToggle }: PackageLis
             backgroundColor: '#1e293b', borderRadius: 10,
             paddingHorizontal: 8, paddingVertical: 2,
           }}>
-            <Text style={{ color: '#10b981', fontSize: 12, fontWeight: '700' }}>
+            <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '700' }}>
               {packages.length}
             </Text>
           </View>
@@ -67,81 +69,85 @@ export default function PackageList({ packages, expanded, onToggle }: PackageLis
 
       {/* List */}
       {expanded && (
-        <ScrollView style={{ maxHeight: 240 }} showsVerticalScrollIndicator={false}>
-          {packages.length === 0 ? (
-            <View style={{ padding: 24, alignItems: 'center' }}>
-              <Text style={{ color: '#334155', fontSize: 14 }}>Nenhum pacote escaneado</Text>
-            </View>
-          ) : (
-            [...packages].reverse().map((pkg, idx) => {
-              const badge = packageTypeBadgeColors(pkg.type);
-              const isCopied = copiedId === pkg.id;
-              return (
-                <View
-                  key={pkg.id}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    paddingHorizontal: 16,
-                    paddingVertical: 10,
-                    borderTopWidth: 1,
-                    borderTopColor: '#1e293b',
-                  }}
-                >
-                  {/* Index */}
-                  <Text style={{ color: '#334155', fontSize: 11, width: 28, fontWeight: '600' }}>
-                    #{packages.length - idx}
-                  </Text>
-                  {/* Code */}
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: '#e2e8f0', fontSize: 13, fontWeight: '600', fontFamily: 'SpaceMono-Regular' }}>
-                      {pkg.code}
-                    </Text>
-                    <Text style={{ color: '#475569', fontSize: 11, marginTop: 2 }}>
-                      {formatTimestamp(pkg.scannedAt)}
-                    </Text>
-                  </View>
-
-                  <TouchableOpacity
-                    onPress={() => handleCopy(pkg)}
-                    activeOpacity={0.85}
+        <Animated.View entering={FadeInDown.duration(220)} exiting={FadeOutDown.duration(160)} layout={Layout.springify()}>
+          <ScrollView style={{ maxHeight: 240 }} showsVerticalScrollIndicator={false}>
+            {packages.length === 0 ? (
+              <View style={{ padding: 24, alignItems: 'center' }}>
+                <Text style={{ color: '#334155', fontSize: 14 }}>Nenhum pacote escaneado</Text>
+              </View>
+            ) : (
+              [...packages].reverse().map((pkg, idx) => {
+                const badge = packageTypeBadgeColors(pkg.type);
+                const isCopied = copiedId === pkg.id;
+                return (
+                  <Animated.View
+                    key={pkg.id}
+                    entering={FadeInDown.duration(220).delay(Math.min(idx * 20, 180))}
+                    layout={Layout.springify()}
                     style={{
-                      backgroundColor: isCopied ? 'rgba(16,185,129,0.15)' : 'rgba(51,65,85,0.35)',
-                      borderWidth: 1,
-                      borderColor: isCopied ? 'rgba(16,185,129,0.55)' : '#334155',
-                      borderRadius: 10,
-                      paddingHorizontal: 10,
-                      paddingVertical: 8,
-                      marginRight: 10,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingHorizontal: 16,
+                      paddingVertical: 10,
+                      borderTopWidth: 1,
+                      borderTopColor: '#1e293b',
                     }}
                   >
-                    <Text style={{
-                      color: isCopied ? '#10b981' : '#cbd5e1',
-                      fontSize: 11,
-                      fontWeight: '800',
-                      letterSpacing: 0.4,
-                    }}>
-                      {isCopied ? 'COPIADO' : 'COPIAR'}
+                    {/* Index */}
+                    <Text style={{ color: '#334155', fontSize: 11, width: 28, fontWeight: '600' }}>
+                      #{packages.length - idx}
                     </Text>
-                  </TouchableOpacity>
+                    {/* Code */}
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: '#e2e8f0', fontSize: 13, fontWeight: '600', fontFamily: 'SpaceMono-Regular' }}>
+                        {pkg.code}
+                      </Text>
+                      <Text style={{ color: '#475569', fontSize: 11, marginTop: 2 }}>
+                        {formatTimestamp(pkg.scannedAt)}
+                      </Text>
+                    </View>
 
-                  {/* Badge */}
-                  <View style={{
-                    backgroundColor: badge.bg,
-                    borderRadius: 6,
-                    paddingHorizontal: 8,
-                    paddingVertical: 3,
-                  }}>
-                    <Text style={{ color: badge.text, fontSize: 10, fontWeight: '700' }}>
-                      {packageTypeLabel(pkg.type)}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })
-          )}
-          <View style={{ height: 8 }} />
-        </ScrollView>
+                    <TouchableOpacity
+                      onPress={() => handleCopy(pkg)}
+                      activeOpacity={0.85}
+                      style={{
+                        backgroundColor: isCopied ? 'rgba(249,115,22,0.16)' : 'rgba(51,65,85,0.35)',
+                        borderWidth: 1,
+                        borderColor: isCopied ? 'rgba(249,115,22,0.6)' : '#334155',
+                        borderRadius: 10,
+                        paddingHorizontal: 10,
+                        paddingVertical: 8,
+                        marginRight: 10,
+                      }}
+                    >
+                      <Text style={{
+                        color: isCopied ? theme.colors.primary : '#cbd5e1',
+                        fontSize: 11,
+                        fontWeight: '800',
+                        letterSpacing: 0.4,
+                      }}>
+                        {isCopied ? 'COPIADO' : 'COPIAR'}
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Badge */}
+                    <View style={{
+                      backgroundColor: badge.bg,
+                      borderRadius: 6,
+                      paddingHorizontal: 8,
+                      paddingVertical: 3,
+                    }}>
+                      <Text style={{ color: badge.text, fontSize: 10, fontWeight: '700' }}>
+                        {packageTypeLabel(pkg.type)}
+                      </Text>
+                    </View>
+                  </Animated.View>
+                );
+              })
+            )}
+            <View style={{ height: 8 }} />
+          </ScrollView>
+        </Animated.View>
       )}
     </View>
   );

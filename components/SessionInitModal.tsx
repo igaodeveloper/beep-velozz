@@ -9,6 +9,8 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
+import { theme } from '@/utils/theme';
 
 interface SessionInitModalProps {
   visible: boolean;
@@ -50,7 +52,7 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
             <View style={{ alignItems: 'center', marginBottom: 32, marginTop: 20 }}>
               <View style={{
                 width: 64, height: 64, borderRadius: 16,
-                backgroundColor: '#10b981', alignItems: 'center', justifyContent: 'center', marginBottom: 16
+                backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 16
               }}>
                 <Text style={{ fontSize: 30 }}>📦</Text>
               </View>
@@ -63,10 +65,14 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
             </View>
 
             {/* Form Card */}
-            <View style={{
-              backgroundColor: '#0f172a', borderRadius: 16,
-              borderWidth: 1, borderColor: '#1e293b', padding: 24,
-            }}>
+            <Animated.View
+              entering={FadeInDown.duration(320)}
+              exiting={FadeOutDown.duration(220)}
+              style={{
+                backgroundColor: '#0f172a', borderRadius: 16,
+                borderWidth: 1, borderColor: '#1e293b', padding: 24,
+              }}
+            >
               {/* Operator Name */}
               <View style={{ marginBottom: 20 }}>
                 <Text style={{ color: '#94a3b8', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
@@ -152,7 +158,7 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                 onPress={handleStart}
                 activeOpacity={0.85}
                 style={{
-                  backgroundColor: '#10b981',
+                  backgroundColor: theme.colors.primary,
                   borderRadius: 12,
                   padding: 18,
                   alignItems: 'center',
@@ -162,7 +168,7 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                   INICIAR CONFERÊNCIA
                 </Text>
               </TouchableOpacity>
-            </View>
+            </Animated.View>
 
             <View style={{ height: 40 }} />
           </ScrollView>

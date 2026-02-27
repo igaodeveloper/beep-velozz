@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Share, Platform, Linking } from 'react-native';
 import { Session } from '@/types/session';
 import { getSessionMetrics, formatWhatsAppMessage, formatDate, formatTimestamp, packageTypeLabel, packageTypeBadgeColors } from '@/utils/session';
+import { theme } from '@/utils/theme';
 
 interface ReportViewProps {
   session: Session;
@@ -40,7 +41,7 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
         borderBottomWidth: 1, borderBottomColor: '#1e293b',
       }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: '#10b981', fontSize: 12, fontWeight: '700', letterSpacing: 1.5 }}>
+          <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '700', letterSpacing: 1.5 }}>
             RELATÓRIO
           </Text>
           <Text style={{ color: '#fff', fontSize: 20, fontWeight: '800' }}>
@@ -59,9 +60,9 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
           <View style={{
             backgroundColor: '#052e16', borderRadius: 8,
             paddingHorizontal: 10, paddingVertical: 5,
-            borderWidth: 1, borderColor: '#10b981',
+            borderWidth: 1, borderColor: theme.colors.success,
           }}>
-            <Text style={{ color: '#10b981', fontSize: 11, fontWeight: '700' }}>✅ OK</Text>
+            <Text style={{ color: theme.colors.success, fontSize: 11, fontWeight: '700' }}>✅ OK</Text>
           </View>
         )}
       </View>
@@ -105,7 +106,7 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
           }}>
             <View>
               <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '700', letterSpacing: 1 }}>TOTAL CONFERIDO</Text>
-              <Text style={{ color: '#10b981', fontSize: 32, fontWeight: '800' }}>{metrics.total}</Text>
+              <Text style={{ color: theme.colors.primary, fontSize: 32, fontWeight: '800' }}>{metrics.total}</Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '700', letterSpacing: 1 }}>DECLARADO</Text>
@@ -208,7 +209,7 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
             onPress={onNewSession}
             activeOpacity={0.85}
             style={{
-              flex: 1, backgroundColor: '#10b981',
+              flex: 1, backgroundColor: theme.colors.primary,
               borderRadius: 12, padding: 14, alignItems: 'center',
             }}
           >

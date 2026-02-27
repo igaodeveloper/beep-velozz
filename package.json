@@ -23,6 +23,7 @@
     "autoprefixer": "^10.4.20",
     "expo": "^54.0.25",
     "expo-atlas": "^0.4.0",
+    "expo-av": "~16.0.8",
     "expo-blur": "~15.0.7",
     "expo-camera": "~17.0.10",
     "expo-clipboard": "~8.0.8",

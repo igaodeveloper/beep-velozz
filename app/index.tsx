@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, SafeAreaView, StatusBar, useWindowDimensions } from 'react-native';
 import { Session, ScannedPackage } from '@/types/session';
 import { getSessionMetrics, generateId } from '@/utils/session';
 import { addSession, loadSessions } from '@/utils/storage';
@@ -133,15 +133,20 @@ export default function HomeScreen() {
     ? getSessionMetrics(currentSession.packages)
     : { shopee: 0, mercadoLivre: 0, avulsos: 0, total: 0, valueShopee: 0, valueMercadoLivre: 0, valueAvulsos: 0, valueTotal: 0 };
 
+  const { width } = useWindowDimensions();
+  const containerWidth = Math.min(width, 640);
+
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center' }}>
       <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, width: '100%' }}>
+        <View style={{ flex: 1, width: containerWidth, alignSelf: 'center' }}>
         {/* App Header */}
         {screen !== 'history' && screen !== 'report' && (
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
+            flexWrap: 'wrap',
             paddingHorizontal: 16,
             paddingTop: 8,
             paddingBottom: 10,
@@ -243,6 +248,8 @@ export default function HomeScreen() {
             onCancel={handleDivergenceCancel}
           />
         )}
+        {/* end inner container */}
+        </View>
       </SafeAreaView>
     </View>
   );

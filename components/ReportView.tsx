@@ -95,7 +95,7 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
             RESUMO DE PACOTES
           </Text>
 
-          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
+          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
             <SummaryBox label="Shopee" count={metrics.shopee} value={metrics.valueShopee} color="#ff5722" />
             <SummaryBox label="Merc. Livre" count={metrics.mercadoLivre} value={metrics.valueMercadoLivre} color="#ffe600" />
             <SummaryBox label="Avulsos" count={metrics.avulsos} value={metrics.valueAvulsos} color="#64748b" />
@@ -169,6 +169,7 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
         padding: 16, gap: 10,
         borderTopWidth: 1, borderTopColor: colors.border,
         backgroundColor: colors.bg,
+        flexWrap: 'wrap',
       }}>
         <TouchableOpacity
           onPress={handleWhatsApp}
@@ -197,7 +198,7 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
           <Text style={{ color: colors.textMuted, fontSize: 16, fontWeight: '700' }}>Compartilhar</Text>
         </TouchableOpacity>
 
-        <View style={{ flexDirection: 'row', gap: 10 }}>
+        <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
           <TouchableOpacity
             onPress={onViewHistory}
             activeOpacity={0.85}

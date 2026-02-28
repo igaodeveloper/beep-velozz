@@ -589,7 +589,7 @@ export default function ScannerView({
               </Text>
             </View>
           ) : (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '600', flex: 1 }}>
                 🔒 Permissão de câmera necessária. Você pode usar a entrada manual, ou liberar a câmera.
               </Text>
@@ -660,6 +660,7 @@ export default function ScannerView({
         flexDirection: 'row',
         gap: 10,
         alignItems: 'center',
+        flexWrap: 'wrap',
       }}>
         <TextInput
           value={manualCode}

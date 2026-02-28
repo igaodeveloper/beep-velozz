@@ -75,7 +75,7 @@ export default function MetricsDashboard({ metrics, declaredCount }: MetricsDash
       </View>
 
       {/* Metric Cards */}
-      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
         <MetricCard label="SHOPEE" count={metrics.shopee} value={metrics.valueShopee} color="#ff5722" emoji="🛍️" />
         <MetricCard label="MERC. LIVRE" count={metrics.mercadoLivre} value={metrics.valueMercadoLivre} color="#ffe600" emoji="🟡" />
         <MetricCard label="AVULSOS" count={metrics.avulsos} value={metrics.valueAvulsos} color="#64748b" emoji="📦" />

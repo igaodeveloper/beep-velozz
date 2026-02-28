@@ -8,6 +8,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  SafeAreaView,
+  useWindowDimensions,
 } from 'react-native';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useAppTheme } from '@/utils/useAppTheme';
@@ -19,6 +21,8 @@ interface SessionInitModalProps {
 
 export default function SessionInitModal({ visible, onStart }: SessionInitModalProps) {
   const { colors } = useAppTheme();
+  const { width } = useWindowDimensions();
+
   const [operatorName, setOperatorName] = useState('');
   const [driverName, setDriverName] = useState('');
   const [shopeeCount, setShopeeCount] = useState('');
@@ -62,8 +66,16 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
 
   return (
     <Modal visible={visible} transparent animationType="fade">
-      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center' }}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ width: '100%', paddingHorizontal: 20 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center' }}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{
+            width: '100%',
+            paddingHorizontal: 20,
+            maxWidth: 640,
+            alignSelf: 'center',
+          }}
+        >
           <ScrollView keyboardShouldPersistTaps="handled">
             {/* Header */}
             <View style={{ alignItems: 'center', marginBottom: 32, marginTop: 20 }}>
@@ -148,9 +160,16 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                   Qtd. Declarada por Tipo
                 </Text>
                 
-                <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    gap: 12,
+                    marginBottom: 16,
+                    flexWrap: 'wrap',
+                  }}
+                >
                   {/* Shopee */}
-                  <View style={{ flex: 1 }}>
+                  <View style={{ flex: 1, minWidth: 80 }}>
                     <Text style={{ color: '#fb923c', fontSize: 10, fontWeight: '600', marginBottom: 6, textAlign: 'center' }}>
                       � SHOPEE
                     </Text>
@@ -260,6 +279,9 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                   borderRadius: 12,
                   padding: 18,
                   alignItems: 'center',
+                  width: '100%',
+                  maxWidth: 480,
+                  alignSelf: 'center',
                 }}
               >
                 <Text style={{ color: colors.secondary, fontSize: 17, fontWeight: '800', letterSpacing: 1 }}>

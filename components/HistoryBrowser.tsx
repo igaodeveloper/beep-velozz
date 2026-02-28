@@ -36,7 +36,7 @@ export default function HistoryBrowser({ sessions, onBack, onNewSession }: Histo
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       {/* Header */}
       <View style={{
-        flexDirection: 'row', alignItems: 'center',
+        flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap',
         paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12,
         borderBottomWidth: 1, borderBottomColor: colors.surface2,
         gap: 12,
@@ -131,7 +131,7 @@ export default function HistoryBrowser({ sessions, onBack, onNewSession }: Histo
                   )}
                 </View>
 
-                <View style={{ flexDirection: 'row', gap: 8 }}>
+                <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
                   <CountBadge label="SP" count={metrics.shopee} value={metrics.valueShopee} color="#ff5722" />
                   <CountBadge label="ML" count={metrics.mercadoLivre} value={metrics.valueMercadoLivre} color="#ffe600" />
                   <CountBadge label="AV" count={metrics.avulsos} value={metrics.valueAvulsos} color="#64748b" />

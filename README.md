@@ -2,6 +2,25 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+## 🎨 Sistema de Tema Dinâmico
+
+Este projeto agora inclui um sistema completo de tema claro e escuro com cores primárias **laranja** e secundárias **brancas**.
+
+**Documentação completa**: Veja [THEME_SYSTEM.md](./THEME_SYSTEM.md) para detalhes sobre o sistema de cores.
+
+### Características:
+- ✨ Tema claro e escuro automático
+- 🎯 Cor primária: Laranja (#f97316)
+- ⚪ Cor secundária: Branco
+- 💾 Preferência de tema persistida no dispositivo
+- 🔄 Transições suaves entre temas
+- 📱 Suporte completo para todos os componentes
+
+### Como testar:
+1. Inicie o app normalmente
+2. Use o componente `ThemeToggle` para alternar entre light/dark mode
+3. A preferência será salva automaticamente
+
 ## Get started
 
 1. Install dependencies

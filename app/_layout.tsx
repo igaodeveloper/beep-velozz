@@ -1,4 +1,5 @@
 import {
+  DarkTheme,
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
@@ -9,11 +10,14 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import "../global.css";
+import { ThemeProvider as CustomThemeProvider, useTheme } from "@/utils/themeContext";
+import { lightTheme, darkTheme } from "@/utils/theme";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function RootLayoutContent() {
+  const { isDark } = useTheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -28,8 +32,32 @@ export default function RootLayout() {
     return null;
   }
 
+  const navTheme = isDark
+    ? {
+        ...DarkTheme,
+        colors: {
+          ...DarkTheme.colors,
+          primary: darkTheme.colors.primary,
+          background: darkTheme.colors.bg,
+          card: darkTheme.colors.surface,
+          text: darkTheme.colors.text,
+          border: darkTheme.colors.border,
+        },
+      }
+    : {
+        ...DefaultTheme,
+        colors: {
+          ...DefaultTheme.colors,
+          primary: lightTheme.colors.primary,
+          background: lightTheme.colors.bg,
+          card: lightTheme.colors.surface,
+          text: lightTheme.colors.text,
+          border: lightTheme.colors.border,
+        },
+      };
+
   return (
-    <ThemeProvider value={DefaultTheme}>
+    <ThemeProvider value={navTheme}>
       <Stack
         screenOptions={({ route }) => ({
           headerShown: !route.name.startsWith("tempobook"),
@@ -37,7 +65,15 @@ export default function RootLayout() {
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
     </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <CustomThemeProvider>
+      <RootLayoutContent />
+    </CustomThemeProvider>
   );
 }

@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { Session } from '@/types/session';
 import { formatDate, formatTimestamp, getSessionMetrics } from '@/utils/session';
-import { theme } from '@/utils/theme';
+import { useAppTheme } from '@/utils/useAppTheme';
 
 interface HistoryBrowserProps {
   sessions: Session[];
@@ -13,6 +13,7 @@ interface HistoryBrowserProps {
 }
 
 export default function HistoryBrowser({ sessions, onBack, onNewSession }: HistoryBrowserProps) {
+  const { colors } = useAppTheme();
   const [filter, setFilter] = useState('');
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
 
@@ -32,30 +33,30 @@ export default function HistoryBrowser({ sessions, onBack, onNewSession }: Histo
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#080d18' }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       {/* Header */}
       <View style={{
         flexDirection: 'row', alignItems: 'center',
         paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12,
-        borderBottomWidth: 1, borderBottomColor: '#1e293b',
+        borderBottomWidth: 1, borderBottomColor: colors.surface2,
         gap: 12,
       }}>
         <TouchableOpacity onPress={onBack} style={{ padding: 4 }}>
-          <Text style={{ color: theme.colors.primary, fontSize: 22 }}>←</Text>
+          <Text style={{ color: colors.primary, fontSize: 22 }}>←</Text>
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '700', letterSpacing: 1.5 }}>
+          <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700', letterSpacing: 1.5 }}>
             ARQUIVO
           </Text>
-          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '800' }}>
+          <Text style={{ color: colors.text, fontSize: 20, fontWeight: '800' }}>
             Histórico de Sessões
           </Text>
         </View>
         <View style={{
-          backgroundColor: '#1e293b', borderRadius: 10,
+          backgroundColor: colors.surface2, borderRadius: 10,
           paddingHorizontal: 10, paddingVertical: 4,
         }}>
-          <Text style={{ color: '#64748b', fontSize: 13, fontWeight: '700' }}>{sessions.length}</Text>
+          <Text style={{ color: colors.textSubtle, fontSize: 13, fontWeight: '700' }}>{sessions.length}</Text>
         </View>
       </View>
 
@@ -65,14 +66,14 @@ export default function HistoryBrowser({ sessions, onBack, onNewSession }: Histo
           value={filter}
           onChangeText={setFilter}
           placeholder="Buscar por operador, motorista ou data..."
-          placeholderTextColor="#334155"
+          placeholderTextColor={colors.textMuted}
           style={{
-            backgroundColor: '#0f172a',
+            backgroundColor: colors.surface,
             borderWidth: 1,
-            borderColor: '#1e293b',
+            borderColor: colors.surface2,
             borderRadius: 10,
             padding: 12,
-            color: '#fff',
+            color: colors.text,
             fontSize: 14,
           }}
         />
@@ -83,7 +84,7 @@ export default function HistoryBrowser({ sessions, onBack, onNewSession }: Histo
         {filtered.length === 0 ? (
           <View style={{ flex: 1, alignItems: 'center', paddingTop: 60 }}>
             <Text style={{ fontSize: 40, marginBottom: 16 }}>📭</Text>
-            <Text style={{ color: '#334155', fontSize: 16, fontWeight: '600' }}>Nenhuma sessão encontrada</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 16, fontWeight: '600' }}>Nenhuma sessão encontrada</Text>
           </View>
         ) : (
           filtered.map(session => {
@@ -94,10 +95,10 @@ export default function HistoryBrowser({ sessions, onBack, onNewSession }: Histo
                 onPress={() => setSelectedSession(session)}
                 activeOpacity={0.8}
                 style={{
-                  backgroundColor: '#0f172a',
+                  backgroundColor: colors.surface,
                   borderRadius: 14,
                   borderWidth: 1,
-                  borderColor: session.hasDivergence ? '#78350f' : '#1e293b',
+                  borderColor: session.hasDivergence ? '#78350f' : colors.surface2,
                   padding: 16,
                   marginBottom: 12,
                 }}
@@ -123,9 +124,9 @@ export default function HistoryBrowser({ sessions, onBack, onNewSession }: Histo
                     <View style={{
                       backgroundColor: '#052e16', borderRadius: 8,
                       paddingHorizontal: 8, paddingVertical: 4,
-                      borderWidth: 1, borderColor: theme.colors.success,
-                    }}>
-                      <Text style={{ color: theme.colors.success, fontSize: 10, fontWeight: '700' }}>✅ OK</Text>
+                      borderWidth: 1, borderColor: colors.success,
+                      }}>
+                        <Text style={{ color: colors.success, fontSize: 10, fontWeight: '700' }}>✅ OK</Text>
                     </View>
                   )}
                 </View>
@@ -136,7 +137,7 @@ export default function HistoryBrowser({ sessions, onBack, onNewSession }: Histo
                   <CountBadge label="AV" value={metrics.avulsos} color="#64748b" />
                   <View style={{ flex: 1 }} />
                   <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={{ color: theme.colors.primary, fontSize: 18, fontWeight: '800' }}>{metrics.total}</Text>
+                    <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '800' }}>{metrics.total}</Text>
                     <Text style={{ color: '#334155', fontSize: 10 }}>/ {session.declaredCount} decl.</Text>
                   </View>
                 </View>
@@ -152,7 +153,7 @@ export default function HistoryBrowser({ sessions, onBack, onNewSession }: Histo
           onPress={onNewSession}
           activeOpacity={0.85}
           style={{
-            backgroundColor: theme.colors.primary,
+            backgroundColor: colors.primary,
             borderRadius: 12, padding: 16,
             alignItems: 'center',
           }}
@@ -190,10 +191,10 @@ function SessionDetailView({ session, onBack }: { session: Session; onBack: () =
         gap: 12,
       }}>
         <TouchableOpacity onPress={onBack} style={{ padding: 4 }}>
-          <Text style={{ color: theme.colors.primary, fontSize: 22 }}>←</Text>
+          <Text style={{ color: colors.primary, fontSize: 22 }}>←</Text>
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '700', letterSpacing: 1.5 }}>
+          <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700', letterSpacing: 1.5 }}>
             DETALHES
           </Text>
           <Text style={{ color: '#fff', fontSize: 18, fontWeight: '800' }} numberOfLines={1}>
@@ -212,9 +213,9 @@ function SessionDetailView({ session, onBack }: { session: Session; onBack: () =
           <View style={{
             backgroundColor: '#052e16', borderRadius: 8,
             paddingHorizontal: 10, paddingVertical: 5,
-            borderWidth: 1, borderColor: theme.colors.success,
+            borderWidth: 1, borderColor: colors.success,
           }}>
-            <Text style={{ color: theme.colors.success, fontSize: 10, fontWeight: '700' }}>✅ OK</Text>
+            <Text style={{ color: colors.success, fontSize: 10, fontWeight: '700' }}>✅ OK</Text>
           </View>
         )}
       </View>
@@ -258,7 +259,7 @@ function SessionDetailView({ session, onBack }: { session: Session; onBack: () =
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#1e293b', borderRadius: 10, padding: 12 }}>
             <View>
               <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '700' }}>CONFERIDO</Text>
-              <Text style={{ color: theme.colors.primary, fontSize: 26, fontWeight: '800' }}>{metrics.total}</Text>
+              <Text style={{ color: colors.primary, fontSize: 26, fontWeight: '800' }}>{metrics.total}</Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '700' }}>DECLARADO</Text>

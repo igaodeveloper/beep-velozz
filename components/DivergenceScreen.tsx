@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
-import { theme } from '@/utils/theme';
+import { useAppTheme } from '@/utils/useAppTheme';
 
 interface DivergenceScreenProps {
   visible: boolean;
@@ -16,6 +16,7 @@ export default function DivergenceScreen({
   declaredCount,
   onCancel,
 }: DivergenceScreenProps) {
+  const { colors } = useAppTheme();
   const delta = scannedCount - declaredCount;
   const isShort = delta < 0;
 
@@ -39,7 +40,7 @@ export default function DivergenceScreen({
             backgroundColor: '#0f0e0a',
             borderRadius: 20,
             borderWidth: 2,
-            borderColor: theme.colors.primary,
+            borderColor: colors.primary,
             padding: 28,
             width: '100%',
             maxWidth: 400,
@@ -57,7 +58,7 @@ export default function DivergenceScreen({
           </View>
 
           <Text style={{
-            color: theme.colors.primary, fontSize: 20, fontWeight: '800',
+            color: colors.primary, fontSize: 20, fontWeight: '800',
             letterSpacing: 1, marginBottom: 8, textAlign: 'center',
           }}>
             DIVERGÊNCIA DETECTADA
@@ -89,7 +90,7 @@ export default function DivergenceScreen({
                 <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '700', letterSpacing: 1 }}>
                   CONFERIDO
                 </Text>
-                <Text style={{ color: theme.colors.primary, fontSize: 28, fontWeight: '800', marginTop: 4 }}>
+                <Text style={{ color: colors.primary, fontSize: 28, fontWeight: '800', marginTop: 4 }}>
                   {scannedCount}
                 </Text>
               </View>
@@ -100,7 +101,7 @@ export default function DivergenceScreen({
               backgroundColor: '#78350f', borderRadius: 10,
               paddingHorizontal: 16, paddingVertical: 8,
             }}>
-              <Text style={{ color: theme.colors.primary, fontSize: 22, fontWeight: '800', textAlign: 'center' }}>
+              <Text style={{ color: colors.primary, fontSize: 22, fontWeight: '800', textAlign: 'center' }}>
                 Δ {delta > 0 ? '+' : ''}{delta}
               </Text>
               <Text style={{ color: '#d97706', fontSize: 11, textAlign: 'center', marginTop: 2 }}>
@@ -114,7 +115,7 @@ export default function DivergenceScreen({
             onPress={onCancel}
             activeOpacity={0.85}
             style={{
-              backgroundColor: theme.colors.primary,
+              backgroundColor: colors.primary,
               borderRadius: 12,
               padding: 16,
               alignItems: 'center',

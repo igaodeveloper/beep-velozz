@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Share, Platform, Linking } from 'react-native';
 import { Session } from '@/types/session';
 import { getSessionMetrics, formatWhatsAppMessage, formatDate, formatTimestamp, packageTypeLabel, packageTypeBadgeColors } from '@/utils/session';
-import { theme } from '@/utils/theme';
+import { useAppTheme } from '@/utils/useAppTheme';
 
 interface ReportViewProps {
   session: Session;
@@ -11,6 +11,7 @@ interface ReportViewProps {
 }
 
 export default function ReportView({ session, onNewSession, onViewHistory }: ReportViewProps) {
+  const { colors } = useAppTheme();
   const metrics = getSessionMetrics(session.packages);
   const hasDivergence = session.hasDivergence;
 
@@ -33,18 +34,18 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#080d18' }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       {/* Header */}
       <View style={{
         flexDirection: 'row', alignItems: 'center',
         paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12,
-        borderBottomWidth: 1, borderBottomColor: '#1e293b',
+        borderBottomWidth: 1, borderBottomColor: colors.surface2,
       }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '700', letterSpacing: 1.5 }}>
+          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700', letterSpacing: 1.5 }}>
             RELATÓRIO
           </Text>
-          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '800' }}>
+          <Text style={{ color: colors.text, fontSize: 20, fontWeight: '800' }}>
             Sessão Concluída
           </Text>
         </View>
@@ -52,17 +53,17 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
           <View style={{
             backgroundColor: '#78350f', borderRadius: 8,
             paddingHorizontal: 10, paddingVertical: 5,
-            borderWidth: 1, borderColor: '#f59e0b',
+            borderWidth: 1, borderColor: colors.warning,
           }}>
-            <Text style={{ color: '#f59e0b', fontSize: 11, fontWeight: '700' }}>⚠️ DIVERGÊNCIA</Text>
+            <Text style={{ color: colors.warning, fontSize: 11, fontWeight: '700' }}>⚠️ DIVERGÊNCIA</Text>
           </View>
         ) : (
           <View style={{
             backgroundColor: '#052e16', borderRadius: 8,
             paddingHorizontal: 10, paddingVertical: 5,
-            borderWidth: 1, borderColor: theme.colors.success,
+            borderWidth: 1, borderColor: colors.success,
           }}>
-            <Text style={{ color: theme.colors.success, fontSize: 11, fontWeight: '700' }}>✅ OK</Text>
+            <Text style={{ color: colors.success, fontSize: 11, fontWeight: '700' }}>✅ OK</Text>
           </View>
         )}
       </View>
@@ -70,11 +71,11 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
         {/* Session Info */}
         <View style={{
-          backgroundColor: '#0f172a', borderRadius: 14,
-          borderWidth: 1, borderColor: '#1e293b',
+          backgroundColor: colors.surface, borderRadius: 14,
+          borderWidth: 1, borderColor: colors.surface2,
           padding: 16, marginBottom: 16,
         }}>
-          <Text style={{ color: '#64748b', fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 12 }}>
+          <Text style={{ color: colors.textSubtle, fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 12 }}>
             INFORMAÇÕES DA SESSÃO
           </Text>
           <InfoRow label="Data" value={formatDate(session.startedAt)} />
@@ -86,11 +87,11 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
 
         {/* Summary metrics */}
         <View style={{
-          backgroundColor: '#0f172a', borderRadius: 14,
-          borderWidth: 1, borderColor: '#1e293b',
+          backgroundColor: colors.surface, borderRadius: 14,
+          borderWidth: 1, borderColor: colors.surface2,
           padding: 16, marginBottom: 16,
         }}>
-          <Text style={{ color: '#64748b', fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 12 }}>
+          <Text style={{ color: colors.textSubtle, fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 12 }}>
             RESUMO DE PACOTES
           </Text>
 
@@ -106,7 +107,7 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
           }}>
             <View>
               <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '700', letterSpacing: 1 }}>TOTAL CONFERIDO</Text>
-              <Text style={{ color: theme.colors.primary, fontSize: 32, fontWeight: '800' }}>{metrics.total}</Text>
+              <Text style={{ color: colors.primary, fontSize: 32, fontWeight: '800' }}>{metrics.total}</Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '700', letterSpacing: 1 }}>DECLARADO</Text>
@@ -189,7 +190,7 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
           }}
         >
           <Text style={{ fontSize: 18 }}>📤</Text>
-          <Text style={{ color: '#e2e8f0', fontSize: 15, fontWeight: '700' }}>Compartilhar</Text>
+          <Text style={{ color: colors.textMuted, fontSize: 16, fontWeight: '700' }}>{}Compartilhar</Text>
         </TouchableOpacity>
 
         <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -209,7 +210,7 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
             onPress={onNewSession}
             activeOpacity={0.85}
             style={{
-              flex: 1, backgroundColor: theme.colors.primary,
+              flex: 1, backgroundColor: colors.primary,
               borderRadius: 12, padding: 14, alignItems: 'center',
             }}
           >

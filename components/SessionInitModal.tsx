@@ -10,7 +10,7 @@ import {
   ScrollView,
 } from 'react-native';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
-import { theme } from '@/utils/theme';
+import { useAppTheme } from '@/utils/useAppTheme';
 
 interface SessionInitModalProps {
   visible: boolean;
@@ -18,6 +18,7 @@ interface SessionInitModalProps {
 }
 
 export default function SessionInitModal({ visible, onStart }: SessionInitModalProps) {
+  const { colors } = useAppTheme();
   const [operatorName, setOperatorName] = useState('');
   const [driverName, setDriverName] = useState('');
   const [shopeeCount, setShopeeCount] = useState('');
@@ -68,14 +69,14 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
             <View style={{ alignItems: 'center', marginBottom: 32, marginTop: 20 }}>
               <View style={{
                 width: 64, height: 64, borderRadius: 16,
-                backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 16
+                backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 16
               }}>
                 <Text style={{ fontSize: 30 }}>📦</Text>
               </View>
-              <Text style={{ color: '#fff', fontSize: 22, fontWeight: '800', letterSpacing: 1 }}>
+              <Text style={{ color: colors.text, fontSize: 22, fontWeight: '800', letterSpacing: 1 }}>
                 NOVA SESSÃO
               </Text>
-              <Text style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>
+              <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 4 }}>
                 Preencha os dados antes de iniciar
               </Text>
             </View>
@@ -85,65 +86,65 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
               entering={FadeInDown.duration(320)}
               exiting={FadeOutDown.duration(220)}
               style={{
-                backgroundColor: '#0f172a', borderRadius: 16,
-                borderWidth: 1, borderColor: '#1e293b', padding: 24,
+                backgroundColor: colors.surface, borderRadius: 16,
+                borderWidth: 1, borderColor: colors.border, padding: 24,
               }}
             >
               {/* Operator Name */}
               <View style={{ marginBottom: 20 }}>
-                <Text style={{ color: '#94a3b8', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
+                <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
                   Operador
                 </Text>
                 <TextInput
                   value={operatorName}
                   onChangeText={setOperatorName}
                   placeholder="Nome do operador"
-                  placeholderTextColor="#334155"
+                  placeholderTextColor={colors.textSubtle}
                   style={{
-                    backgroundColor: '#1e293b',
+                    backgroundColor: colors.surface2,
                     borderWidth: 1,
-                    borderColor: errors.operatorName ? '#ef4444' : '#334155',
+                    borderColor: errors.operatorName ? colors.danger : colors.border2,
                     borderRadius: 10,
                     padding: 14,
-                    color: '#fff',
+                    color: colors.text,
                     fontSize: 16,
                     fontWeight: '500',
                   }}
                 />
                 {errors.operatorName && (
-                  <Text style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.operatorName}</Text>
+                  <Text style={{ color: colors.danger, fontSize: 12, marginTop: 4 }}>{errors.operatorName}</Text>
                 )}
               </View>
 
               {/* Driver Name */}
               <View style={{ marginBottom: 20 }}>
-                <Text style={{ color: '#94a3b8', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
+                <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
                   Motorista
                 </Text>
                 <TextInput
                   value={driverName}
                   onChangeText={setDriverName}
                   placeholder="Nome do motorista"
-                  placeholderTextColor="#334155"
+                  placeholderTextColor={colors.textSubtle}
                   style={{
-                    backgroundColor: '#1e293b',
+                    backgroundColor: colors.surface2,
                     borderWidth: 1,
-                    borderColor: errors.driverName ? '#ef4444' : '#334155',
+                    borderColor: errors.driverName ? colors.danger : colors.border2,
                     borderRadius: 10,
                     padding: 14,
-                    color: '#fff',
+                    color: colors.text,
                     fontSize: 16,
                     fontWeight: '500',
                   }}
                 />
                 {errors.driverName && (
-                  <Text style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{errors.driverName}</Text>
+                  <Text style={{ color: colors.danger, fontSize: 12, marginTop: 4 }}>{errors.driverName}</Text>
                 )}
               </View>
 
               {/* Declared Counts */}
               <View style={{ marginBottom: 28 }}>
-                <Text style={{ color: '#94a3b8', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 12, textTransform: 'uppercase' }}>
+                <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 12, textTransform: 'uppercase' }}>
                   Qtd. Declarada por Tipo
                 </Text>
                 
@@ -175,22 +176,22 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                   
                   {/* Mercado Livre */}
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '600', marginBottom: 6, textAlign: 'center' }}>
+                    <Text style={{ color: colors.textSubtle, fontSize: 10, fontWeight: '600', marginBottom: 6, textAlign: 'center' }}>
                       🟨 MERCADO LIVRE
                     </Text>
                     <TextInput
                       value={mercadoLivreCount}
                       onChangeText={setMercadoLivreCount}
                       placeholder="0"
-                      placeholderTextColor="#334155"
+                      placeholderTextColor={colors.textMuted}
                       keyboardType="numeric"
                       style={{
-                        backgroundColor: '#1e293b',
+                        backgroundColor: colors.surface2,
                         borderWidth: 1,
-                        borderColor: errors.mercadoLivre ? '#ef4444' : '#334155',
+                        borderColor: errors.mercadoLivre ? colors.danger : colors.textMuted,
                         borderRadius: 10,
                         padding: 12,
-                        color: '#fff',
+                        color: colors.text,
                         fontSize: 20,
                         fontWeight: '700',
                         textAlign: 'center',
@@ -200,22 +201,22 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                   
                   {/* Avulso */}
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: '#22c55e', fontSize: 10, fontWeight: '600', marginBottom: 6, textAlign: 'center' }}>
+                    <Text style={{ color: colors.success, fontSize: 10, fontWeight: '600', marginBottom: 6, textAlign: 'center' }}>
                       🟩 AVULSO
                     </Text>
                     <TextInput
                       value={avulsoCount}
                       onChangeText={setAvulsoCount}
                       placeholder="0"
-                      placeholderTextColor="#334155"
+                      placeholderTextColor={colors.textSubtle}
                       keyboardType="numeric"
                       style={{
-                        backgroundColor: '#1e293b',
+                        backgroundColor: colors.surface2,
                         borderWidth: 1,
-                        borderColor: errors.avulso ? '#ef4444' : '#334155',
+                        borderColor: errors.avulso ? colors.danger : colors.border2,
                         borderRadius: 10,
                         padding: 12,
-                        color: '#fff',
+                        color: colors.text,
                         fontSize: 20,
                         fontWeight: '700',
                         textAlign: 'center',
@@ -226,18 +227,18 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                 
                 {/* Total */}
                 <View style={{
-                  backgroundColor: '#0f172a',
+                  backgroundColor: colors.surface2,
                   borderRadius: 10,
                   padding: 12,
                   borderWidth: 1,
-                  borderColor: '#334155',
+                  borderColor: colors.border2,
                   alignItems: 'center',
                 }}>
-                  <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '600', marginBottom: 4 }}>
+                  <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '600', marginBottom: 4 }}>
                     TOTAL DECLARADO
                   </Text>
                   <Text style={{ 
-                    color: theme.colors.primary, 
+                    color: colors.primary, 
                     fontSize: 24, 
                     fontWeight: '800',
                   }}>
@@ -246,7 +247,7 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                 </View>
                 
                 {errors.total && (
-                  <Text style={{ color: '#ef4444', fontSize: 12, marginTop: 8, textAlign: 'center' }}>{errors.total}</Text>
+                  <Text style={{ color: colors.danger, fontSize: 12, marginTop: 8, textAlign: 'center' }}>{errors.total}</Text>
                 )}
               </View>
 
@@ -255,13 +256,13 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                 onPress={handleStart}
                 activeOpacity={0.85}
                 style={{
-                  backgroundColor: theme.colors.primary,
+                  backgroundColor: colors.primary,
                   borderRadius: 12,
                   padding: 18,
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ color: '#fff', fontSize: 17, fontWeight: '800', letterSpacing: 1 }}>
+                <Text style={{ color: colors.secondary, fontSize: 17, fontWeight: '800', letterSpacing: 1 }}>
                   INICIAR CONFERÊNCIA
                 </Text>
               </TouchableOpacity>

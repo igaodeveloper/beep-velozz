@@ -5,7 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { ScannedPackage } from '@/types/session';
 import { formatTimestamp, packageTypeLabel, packageTypeBadgeColors } from '@/utils/session';
 import Animated, { FadeInDown, FadeOutDown, Layout } from 'react-native-reanimated';
-import { theme } from '@/utils/theme';
+import { useAppTheme } from '@/utils/useAppTheme';
 
 interface PackageListProps {
   packages: ScannedPackage[];
@@ -14,6 +14,7 @@ interface PackageListProps {
 }
 
 export default function PackageList({ packages, expanded, onToggle }: PackageListProps) {
+  const { colors } = useAppTheme();
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopy = async (pkg: ScannedPackage) => {
@@ -33,9 +34,9 @@ export default function PackageList({ packages, expanded, onToggle }: PackageLis
 
   return (
     <View style={{
-      backgroundColor: '#0a0f1e',
+      backgroundColor: colors.bg,
       borderTopWidth: 1,
-      borderTopColor: '#1e293b',
+      borderTopColor: colors.surface2,
     }}>
       {/* Header toggle */}
       <TouchableOpacity
@@ -50,19 +51,19 @@ export default function PackageList({ packages, expanded, onToggle }: PackageLis
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700', letterSpacing: 0.5 }}>
+          <Text style={{ color: colors.text, fontSize: 13, fontWeight: '700', letterSpacing: 0.5 }}>
             PACOTES ESCANEADOS
           </Text>
           <View style={{
-            backgroundColor: '#1e293b', borderRadius: 10,
+            backgroundColor: colors.surface2, borderRadius: 10,
             paddingHorizontal: 8, paddingVertical: 2,
           }}>
-            <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '700' }}>
+            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>
               {packages.length}
             </Text>
           </View>
         </View>
-        <Text style={{ color: '#64748b', fontSize: 18 }}>
+        <Text style={{ color: colors.textSubtle, fontSize: 18 }}>
           {expanded ? '▼' : '▲'}
         </Text>
       </TouchableOpacity>
@@ -73,7 +74,7 @@ export default function PackageList({ packages, expanded, onToggle }: PackageLis
           <ScrollView style={{ maxHeight: 240 }} showsVerticalScrollIndicator={false}>
             {packages.length === 0 ? (
               <View style={{ padding: 24, alignItems: 'center' }}>
-                <Text style={{ color: '#334155', fontSize: 14 }}>Nenhum pacote escaneado</Text>
+                <Text style={{ color: colors.textMuted, fontSize: 14 }}>Nenhum pacote escaneado</Text>
               </View>
             ) : (
               [...packages].reverse().map((pkg, idx) => {
@@ -90,19 +91,19 @@ export default function PackageList({ packages, expanded, onToggle }: PackageLis
                       paddingHorizontal: 16,
                       paddingVertical: 10,
                       borderTopWidth: 1,
-                      borderTopColor: '#1e293b',
+                      borderTopColor: colors.surface2,
                     }}
                   >
                     {/* Index */}
-                    <Text style={{ color: '#334155', fontSize: 11, width: 28, fontWeight: '600' }}>
+                    <Text style={{ color: colors.textMuted, fontSize: 11, width: 28, fontWeight: '600' }}>
                       #{packages.length - idx}
                     </Text>
                     {/* Code */}
                     <View style={{ flex: 1 }}>
-                      <Text style={{ color: '#e2e8f0', fontSize: 13, fontWeight: '600', fontFamily: 'SpaceMono-Regular' }}>
+                      <Text style={{ color: colors.text, fontSize: 13, fontWeight: '600', fontFamily: 'SpaceMono-Regular' }}>
                         {pkg.code}
                       </Text>
-                      <Text style={{ color: '#475569', fontSize: 11, marginTop: 2 }}>
+                      <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
                         {formatTimestamp(pkg.scannedAt)}
                       </Text>
                     </View>
@@ -113,7 +114,7 @@ export default function PackageList({ packages, expanded, onToggle }: PackageLis
                       style={{
                         backgroundColor: isCopied ? 'rgba(249,115,22,0.16)' : 'rgba(51,65,85,0.35)',
                         borderWidth: 1,
-                        borderColor: isCopied ? 'rgba(249,115,22,0.6)' : '#334155',
+                        borderColor: isCopied ? 'rgba(249,115,22,0.6)' : colors.textMuted,
                         borderRadius: 10,
                         paddingHorizontal: 10,
                         paddingVertical: 8,
@@ -121,7 +122,7 @@ export default function PackageList({ packages, expanded, onToggle }: PackageLis
                       }}
                     >
                       <Text style={{
-                        color: isCopied ? theme.colors.primary : '#cbd5e1',
+                        color: isCopied ? colors.primary : colors.text,
                         fontSize: 11,
                         fontWeight: '800',
                         letterSpacing: 0.4,

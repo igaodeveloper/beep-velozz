@@ -3,7 +3,7 @@ import { View, Text, SafeAreaView, StatusBar } from 'react-native';
 import { Session, ScannedPackage } from '@/types/session';
 import { getSessionMetrics, generateId } from '@/utils/session';
 import { addSession, loadSessions } from '@/utils/storage';
-import { theme } from '@/utils/theme';
+import { useAppTheme } from '@/utils/useAppTheme';
 
 import SessionInitModal from '@/components/SessionInitModal';
 import ScannerView from '@/components/ScannerView';
@@ -17,6 +17,7 @@ import HistoryBrowser from '@/components/HistoryBrowser';
 type AppScreen = 'scanning' | 'report' | 'history';
 
 export default function HomeScreen() {
+  const { colors } = useAppTheme();
   const [screen, setScreen] = useState<AppScreen>('scanning');
   const [showInitModal, setShowInitModal] = useState(true);
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
@@ -132,8 +133,8 @@ export default function HomeScreen() {
     : { shopee: 0, mercadoLivre: 0, avulsos: 0, total: 0 };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <StatusBar barStyle="light-content" backgroundColor={theme.colors.bg} />
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
       <SafeAreaView style={{ flex: 1 }}>
         {/* App Header */}
         {screen !== 'history' && screen !== 'report' && (
@@ -144,29 +145,29 @@ export default function HomeScreen() {
             paddingTop: 8,
             paddingBottom: 10,
             borderBottomWidth: 1,
-            borderBottomColor: theme.colors.border,
+            borderBottomColor: colors.border,
           }}>
             <View style={{
               width: 32, height: 32, borderRadius: 8,
-              backgroundColor: theme.colors.primary,
+              backgroundColor: colors.primary,
               alignItems: 'center', justifyContent: 'center',
               marginRight: 10,
             }}>
-              <Text style={{ fontSize: 16 }}>📦</Text>
+              <Text style={{ fontSize: 16 }}>\ud83d\udce6</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '800', letterSpacing: 0.5 }}>
+              <Text style={{ color: colors.text, fontSize: 16, fontWeight: '800', letterSpacing: 0.5 }}>
                 LogManager Pro
               </Text>
               {currentSession && (
-                <Text style={{ color: '#475569', fontSize: 11 }} numberOfLines={1}>
-                  {currentSession.driverName} · Op: {currentSession.operatorName}
+                <Text style={{ color: colors.textMuted, fontSize: 11 }} numberOfLines={1}>
+                  {currentSession.driverName} \u00b7 Op: {currentSession.operatorName}
                 </Text>
               )}
             </View>
             <View style={{
               width: 8, height: 8, borderRadius: 4,
-              backgroundColor: currentSession ? theme.colors.primary : theme.colors.border2,
+              backgroundColor: currentSession ? colors.primary : colors.border2,
             }} />
           </View>
         )}

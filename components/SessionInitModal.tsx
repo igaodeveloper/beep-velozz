@@ -10,9 +10,11 @@ import {
   ScrollView,
   SafeAreaView,
   useWindowDimensions,
+  Image,
 } from 'react-native';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useAppTheme } from '@/utils/useAppTheme';
+import { MaterialIcons } from '@expo/vector-icons';
 
 interface SessionInitModalProps {
   visible: boolean;
@@ -79,14 +81,19 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
           <ScrollView keyboardShouldPersistTaps="handled">
             {/* Header */}
             <View style={{ alignItems: 'center', marginBottom: 32, marginTop: 20 }}>
+              {/* larger square container with no solid background and rounded corners */}
               <View style={{
-                width: 64, height: 64, borderRadius: 16,
-                backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 16
+                width: 120, height: 120, borderRadius: 24,
+                backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+                overflow: 'hidden' // ensure image respects corners
               }}>
-                <Text style={{ fontSize: 30 }}>📦</Text>
+                <Image
+                  source={require('../assets/images/session.png')}
+                  style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
+                />
               </View>
               <Text style={{ color: colors.text, fontSize: 22, fontWeight: '800', letterSpacing: 1 }}>
-                NOVA SESSÃO
+                beep velozz
               </Text>
               <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 4 }}>
                 Preencha os dados antes de iniciar

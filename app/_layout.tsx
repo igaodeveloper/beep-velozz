@@ -65,7 +65,7 @@ function RootLayoutContent() {
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
       </Stack>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <StatusBar backgroundColor={isDark ? "#1a1a1a" : "#ffffff"} />
     </ThemeProvider>
   );
 }

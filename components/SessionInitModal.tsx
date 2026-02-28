@@ -293,7 +293,7 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
             <View style={{ height: 40 }} />
           </ScrollView>
         </KeyboardAvoidingView>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 }

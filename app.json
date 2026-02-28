@@ -1,15 +1,16 @@
 {
   "expo": {
     "name": "Beep Velozz",
-    "slug": "Beep Velozz",
+    "slug": "beep-velozz",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "beepvelozz",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.igaonamikaze.beepvelozz",
       "infoPlist": {
         "NSCameraUsageDescription": "Precisamos de acesso à câmera para ler QR Codes e códigos de barras."
       }
@@ -22,7 +23,7 @@
       "permissions": [
         "CAMERA"
       ],
-      "package": "com.igaonamikaze.testtempo"
+      "package": "com.igaonamikaze.beepvelozz"
     },
     "web": {
       "bundler": "metro",
@@ -49,8 +50,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "f4819179-45f8-4d20-af4d-6ccc206ab57f"
+        "projectId": "9a9e3814-54fe-4f94-892d-a55bbe897cf0"
       }
-    }
+    },
+    "owner": "igaonamikaze"
   }
 }

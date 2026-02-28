@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Platform,
   useWindowDimensions,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
@@ -38,6 +39,7 @@ export default function ScannerView({
   const { colors } = useAppTheme();
   const { width: windowWidth } = useWindowDimensions();
   const [manualCode, setManualCode] = useState('');
+  const [manualError, setManualError] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const feedbackAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -49,6 +51,9 @@ export default function ScannerView({
   const lastAcceptedRef = useRef<{ code: string; at: number } | null>(null);
 
   const metrics = getSessionMetrics(packages);
+
+  // quick lookup set for faster duplicate detection
+  const packageSet = useMemo(() => new Set(packages.map(p => p.code)), [packages]);
 
   const [limitVisible, setLimitVisible] = useState(false);
   const [limitLabel, setLimitLabel] = useState('');
@@ -178,22 +183,27 @@ export default function ScannerView({
   }, [permission, requestPermission]);
 
   const handleManualSubmit = () => {
+    setManualError(null);
     const code = normalizeCode(manualCode);
-    if (!code) return;
+    if (!code) {
+      setManualError('Código inválido');
+      return;
+    }
 
-    const duplicate = packages.find(p => p.code === code);
-    if (duplicate) {
+    if (packageSet.has(code)) {
       onDuplicate(code);
       playError();
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       }
       setManualCode('');
+      setManualError('Código já escaneado');
       return;
     }
 
     const forced = forceTypeByPrefix(code);
     const type = forced ?? classifyPackage(code);
+
     // check limit
     if (!checkLimit(type)) {
       playError();
@@ -201,6 +211,7 @@ export default function ScannerView({
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       }
       setManualCode('');
+      setManualError('Limite atingido para este tipo');
       return;
     }
 
@@ -223,6 +234,7 @@ export default function ScannerView({
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       }
+      setManualError('Não foi possível aceitar o pacote');
     }
     setManualCode('');
   };
@@ -237,8 +249,7 @@ export default function ScannerView({
       return;
     }
 
-    const duplicate = packages.find(p => p.code === code);
-    if (duplicate) {
+    if (packageSet.has(code)) {
       onDuplicate(code);
       playError();
       if (Platform.OS !== 'web') {
@@ -480,22 +491,36 @@ export default function ScannerView({
         </Animated.View>
 
         <Text style={{
-          color: '#334155', fontSize: 12, marginTop: 20,
-          fontWeight: '500', letterSpacing: 0.5,
+          color: colors.text, fontSize: 12, marginTop: 20,
+          fontWeight: '600', letterSpacing: 0.3,
         }}>
-          Posicione o QR Code ou código de barras
+          Posicione o QR Code ou código de barras dentro da área
         </Text>
-        {/* counts vs declared */}
-        <View style={{ flexDirection: 'row', gap: 12, marginTop: 6 }}>
-          <Text style={{ color: '#fb923c', fontSize: 10, fontWeight: '600' }}>
-            SHOPEE {metrics.shopee}/{declaredCounts.shopee}
-          </Text>
-          <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '600' }}>
-            ML {metrics.mercadoLivre}/{declaredCounts.mercadoLivre}
-          </Text>
-          <Text style={{ color: colors.success, fontSize: 10, fontWeight: '600' }}>
-            AVULSO {metrics.avulsos}/{declaredCounts.avulso}
-          </Text>
+        {/* counts vs declared with compact progress */}
+        <View style={{ marginTop: 8, width: '86%', alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+            <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '600' }}>Shopee</Text>
+            <Text style={{ color: colors.text, fontSize: 11, fontWeight: '700' }}>{metrics.shopee}/{declaredCounts.shopee}</Text>
+          </View>
+          <View style={{ height: 8, width: '100%', backgroundColor: colors.surface2, borderRadius: 8, marginTop: 6, overflow: 'hidden' }}>
+            <View style={{ width: `${Math.min(100, declaredCounts.shopee ? Math.round((metrics.shopee / declaredCounts.shopee) * 100) : 0)}%`, height: '100%', backgroundColor: '#fb923c' }} />
+          </View>
+          <View style={{ height: 8 }} />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+            <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '600' }}>Mercado Livre</Text>
+            <Text style={{ color: colors.text, fontSize: 11, fontWeight: '700' }}>{metrics.mercadoLivre}/{declaredCounts.mercadoLivre}</Text>
+          </View>
+          <View style={{ height: 8, width: '100%', backgroundColor: colors.surface2, borderRadius: 8, marginTop: 6, overflow: 'hidden' }}>
+            <View style={{ width: `${Math.min(100, declaredCounts.mercadoLivre ? Math.round((metrics.mercadoLivre / declaredCounts.mercadoLivre) * 100) : 0)}%`, height: '100%', backgroundColor: '#ffe600' }} />
+          </View>
+          <View style={{ height: 8 }} />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+            <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '600' }}>Avulso</Text>
+            <Text style={{ color: colors.text, fontSize: 11, fontWeight: '700' }}>{metrics.avulsos}/{declaredCounts.avulso}</Text>
+          </View>
+          <View style={{ height: 8, width: '100%', backgroundColor: colors.surface2, borderRadius: 8, marginTop: 6, overflow: 'hidden' }}>
+            <View style={{ width: `${Math.min(100, declaredCounts.avulso ? Math.round((metrics.avulsos / declaredCounts.avulso) * 100) : 0)}%`, height: '100%', backgroundColor: colors.success }} />
+          </View>
         </View>
 
         {lastScanned && lastBadge && (
@@ -556,6 +581,13 @@ export default function ScannerView({
             <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '600' }}>
               📷 Aponte para o QR Code ou código de barras
             </Text>
+          ) : permission?.status === 'undetermined' ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <ActivityIndicator size="small" color={colors.primary} />
+              <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '600', flex: 1 }}>
+                Solicitando permissão da câmera...
+              </Text>
+            </View>
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '600', flex: 1 }}>
@@ -563,6 +595,8 @@ export default function ScannerView({
               </Text>
               <TouchableOpacity
                 onPress={() => requestPermission()}
+                accessibilityRole="button"
+                accessibilityLabel="Permitir câmera"
                 activeOpacity={0.85}
                 style={{
                   backgroundColor: colors.primary,
@@ -661,6 +695,12 @@ export default function ScannerView({
           <Text style={{ color: '#fff', fontSize: 16, fontWeight: '800' }}>+</Text>
         </TouchableOpacity>
       </View>
+
+      {manualError ? (
+        <View style={{ backgroundColor: colors.surface, paddingHorizontal: 16, paddingVertical: 8 }}>
+          <Text style={{ color: colors.danger, fontSize: 13, fontWeight: '700' }}>{manualError}</Text>
+        </View>
+      ) : null}
 
       {/* End Session Button */}
       <View style={{

@@ -137,9 +137,22 @@ export default function PackageList({ packages, expanded, onToggle }: PackageLis
                       borderRadius: 6,
                       paddingHorizontal: 8,
                       paddingVertical: 3,
+                      marginRight: 8,
                     }}>
                       <Text style={{ color: badge.text, fontSize: 10, fontWeight: '700' }}>
                         {packageTypeLabel(pkg.type)}
+                      </Text>
+                    </View>
+
+                    {/* Value */}
+                    <View style={{
+                      backgroundColor: colors.primary,
+                      borderRadius: 6,
+                      paddingHorizontal: 8,
+                      paddingVertical: 3,
+                    }}>
+                      <Text style={{ color: colors.secondary, fontSize: 10, fontWeight: '700' }}>
+                        R$ {pkg.value.toFixed(2)}
                       </Text>
                     </View>
                   </Animated.View>

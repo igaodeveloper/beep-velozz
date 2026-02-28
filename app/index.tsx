@@ -62,7 +62,7 @@ export default function HomeScreen() {
   };
 
   const handleScan = (pkg: ScannedPackage) => {
-    if (!currentSession) return;
+    if (!currentSession) return false;
     const updated = {
       ...currentSession,
       packages: [...currentSession.packages, pkg],
@@ -76,6 +76,7 @@ export default function HomeScreen() {
     if (scannedCount === declaredCount) {
       setDivergenceVisible(false);
     }
+    return true;
   };
 
   const handleDuplicate = (code: string) => {
@@ -130,7 +131,7 @@ export default function HomeScreen() {
 
   const metrics = currentSession
     ? getSessionMetrics(currentSession.packages)
-    : { shopee: 0, mercadoLivre: 0, avulsos: 0, total: 0 };
+    : { shopee: 0, mercadoLivre: 0, avulsos: 0, total: 0, valueShopee: 0, valueMercadoLivre: 0, valueAvulsos: 0, valueTotal: 0 };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -199,6 +200,7 @@ export default function HomeScreen() {
                 onScan={handleScan}
                 onDuplicate={handleDuplicate}
                 packages={currentSession.packages}
+                declaredCounts={currentSession.declaredCounts}
                 lastScanned={lastScanned}
                 onEndSession={handleEndSession}
               />

@@ -8,18 +8,21 @@ import {
   Easing,
   Platform,
   useWindowDimensions,
+  Modal,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { ScannedPackage } from '@/types/session';
-import { classifyPackage, packageTypeLabel, packageTypeBadgeColors, generateId } from '@/utils/session';
+import { classifyPackage, packageTypeLabel, packageTypeBadgeColors, generateId, getPackageValue, getSessionMetrics } from '@/utils/session';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { playBeep, playError, preloadSounds, unloadSounds } from '@/utils/sound';
 
 interface ScannerViewProps {
-  onScan: (pkg: ScannedPackage) => void;
+  // Return true if the package was accepted, false for duplicates/limits
+  onScan: (pkg: ScannedPackage) => boolean;
   onDuplicate: (code: string) => void;
   packages: ScannedPackage[];
+  declaredCounts: { shopee: number; mercadoLivre: number; avulso: number };
   lastScanned?: ScannedPackage | null;
   onEndSession: () => void;
 }
@@ -28,6 +31,7 @@ export default function ScannerView({
   onScan,
   onDuplicate,
   packages,
+  declaredCounts,
   lastScanned,
   onEndSession,
 }: ScannerViewProps) {
@@ -43,6 +47,42 @@ export default function ScannerView({
   const [torchEnabled, setTorchEnabled] = useState(false);
   const [facing, setFacing] = useState<'back' | 'front'>('back');
   const lastAcceptedRef = useRef<{ code: string; at: number } | null>(null);
+
+  const metrics = getSessionMetrics(packages);
+
+  const [limitVisible, setLimitVisible] = useState(false);
+  const [limitLabel, setLimitLabel] = useState('');
+  const [limitValue, setLimitValue] = useState(0);
+
+  const checkLimit = (type: 'shopee' | 'mercado_livre' | 'avulso') => {
+    let currentCount = 0;
+    let limit = 0;
+    let label = '';
+    switch (type) {
+      case 'shopee':
+        currentCount = metrics.shopee;
+        limit = declaredCounts.shopee;
+        label = 'Shopee';
+        break;
+      case 'mercado_livre':
+        currentCount = metrics.mercadoLivre;
+        limit = declaredCounts.mercadoLivre;
+        label = 'Mercado Livre';
+        break;
+      case 'avulso':
+        currentCount = metrics.avulsos;
+        limit = declaredCounts.avulso;
+        label = 'Avulso';
+        break;
+    }
+    if (currentCount >= limit) {
+      setLimitLabel(label);
+      setLimitValue(limit);
+      setLimitVisible(true);
+      return false;
+    }
+    return true;
+  };
 
   const normalizeCode = (raw: string) => {
     const trimmed = (raw ?? '').trim();
@@ -154,16 +194,35 @@ export default function ScannerView({
 
     const forced = forceTypeByPrefix(code);
     const type = forced ?? classifyPackage(code);
+    // check limit
+    if (!checkLimit(type)) {
+      playError();
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+      }
+      setManualCode('');
+      return;
+    }
+
     const pkg: ScannedPackage = {
       id: generateId(),
       code,
       type,
+      value: getPackageValue(type),
       scannedAt: new Date().toISOString(),
     };
-    onScan(pkg);
-    playBeep();
-    if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    const accepted = onScan(pkg);
+    if (accepted) {
+      lastAcceptedRef.current = { code, at: Date.now() };
+      playBeep();
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      }
+    } else {
+      playError();
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+      }
     }
     setManualCode('');
   };
@@ -190,17 +249,36 @@ export default function ScannerView({
 
     const forced = forceTypeByPrefix(code);
     const type = forced ?? classifyPackage(code);
+
+    // check per‑type limit before emitting
+    if (!checkLimit(type)) {
+      playError();
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+      }
+      return;
+    }
+
     const pkg: ScannedPackage = {
       id: generateId(),
       code,
       type,
+      value: getPackageValue(type),
       scannedAt: new Date().toISOString(),
     };
-    onScan(pkg);
-    playBeep();
-    lastAcceptedRef.current = { code, at: now };
-    if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+
+    const accepted = onScan(pkg);
+    if (accepted) {
+      lastAcceptedRef.current = { code, at: now };
+      playBeep();
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      }
+    } else {
+      playError();
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+      }
     }
   };
 
@@ -407,6 +485,18 @@ export default function ScannerView({
         }}>
           Posicione o QR Code ou código de barras
         </Text>
+        {/* counts vs declared */}
+        <View style={{ flexDirection: 'row', gap: 12, marginTop: 6 }}>
+          <Text style={{ color: '#fb923c', fontSize: 10, fontWeight: '600' }}>
+            SHOPEE {metrics.shopee}/{declaredCounts.shopee}
+          </Text>
+          <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '600' }}>
+            ML {metrics.mercadoLivre}/{declaredCounts.mercadoLivre}
+          </Text>
+          <Text style={{ color: colors.success, fontSize: 10, fontWeight: '600' }}>
+            AVULSO {metrics.avulsos}/{declaredCounts.avulso}
+          </Text>
+        </View>
 
         {lastScanned && lastBadge && (
           <View style={{
@@ -429,6 +519,7 @@ export default function ScannerView({
               paddingHorizontal: 10,
               paddingVertical: 5,
               borderRadius: 999,
+              marginRight: 4,
             }}>
               <Text style={{ color: lastBadge.text, fontSize: 11, fontWeight: '800' }}>
                 {packageTypeLabel(lastScanned.type)}
@@ -442,12 +533,11 @@ export default function ScannerView({
                 Último lido
               </Text>
             </View>
-            <View style={{
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: colors.primary,
-            }} />
+            <View style={{ alignItems: 'flex-end' }}>
+              <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '800' }}>
+                R$ {lastScanned.value.toFixed(2)}
+              </Text>
+            </View>
           </View>
         )}
 
@@ -519,6 +609,9 @@ export default function ScannerView({
                   {packageTypeLabel(lastScanned.type)}
                 </Text>
               </View>
+              <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '800', marginTop: 8 }}>
+                R$ {lastScanned.value.toFixed(2)}
+              </Text>
             </View>
           </Animated.View>
         )}
@@ -593,6 +686,70 @@ export default function ScannerView({
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Per‑type limit warning modal */}
+      {limitVisible && (
+        <Modal visible transparent animationType="fade">
+          <View style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 20,
+          }}>
+            <View style={{
+              backgroundColor: colors.bg,
+              borderRadius: 16,
+              padding: 24,
+              alignItems: 'center',
+              width: '100%',
+              maxWidth: 400,
+            }}>
+              {/* warning icon */}
+              <View style={{
+                width: 64, height: 64, borderRadius: 32,
+                backgroundColor: colors.danger,
+                alignItems: 'center', justifyContent: 'center',
+                marginBottom: 16,
+              }}>
+                <Text style={{ fontSize: 36 }}>⚠️</Text>
+              </View>
+              <Text style={{
+                color: colors.danger,
+                fontSize: 20,
+                fontWeight: '800',
+                letterSpacing: 1,
+                textAlign: 'center',
+              }}>
+                LIMITE ATINGIDO
+              </Text>
+              <Text style={{
+                color: colors.textMuted,
+                fontSize: 14,
+                textAlign: 'center',
+                marginTop: 8,
+              }}>
+                Quantidade declarada de {limitLabel} ({limitValue}) já foi escaneada.
+              </Text>
+              <TouchableOpacity
+                onPress={() => setLimitVisible(false)}
+                activeOpacity={0.85}
+                style={{
+                  backgroundColor: colors.primary,
+                  borderRadius: 12,
+                  padding: 16,
+                  width: '100%',
+                  alignItems: 'center',
+                  marginTop: 24,
+                }}>
+                <Text style={{ color: colors.secondary, fontSize: 16, fontWeight: '800', letterSpacing: 1 }}>
+                  ENTENDI
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 }

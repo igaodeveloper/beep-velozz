@@ -1,5 +1,16 @@
 import { PackageType, ScannedPackage, Session } from '@/types/session';
 
+// Valores de cada pacote por marketplace
+const PACKAGE_VALUES: Record<PackageType, number> = {
+  'shopee': 6,
+  'mercado_livre': 8,
+  'avulso': 8,
+};
+
+export function getPackageValue(type: PackageType): number {
+  return PACKAGE_VALUES[type] || 0;
+}
+
 export function classifyPackage(code: string): PackageType {
   const normalized = (code ?? '').trim();
   const cleaned = normalized.replace(/[^0-9a-zA-Z]/g, '');
@@ -59,11 +70,22 @@ export function packageTypeBadgeColors(type: PackageType): { bg: string; text: s
 }
 
 export function getSessionMetrics(packages: ScannedPackage[]) {
+  const shopeePackages = packages.filter(p => p.type === 'shopee');
+  const mercadoLivrePackages = packages.filter(p => p.type === 'mercado_livre');
+  const avulsoPackages = packages.filter(p => p.type === 'avulso');
+  
+  // ensure value is defined for backwards compatibility
+  const safeValue = (p: ScannedPackage) => (typeof p.value === 'number' ? p.value : getPackageValue(p.type));
+
   return {
-    shopee: packages.filter(p => p.type === 'shopee').length,
-    mercadoLivre: packages.filter(p => p.type === 'mercado_livre').length,
-    avulsos: packages.filter(p => p.type === 'avulso').length,
+    shopee: shopeePackages.length,
+    mercadoLivre: mercadoLivrePackages.length,
+    avulsos: avulsoPackages.length,
     total: packages.length,
+    valueShopee: shopeePackages.reduce((acc, p) => acc + safeValue(p), 0),
+    valueMercadoLivre: mercadoLivrePackages.reduce((acc, p) => acc + safeValue(p), 0),
+    valueAvulsos: avulsoPackages.reduce((acc, p) => acc + safeValue(p), 0),
+    valueTotal: packages.reduce((acc, p) => acc + safeValue(p), 0),
   };
 }
 
@@ -81,10 +103,10 @@ export function formatWhatsAppMessage(session: Session): string {
 🚚 Motorista: ${session.driverName}
 ━━━━━━━━━━━━━━━━
 📊 *RESUMO*
-• Shopee: ${metrics.shopee}
-• Mercado Livre: ${metrics.mercadoLivre}
-• Avulsos: ${metrics.avulsos}
-• Total Conferido: ${metrics.total}
+• Shopee: ${metrics.shopee} (R$ ${metrics.valueShopee.toFixed(2)})
+• Mercado Livre: ${metrics.mercadoLivre} (R$ ${metrics.valueMercadoLivre.toFixed(2)})
+• Avulsos: ${metrics.avulsos} (R$ ${metrics.valueAvulsos.toFixed(2)})
+• Total Conferido: ${metrics.total} (R$ ${metrics.valueTotal.toFixed(2)})
 • Total Declarado: ${session.declaredCount}
 ━━━━━━━━━━━━━━━━
 ${divergenceText}

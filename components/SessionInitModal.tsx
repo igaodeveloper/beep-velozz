@@ -172,27 +172,26 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                     flexDirection: 'row',
                     gap: 12,
                     marginBottom: 16,
-                    flexWrap: 'wrap',
                   }}
                 >
                   {/* Shopee */}
-                  <View style={{ flex: 1, minWidth: 80 }}>
-                    <Text style={{ color: '#fb923c', fontSize: 10, fontWeight: '600', marginBottom: 6, textAlign: 'center' }}>
-                      � SHOPEE
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: '#fb923c', fontSize: 10, fontWeight: '600', marginBottom: 8, textAlign: 'center', textTransform: 'uppercase' }}>
+                      🟧 Shopee
                     </Text>
                     <TextInput
                       value={shopeeCount}
                       onChangeText={setShopeeCount}
                       placeholder="0"
-                      placeholderTextColor="#334155"
+                      placeholderTextColor={colors.textMuted}
                       keyboardType="numeric"
                       style={{
-                        backgroundColor: '#1e293b',
+                        backgroundColor: colors.surface2,
                         borderWidth: 1,
-                        borderColor: errors.shopee ? '#ef4444' : '#334155',
+                        borderColor: errors.shopee ? colors.danger : colors.border2,
                         borderRadius: 10,
-                        padding: 12,
-                        color: '#fff',
+                        padding: 14,
+                        color: colors.text,
                         fontSize: 20,
                         fontWeight: '700',
                         textAlign: 'center',
@@ -202,8 +201,8 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                   
                   {/* Mercado Livre */}
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.textSubtle, fontSize: 10, fontWeight: '600', marginBottom: 6, textAlign: 'center' }}>
-                      🟨 MERCADO LIVRE
+                    <Text style={{ color: '#ffe600', fontSize: 10, fontWeight: '600', marginBottom: 8, textAlign: 'center', textTransform: 'uppercase' }}>
+                      🟨 Mercado Livre
                     </Text>
                     <TextInput
                       value={mercadoLivreCount}
@@ -214,9 +213,9 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                       style={{
                         backgroundColor: colors.surface2,
                         borderWidth: 1,
-                        borderColor: errors.mercadoLivre ? colors.danger : colors.textMuted,
+                        borderColor: errors.mercadoLivre ? colors.danger : colors.border2,
                         borderRadius: 10,
-                        padding: 12,
+                        padding: 14,
                         color: colors.text,
                         fontSize: 20,
                         fontWeight: '700',
@@ -227,21 +226,21 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                   
                   {/* Avulso */}
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.success, fontSize: 10, fontWeight: '600', marginBottom: 6, textAlign: 'center' }}>
-                      🟩 AVULSO
+                    <Text style={{ color: colors.success, fontSize: 10, fontWeight: '600', marginBottom: 8, textAlign: 'center', textTransform: 'uppercase' }}>
+                      🟩 Avulso
                     </Text>
                     <TextInput
                       value={avulsoCount}
                       onChangeText={setAvulsoCount}
                       placeholder="0"
-                      placeholderTextColor={colors.textSubtle}
+                      placeholderTextColor={colors.textMuted}
                       keyboardType="numeric"
                       style={{
                         backgroundColor: colors.surface2,
                         borderWidth: 1,
                         borderColor: errors.avulso ? colors.danger : colors.border2,
                         borderRadius: 10,
-                        padding: 12,
+                        padding: 14,
                         color: colors.text,
                         fontSize: 20,
                         fontWeight: '700',
@@ -250,7 +249,7 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                     />
                   </View>
                 </View>
-                
+
                 {/* Total */}
                 <View style={{
                   backgroundColor: colors.surface2,

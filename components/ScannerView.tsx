@@ -41,13 +41,13 @@ export default function ScannerView({
   const [manualCode, setManualCode] = useState('');
   const [manualError, setManualError] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [manualInputExpanded, setManualInputExpanded] = useState(false);
   const feedbackAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const scanLineAnim = useRef(new Animated.Value(0)).current;
   const [permission, requestPermission] = useCameraPermissions();
   const [barcodeLocked, setBarcodeLocked] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
-  const [facing, setFacing] = useState<'back' | 'front'>('back');
   const lastAcceptedRef = useRef<{ code: string; at: number } | null>(null);
 
   const metrics = getSessionMetrics(packages);
@@ -324,7 +324,7 @@ export default function ScannerView({
         {Platform.OS !== 'web' && permission?.granted && (
           <CameraView
             style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
-            facing={facing}
+            facing="back"
             enableTorch={torchEnabled}
             barcodeScannerSettings={{
               barcodeTypes: [
@@ -347,43 +347,29 @@ export default function ScannerView({
         {Platform.OS !== 'web' && permission?.granted && (
           <View style={{
             position: 'absolute',
-            top: 14,
-            right: 14,
-            flexDirection: 'row',
-            gap: 10,
-            alignItems: 'center',
+            top: 16,
+            right: 16,
+            zIndex: 10,
           }}>
             <TouchableOpacity
               onPress={() => setTorchEnabled(v => !v)}
               activeOpacity={0.85}
               style={{
-                backgroundColor: torchEnabled ? colors.primary : 'rgba(15,23,42,0.9)',
-                borderRadius: 10,
-                paddingHorizontal: 12,
+                backgroundColor: torchEnabled ? colors.primary : 'rgba(15,23,42,0.85)',
+                borderRadius: 12,
+                paddingHorizontal: 14,
                 paddingVertical: 10,
                 borderWidth: 1,
                 borderColor: torchEnabled ? colors.primary : colors.border2,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                elevation: 3,
               }}
             >
               <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800', letterSpacing: 0.5 }}>
-                {torchEnabled ? 'FLASH ON' : 'FLASH OFF'}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setFacing(v => (v === 'back' ? 'front' : 'back'))}
-              activeOpacity={0.85}
-              style={{
-                backgroundColor: 'rgba(15,23,42,0.9)',
-                borderRadius: 10,
-                paddingHorizontal: 12,
-                paddingVertical: 10,
-                borderWidth: 1,
-                borderColor: colors.border2,
-              }}
-            >
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800', letterSpacing: 0.5 }}>
-                {facing === 'back' ? 'CÂMERA TRAS.' : 'CÂMERA FRNT.'}
+                {torchEnabled ? '💡 FLASH ON' : '🔦 FLASH OFF'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -423,58 +409,103 @@ export default function ScannerView({
           alignItems: 'center',
           justifyContent: 'center',
         }}>
+          {/* Overlay escuro */}
           <View style={{
             position: 'absolute',
             top: -overlayExtraY,
             left: -overlayExtraX,
             right: -overlayExtraX,
             bottom: -overlayExtraY,
-            backgroundColor: 'rgba(2,6,23,0.55)',
-            borderRadius: 18,
+            backgroundColor: 'rgba(2,6,23,0.6)',
+            borderRadius: 20,
           }} />
 
+          {/* Border principal */}
           <View style={{
             position: 'absolute',
-            top: -8,
-            left: -8,
-            right: -8,
-            bottom: -8,
-            backgroundColor: 'rgba(249,115,22,0.05)',
-            borderWidth: 1,
-            borderColor: 'rgba(249,115,22,0.4)',
-            borderRadius: 18,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            borderWidth: 2,
+            borderColor: colors.primary,
+            borderRadius: 16,
+            opacity: 0.8,
           }} />
 
-          {/* Corner brackets */}
-          {[
-            { top: 0, left: 0 },
-            { top: 0, right: 0 },
-            { bottom: 0, left: 0 },
-            { bottom: 0, right: 0 },
-          ].map((pos, i) => (
-            <View
-              key={i}
-              style={{
-                position: 'absolute',
-                width: 24, height: 24,
-                ...pos,
-                borderColor: colors.primary,
-                borderTopWidth: i < 2 ? 3 : 0,
-                borderBottomWidth: i >= 2 ? 3 : 0,
-                borderLeftWidth: i === 0 || i === 2 ? 3 : 0,
-                borderRightWidth: i === 1 || i === 3 ? 3 : 0,
-              }}
-            />
-          ))}
+          {/* Corner brackets - superior esquerdo */}
+          <View
+            style={{
+              position: 'absolute',
+              top: -4,
+              left: -4,
+              width: 32,
+              height: 32,
+              borderTopWidth: 3,
+              borderLeftWidth: 3,
+              borderColor: colors.primary,
+              borderTopLeftRadius: 8,
+            }}
+          />
 
-          {/* Scan line */}
+          {/* Corner brackets - superior direito */}
+          <View
+            style={{
+              position: 'absolute',
+              top: -4,
+              right: -4,
+              width: 32,
+              height: 32,
+              borderTopWidth: 3,
+              borderRightWidth: 3,
+              borderColor: colors.primary,
+              borderTopRightRadius: 8,
+            }}
+          />
+
+          {/* Corner brackets - inferior esquerdo */}
+          <View
+            style={{
+              position: 'absolute',
+              bottom: -4,
+              left: -4,
+              width: 32,
+              height: 32,
+              borderBottomWidth: 3,
+              borderLeftWidth: 3,
+              borderColor: colors.primary,
+              borderBottomLeftRadius: 8,
+            }}
+          />
+
+          {/* Corner brackets - inferior direito */}
+          <View
+            style={{
+              position: 'absolute',
+              bottom: -4,
+              right: -4,
+              width: 32,
+              height: 32,
+              borderBottomWidth: 3,
+              borderRightWidth: 3,
+              borderColor: colors.primary,
+              borderBottomRightRadius: 8,
+            }}
+          />
+
+          {/* Scan line animada */}
           <Animated.View style={{
             position: 'absolute',
-            left: 10,
-            right: 10,
+            left: 8,
+            right: 8,
             height: 2,
             backgroundColor: colors.primary,
-            opacity: 0.75,
+            opacity: 0.7,
+            shadowColor: colors.primary,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.6,
+            shadowRadius: 8,
+            elevation: 5,
             transform: [{
               translateY: scanLineAnim.interpolate({
                 inputRange: [0, 1],
@@ -485,8 +516,16 @@ export default function ScannerView({
 
           {/* Center dot */}
           <View style={{
-            width: 8, height: 8, borderRadius: 4,
-            backgroundColor: colors.primary, opacity: 0.8,
+            width: 6,
+            height: 6,
+            borderRadius: 3,
+            backgroundColor: colors.primary,
+            opacity: 0.9,
+            shadowColor: colors.primary,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.7,
+            shadowRadius: 4,
+            elevation: 3,
           }} />
         </Animated.View>
 
@@ -656,45 +695,74 @@ export default function ScannerView({
         backgroundColor: colors.surface,
         borderTopWidth: 1,
         borderTopColor: colors.border,
-        padding: 16,
-        flexDirection: 'row',
-        gap: 10,
-        alignItems: 'center',
-        flexWrap: 'wrap',
       }}>
-        <TextInput
-          value={manualCode}
-          onChangeText={setManualCode}
-          placeholder="Inserir código manualmente..."
-          placeholderTextColor={colors.textMuted}
-          returnKeyType="done"
-          onSubmitEditing={handleManualSubmit}
-          autoCapitalize="characters"
-          style={{
-            flex: 1,
-            backgroundColor: colors.surface2,
-            borderWidth: 1,
-            borderColor: colors.textMuted,
-            borderRadius: 10,
-            padding: 12,
-            color: colors.text,
-            fontSize: 15,
-            fontFamily: 'SpaceMono-Regular',
-          }}
-        />
+        {/* Toggle Header */}
         <TouchableOpacity
-          onPress={handleManualSubmit}
-          activeOpacity={0.85}
+          onPress={() => setManualInputExpanded(!manualInputExpanded)}
+          activeOpacity={0.7}
           style={{
-            backgroundColor: colors.primary,
-            borderRadius: 10,
-            padding: 13,
-            justifyContent: 'center',
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
             alignItems: 'center',
           }}
         >
-          <Text style={{ color: '#fff', fontSize: 16, fontWeight: '800' }}>+</Text>
+          <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: '600', letterSpacing: 0.5 }}>
+            ⌨️ ENTRADA MANUAL
+          </Text>
+          <Text style={{ color: colors.primary, fontSize: 16, fontWeight: '700' }}>
+            {manualInputExpanded ? '−' : '+'}
+          </Text>
         </TouchableOpacity>
+
+        {/* Expanded Content */}
+        {manualInputExpanded && (
+          <View style={{
+            padding: 16,
+            paddingTop: 8,
+            flexDirection: 'row',
+            gap: 10,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            borderTopWidth: 1,
+            borderTopColor: colors.border2,
+          }}>
+            <TextInput
+              value={manualCode}
+              onChangeText={setManualCode}
+              placeholder="Inserir código manualmente..."
+              placeholderTextColor={colors.textMuted}
+              returnKeyType="done"
+              onSubmitEditing={handleManualSubmit}
+              autoCapitalize="characters"
+              style={{
+                flex: 1,
+                backgroundColor: colors.surface2,
+                borderWidth: 1,
+                borderColor: colors.textMuted,
+                borderRadius: 10,
+                padding: 12,
+                color: colors.text,
+                fontSize: 15,
+                fontFamily: 'SpaceMono-Regular',
+              }}
+            />
+            <TouchableOpacity
+              onPress={handleManualSubmit}
+              activeOpacity={0.85}
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 10,
+                padding: 13,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '800' }}>+</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {manualError ? (

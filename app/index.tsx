@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, SafeAreaView, StatusBar, useWindowDimensions } from 'react-native';
+import { View, SafeAreaView, StatusBar } from 'react-native';
 import { Session, ScannedPackage } from '@/types/session';
 import { getSessionMetrics, generateId } from '@/utils/session';
 import { addSession, loadSessions } from '@/utils/storage';
@@ -13,13 +13,16 @@ import DuplicateModal from '@/components/DuplicateModal';
 import DivergenceScreen from '@/components/DivergenceScreen';
 import ReportView from '@/components/ReportView';
 import HistoryBrowser from '@/components/HistoryBrowser';
+import AppHeader from '@/components/AppHeader';
+import EmptyStateWelcome from '@/components/EmptyStateWelcome';
+import MainLayout from '@/components/MainLayout';
 
 type AppScreen = 'scanning' | 'report' | 'history';
 
 export default function HomeScreen() {
   const { colors } = useAppTheme();
   const [screen, setScreen] = useState<AppScreen>('scanning');
-  const [showInitModal, setShowInitModal] = useState(true);
+  const [showInitModal, setShowInitModal] = useState(false);
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [packageListExpanded, setPackageListExpanded] = useState(false);
   const [lastScanned, setLastScanned] = useState<ScannedPackage | null>(null);
@@ -121,7 +124,7 @@ export default function HomeScreen() {
     setCurrentSession(null);
     setCompletedSession(null);
     setLastScanned(null);
-    setShowInitModal(true);
+    setShowInitModal(false);
     setScreen('scanning');
   };
 
@@ -133,105 +136,71 @@ export default function HomeScreen() {
     ? getSessionMetrics(currentSession.packages)
     : { shopee: 0, mercadoLivre: 0, avulsos: 0, total: 0, valueShopee: 0, valueMercadoLivre: 0, valueAvulsos: 0, valueTotal: 0 };
 
-  const { width } = useWindowDimensions();
-  const containerWidth = Math.min(width, 640);
-
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center' }}>
+    <MainLayout>
       <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
-      <SafeAreaView style={{ flex: 1, width: '100%' }}>
-        <View style={{ flex: 1, width: containerWidth, alignSelf: 'center' }}>
-        {/* App Header */}
+      <SafeAreaView style={{ flex: 1 }}>
+        {/* Header - sempre visível */}
         {screen !== 'history' && screen !== 'report' && (
-          <View style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            paddingHorizontal: 16,
-            paddingTop: 8,
-            paddingBottom: 10,
-            borderBottomWidth: 1,
-            borderBottomColor: colors.border,
-          }}>
-            <View style={{
-              width: 32, height: 32, borderRadius: 8,
-              backgroundColor: colors.primary,
-              alignItems: 'center', justifyContent: 'center',
-              marginRight: 10,
-            }}>
-              <Text style={{ fontSize: 16 }}>\ud83d\udce6</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.text, fontSize: 16, fontWeight: '800', letterSpacing: 0.5 }}>
-                LogManager Pro
-              </Text>
-              {currentSession && (
-                <Text style={{ color: colors.textMuted, fontSize: 11 }} numberOfLines={1}>
-                  {currentSession.driverName} \u00b7 Op: {currentSession.operatorName}
-                </Text>
-              )}
-            </View>
-            <View style={{
-              width: 8, height: 8, borderRadius: 4,
-              backgroundColor: currentSession ? colors.primary : colors.border2,
-            }} />
-          </View>
+          <AppHeader currentSession={currentSession} />
         )}
 
-        {/* Main Content */}
-        {screen === 'report' && completedSession ? (
-          <ReportView
-            session={completedSession}
-            onNewSession={handleNewSession}
-            onViewHistory={handleViewHistory}
-          />
-        ) : screen === 'history' ? (
-          <HistoryBrowser
-            sessions={sessions}
-            onBack={() => setScreen('scanning')}
-            onNewSession={handleNewSession}
-          />
-        ) : currentSession ? (
-          <View style={{ flex: 1 }}>
-            {/* Metrics Dashboard */}
-            <MetricsDashboard
-              metrics={metrics}
-              declaredCount={currentSession.declaredCount}
+        {/* Main Content Area */}
+        <View style={{ flex: 1 }}>
+          {/* Report Screen */}
+          {screen === 'report' && completedSession ? (
+            <ReportView
+              session={completedSession}
+              onNewSession={handleNewSession}
+              onViewHistory={handleViewHistory}
             />
-
-            {/* Scanner */}
+          ) : /* History Screen */ screen === 'history' ? (
+            <HistoryBrowser
+              sessions={sessions}
+              onBack={() => setScreen('scanning')}
+              onNewSession={handleNewSession}
+            />
+          ) : /* Active Session Screen */ currentSession ? (
             <View style={{ flex: 1 }}>
-              <ScannerView
-                onScan={handleScan}
-                onDuplicate={handleDuplicate}
+              {/* Metrics Dashboard */}
+              <MetricsDashboard
+                metrics={metrics}
+                declaredCount={currentSession.declaredCount}
+              />
+
+              {/* Scanner */}
+              <View style={{ flex: 1 }}>
+                <ScannerView
+                  onScan={handleScan}
+                  onDuplicate={handleDuplicate}
+                  packages={currentSession.packages}
+                  declaredCounts={currentSession.declaredCounts}
+                  lastScanned={lastScanned}
+                  onEndSession={handleEndSession}
+                />
+              </View>
+
+              {/* Package list panel */}
+              <PackageList
                 packages={currentSession.packages}
-                declaredCounts={currentSession.declaredCounts}
-                lastScanned={lastScanned}
-                onEndSession={handleEndSession}
+                expanded={packageListExpanded}
+                onToggle={() => setPackageListExpanded(v => !v)}
               />
             </View>
-
-            {/* Package list panel */}
-            <PackageList
-              packages={currentSession.packages}
-              expanded={packageListExpanded}
-              onToggle={() => setPackageListExpanded(v => !v)}
+          ) : /* Welcome State */ (
+            <EmptyStateWelcome
+              onStartSession={() => setShowInitModal(true)}
+              onViewHistory={handleViewHistory}
             />
-          </View>
-        ) : (
-          // Empty state while waiting for modal
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ color: '#1e293b', fontSize: 40 }}>📦</Text>
-          </View>
-        )}
+          )}
+        </View>
 
-        {/* Session Init Modal */}
+        {/* Modals and Overlays */}
         <SessionInitModal
           visible={showInitModal}
           onStart={handleStartSession}
         />
 
-        {/* Duplicate Modal */}
         <DuplicateModal
           visible={duplicateVisible}
           code={duplicateCode}
@@ -239,7 +208,6 @@ export default function HomeScreen() {
           onDismiss={() => setDuplicateVisible(false)}
         />
 
-        {/* Divergence Screen */}
         {currentSession && (
           <DivergenceScreen
             visible={divergenceVisible}
@@ -248,9 +216,7 @@ export default function HomeScreen() {
             onCancel={handleDivergenceCancel}
           />
         )}
-        {/* end inner container */}
-        </View>
       </SafeAreaView>
-    </View>
+    </MainLayout>
   );
 }

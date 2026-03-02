@@ -26,6 +26,7 @@ interface ScannerViewProps {
   declaredCounts: { shopee: number; mercadoLivre: number; avulso: number };
   lastScanned?: ScannedPackage | null;
   onEndSession: () => void;
+  onRequestPhoto?: (pkg: ScannedPackage) => void;
 }
 
 export default function ScannerView({
@@ -35,6 +36,7 @@ export default function ScannerView({
   declaredCounts,
   lastScanned,
   onEndSession,
+  onRequestPhoto,
 }: ScannerViewProps) {
   const { colors } = useAppTheme();
   const { width: windowWidth } = useWindowDimensions();
@@ -602,6 +604,22 @@ export default function ScannerView({
                 R$ {lastScanned.value.toFixed(2)}
               </Text>
             </View>
+            {onRequestPhoto && (
+              <TouchableOpacity
+                onPress={() => onRequestPhoto(lastScanned)}
+                style={{
+                  marginLeft: 8,
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderRadius: 999,
+                  backgroundColor: colors.surface2,
+                }}
+              >
+                <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700' }}>
+                  📸 Foto
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
 

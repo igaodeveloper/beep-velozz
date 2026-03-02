@@ -1,7 +1,9 @@
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const PHOTOS_DIR = `${FileSystem.Paths.document ?? FileSystem.Paths.cache}/package-photos/`;
+// Usa o diretório de documentos quando disponível, senão cai para o cache
+const BASE_DIR = FileSystem.documentDirectory ?? FileSystem.cacheDirectory ?? '';
+const PHOTOS_DIR = `${BASE_DIR}package-photos/`;
 const PHOTO_INDEX_KEY = 'photo_index';
 
 /**

@@ -16,6 +16,8 @@ import HistoryBrowser from '@/components/HistoryBrowser';
 import AppHeader from '@/components/AppHeader';
 import EmptyStateWelcome from '@/components/EmptyStateWelcome';
 import MainLayout from '@/components/MainLayout';
+import PackagePhotoCapture from '@/components/PackagePhotoCapture';
+import { savePackagePhoto } from '@/utils/photoStorage';
 
 type AppScreen = 'scanning' | 'report' | 'history';
 
@@ -40,6 +42,10 @@ export default function HomeScreen() {
 
   // History
   const [sessions, setSessions] = useState<Session[]>([]);
+
+  // Photo capture state (optional)
+  const [photoModalVisible, setPhotoModalVisible] = useState(false);
+  const [photoPackageCode, setPhotoPackageCode] = useState<string | null>(null);
 
   useEffect(() => {
     loadSessions().then(setSessions);
@@ -80,6 +86,27 @@ export default function HomeScreen() {
       setDivergenceVisible(false);
     }
     return true;
+  };
+
+  const handleRequestPhoto = (pkg: ScannedPackage) => {
+    setPhotoPackageCode(pkg.code);
+    setPhotoModalVisible(true);
+  };
+
+  const handlePhotoCaptured = async (uri: string) => {
+    if (!currentSession || !photoPackageCode) {
+      setPhotoModalVisible(false);
+      setPhotoPackageCode(null);
+      return;
+    }
+    try {
+      await savePackagePhoto(uri, photoPackageCode, currentSession.id);
+    } catch (error) {
+      console.error('Erro ao salvar foto do pacote:', error);
+    } finally {
+      setPhotoModalVisible(false);
+      setPhotoPackageCode(null);
+    }
   };
 
   const handleDuplicate = (code: string) => {
@@ -177,6 +204,7 @@ export default function HomeScreen() {
                   declaredCounts={currentSession.declaredCounts}
                   lastScanned={lastScanned}
                   onEndSession={handleEndSession}
+                  onRequestPhoto={handleRequestPhoto}
                 />
               </View>
 
@@ -214,6 +242,18 @@ export default function HomeScreen() {
             scannedCount={currentSession.packages.length}
             declaredCount={currentSession.declaredCount}
             onCancel={handleDivergenceCancel}
+          />
+        )}
+
+        {currentSession && (
+          <PackagePhotoCapture
+            visible={photoModalVisible}
+            packageCode={photoPackageCode || (lastScanned?.code ?? '')}
+            onPhotoCapture={handlePhotoCaptured}
+            onClose={() => {
+              setPhotoModalVisible(false);
+              setPhotoPackageCode(null);
+            }}
           />
         )}
       </SafeAreaView>

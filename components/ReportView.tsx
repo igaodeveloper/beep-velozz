@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Share, Platform, Linking } from 'react-native';
 import { Session } from '@/types/session';
 import { getSessionMetrics, formatWhatsAppMessage, formatDate, formatTimestamp, packageTypeLabel, packageTypeBadgeColors } from '@/utils/session';
 import { useAppTheme } from '@/utils/useAppTheme';
+import PackagePhotoGallery from '@/components/PackagePhotoGallery';
+import { exportSessionWithPhotosToPDF } from '@/utils/pdfExport';
 
 interface ReportViewProps {
   session: Session;
@@ -14,6 +16,8 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
   const { colors } = useAppTheme();
   const metrics = getSessionMetrics(session.packages);
   const hasDivergence = session.hasDivergence;
+
+  const [showPhotoGallery, setShowPhotoGallery] = useState(false);
 
   const handleWhatsApp = async () => {
     const message = formatWhatsAppMessage(session);
@@ -31,6 +35,14 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
   const handleShare = async () => {
     const message = formatWhatsAppMessage(session);
     await Share.share({ message });
+  };
+
+  const handleExportWithPhotos = async () => {
+    try {
+      await exportSessionWithPhotosToPDF(session);
+    } catch (error) {
+      console.error('Erro ao exportar PDF com fotos:', error);
+    }
   };
 
   return (
@@ -198,6 +210,27 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
           <Text style={{ color: colors.textMuted, fontSize: 16, fontWeight: '700' }}>Compartilhar</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          onPress={() => setShowPhotoGallery(true)}
+          activeOpacity={0.85}
+          style={{
+            backgroundColor: colors.surface,
+            borderRadius: 12,
+            padding: 14,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          <Text style={{ fontSize: 18 }}>📸</Text>
+          <Text style={{ color: colors.text, fontSize: 14, fontWeight: '700' }}>
+            Fotos dos pacotes (opcional)
+          </Text>
+        </TouchableOpacity>
+
         <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
           <TouchableOpacity
             onPress={onViewHistory}
@@ -223,6 +256,13 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
           </TouchableOpacity>
         </View>
       </View>
+
+      <PackagePhotoGallery
+        session={session}
+        visible={showPhotoGallery}
+        onClose={() => setShowPhotoGallery(false)}
+        onExportWithPhotos={handleExportWithPhotos}
+      />
     </View>
   );
 }

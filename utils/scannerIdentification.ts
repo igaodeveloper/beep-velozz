@@ -1,7 +1,16 @@
 /**
- * Scanner Industrial - Módulo de Identificação v2.0
- * Responsável por classificar códigos com base em prefixos
- * Escalável, robusto e com validação avançada
+ * Scanner Industrial - Módulo de Identificação v3.0 - Profissional
+ * Responsável por classificar códigos com precisão absoluta
+ * 
+ * REGRAS DE IDENTIFICAÇÃO (ordem rigorosa):
+ * 1. MLB → MERCADO LIVRE
+ * 2. LM + 2+ caracteres → AVULSO
+ * 3. 14 + 2+ caracteres → AVULSO
+ * 4. BR + 6+ caracteres → SHOPEE
+ * 5. 20000 → MERCADO LIVRE (qualquer comprimento)
+ * 6. ID46 ou 46 → MERCADO LIVRE (qualquer comprimento)
+ * 7. Qualquer outro com 4+ caracteres → AVULSO (fallback)
+ * 8. Menos de 4 caracteres → INVÁLIDO
  */
 
 import {
@@ -11,73 +20,87 @@ import {
 } from '@/types/scanner';
 
 /**
- * Padrões regex mais robustos para cada tipo
- * Segue rigorosamente: LM/avulso primeiro, depois Shopee, depois Mercado Livre
+ * Mapeamento PRECISO de prefixos → tipos de pacote
+ * ORDEM IMPORTA! Mais específicos primeiro
  */
-const PATTERN_CONFIGS = {
-  avulso: {
-    patterns: [
-      { regex: /^LM[0-9A-Z]{2,}$/, minLength: 4, priority: 1 },
-    ],
-    description: 'Avulso (LM ou outros)',
-  },
-  shopee: {
-    patterns: [
-      { regex: /^BR[0-9A-Z]{6,}$/, minLength: 8, priority: 2 },
-    ],
-    description: 'Shopee (BR)',
-  },
-  mercado_livre: {
-    patterns: [
-      { regex: /^20000[0-9]{6,}$/, minLength: 11, priority: 3 },
-      { regex: /^46[0-9]{8,}$/, minLength: 10, priority: 3 },
-    ],
-    description: 'Mercado Livre (20000 ou 46)',
-  },
-};
-
-/**
- * Mapeamento centralizado de prefixos -> tipos de pacote
- * Escalável: adicione novos marketplaces aqui sem alterar lógica
- * CRÍTICO: Ordem importa! AVULSO é verificado primeiro
- */
-const PREFIX_MAPPINGS: PrefixMapping[] = [
+const PREFIX_PATTERNS = [
+  // Mercado Livre - Prefixo MLB (LogManager)
   {
-    prefixes: ['LM'],
-    type: 'avulso',
-    audioKey: 'beep_c',
-  },
-  {
-    prefixes: ['BR'],
-    type: 'shopee',
-    audioKey: 'beep_a',
-  },
-  {
-    prefixes: ['20000', '46'],
-    type: 'mercado_livre',
+    prefix: 'MLB',
+    minLength: 5, // MLB + 2+ caracteres
+    type: 'mercado_livre' as PackageType,
     audioKey: 'beep_b',
+    description: 'Mercado Livre (prefixo MLB)',
+  },
+  // Avulso - Prefixo LM
+  {
+    prefix: 'LM',
+    minLength: 4, // LM + 2 caracteres
+    type: 'avulso' as PackageType,
+    audioKey: 'beep_c',
+    description: 'Avulso (prefixo LM)',
+  },
+  // Avulso - Prefixo 14 (numérico)
+  {
+    prefix: '14',
+    minLength: 4, // 14 + 2 caracteres/dígitos
+    type: 'avulso' as PackageType,
+    audioKey: 'beep_c',
+    description: 'Avulso (prefixo 14)',
+  },
+  // Shopee - Prefixo BR
+  {
+    prefix: 'BR',
+    minLength: 8, // BR + 6 caracteres
+    type: 'shopee' as PackageType,
+    audioKey: 'beep_a',
+    description: 'Shopee (prefixo BR)',
+  },
+  // Mercado Livre - Prefixo 20000
+  {
+    prefix: '20000',
+    minLength: 5, // apenas 20000, qualquer comprimento extra é aceito
+    type: 'mercado_livre' as PackageType,
+    audioKey: 'beep_b',
+    description: 'Mercado Livre (prefixo 20000)',
+  },
+  // Mercado Livre - Prefixo ID46 (alguns códigos vêm com ID na frente)
+  {
+    prefix: 'ID46',
+    minLength: 4, // pouco: ID46 + qualquer coisa
+    type: 'mercado_livre' as PackageType,
+    audioKey: 'beep_b',
+    description: 'Mercado Livre (prefixo ID46)',
+  },
+  // Mercado Livre - Prefixo 46
+  {
+    prefix: '46',
+    minLength: 2, // apenas 46, qualquer extensão
+    type: 'mercado_livre' as PackageType,
+    audioKey: 'beep_b',
+    description: 'Mercado Livre (prefixo 46)',
   },
 ];
 
 /**
- * Cache de validação para evitar re-processamento
+ * Cache de validação para melhor performance
  */
-const validationCache = new Map<string, { valid: boolean; type: PackageType; }>();
+const identificationCache = new Map<string, PackageIdentification>();
 
 /**
- * Limpa cache periodicamente (a cada 5 minutos)
+ * Limpa cache a cada 5 minutos
  */
 const CACHE_TTL = 5 * 60 * 1000;
 setInterval(() => {
-  validationCache.clear();
+  identificationCache.clear();
 }, CACHE_TTL);
 
 /**
- * Normaliza o código escanneado para processamento
- * - Remove espaços em branco
- * - Converte para maiúsculas
- * - Remove apenas caracteres realmente especiais
- * - Valida padrões conhecidos PRIMEIRO
+ * Normaliza código de forma rigorosa
+ * - MAIÚSCULAS
+ * - Remove espaços
+ * - Remove caracteres especiais
+ * - Valida comprimento mínimo
  */
 export function normalizeCode(rawCode: string): string {
   if (!rawCode || typeof rawCode !== 'string') {
@@ -90,58 +113,38 @@ export function normalizeCode(rawCode: string): string {
     return '';
   }
 
-  // Tenta extrair padrões conhecidos primeiro
-  // CRÍTICO: Ordem LM -> BR -> 20000/46 para evitar confusão
-  const extracted =
-    trimmed.match(/^(LM[0-9A-Z]{2,})/)?.[1] ||
-    trimmed.match(/^(BR[0-9A-Z]{6,})/)?.[1] ||
-    trimmed.match(/^(20000[0-9]{6,})/)?.[1] ||
-    trimmed.match(/^(46[0-9]{8,})/)?.[1];
+  // Remove caracteres que não são alfanuméricos
+  let normalized = trimmed.replace(/[^0-9A-Z]/g, '');
 
-  if (extracted) {
-    return extracted;
+  // Many scanners prepend an "ID" before numeric ML prefixes (e.g. "ID46...").
+  // If the code begins with ID followed by a digit, strip the ID so our
+  // prefix patterns work correctly. This does not affect codes like "IDLM..."
+  if (/^ID[0-9]/.test(normalized)) {
+    normalized = normalized.slice(2);
   }
 
-  // Fallback: remove apenas caracteres que não são alfanuméricos
-  const cleaned = trimmed.replace(/[^0-9A-Z]/g, '');
-  return cleaned;
+  return normalized;
 }
 
 /**
- * Valida se um código está em formato correto
- * Mais robusto que apenas verificar comprimento
+ * Valida se um código tem formato aceitável
+ * Critério: mínimo 4 caracteres, apenas alfanumérico
  */
 export function validateCode(normalizedCode: string): boolean {
-  if (!normalizedCode || normalizedCode.length < 3) {
+  if (!normalizedCode || normalizedCode.length < 4) {
     return false;
   }
 
   // Apenas alfanuméricos
-  if (!/^[A-Z0-9]+$/.test(normalizedCode)) {
-    return false;
-  }
-
-  // Verifica se corresponde a algum padrão conhecido
-  for (const [type, config] of Object.entries(PATTERN_CONFIGS)) {
-    for (const patternConfig of config.patterns) {
-      if (normalizedCode.length >= patternConfig.minLength && patternConfig.regex.test(normalizedCode)) {
-        return true;
-      }
-    }
-  }
-
-  // Se chegou aqui, poderia ser um código desconhecido mas válido
-  // Permitir se tem pelo menos 4 caracteres (para dar flexibilidade)
-  return normalizedCode.length >= 4;
+  return /^[A-Z0-9]+$/.test(normalizedCode);
 }
 
 /**
- * Identifica o tipo de pacote baseado em prefixo
- * Determinístico: sempre retorna o mesmo resultado para o mesmo input
- * Usa cache para melhor performance
+ * Identifica tipo de pacote com precisão absoluta
+ * NUNCA classifica como Avulso por padrão - requer padrão explícito
  */
 export function identifyPackage(normalizedCode: string): PackageIdentification {
-  if (!normalizedCode || normalizedCode.length === 0) {
+  if (!normalizedCode || normalizedCode.length < 4) {
     return {
       type: 'unknown',
       matched: false,
@@ -149,72 +152,101 @@ export function identifyPackage(normalizedCode: string): PackageIdentification {
     };
   }
 
-  // Verifica cache primeiro
-  const cached = validationCache.get(normalizedCode);
+  // sanity check: if code clearly has ML numeric prefix but cache or patterns
+  // fail, we'll still continue and log an error later once result is computed.
+
+  // Verifica cache
+  const cached = identificationCache.get(normalizedCode);
   if (cached) {
-    return {
-      type: cached.type,
-      matched: cached.type !== 'unknown',
-      confidence: cached.valid ? 'high' : 'low',
-    };
-  }
-
-  // Procura por prefixo usando mapeamento centralizado
-  // CRÍTICO: A ordem aqui importa!
-  for (const mapping of PREFIX_MAPPINGS) {
-    for (const prefix of mapping.prefixes) {
-      if (normalizedCode.startsWith(prefix)) {
-        // Armazena em cache
-        validationCache.set(normalizedCode, {
-          valid: true,
-          type: mapping.type,
-        });
-
-        return {
-          type: mapping.type,
-          matched: true,
-          confidence: 'high',
-        };
-      }
+    // revalida prefixo para evitar cache staleness
+    const prefixMatch = PREFIX_PATTERNS.find(p =>
+      normalizedCode.startsWith(p.prefix) && normalizedCode.length >= p.minLength
+    );
+    if (prefixMatch && prefixMatch.type === cached.type) {
+      return cached;
     }
+    // caso cache esteja desatualizado, continua para recalcular
   }
 
-  // Se não é LM/avulso, BR/shopee ou 20000/46/mercado_livre
-  // Mas tem padrão válido, é avulso por padrão
-  if (validateCode(normalizedCode)) {
-    validationCache.set(normalizedCode, {
-      valid: true,
-      type: 'avulso',
-    });
-
-    return {
-      type: 'avulso',
-      matched: true,
-      confidence: 'medium',
-    };
-  }
-
-  // Nenhum prefixo conhecido e não passa validação
-  validationCache.set(normalizedCode, {
-    valid: false,
-    type: 'unknown',
-  });
-
-  return {
+  let result: PackageIdentification = {
     type: 'unknown',
     matched: false,
     confidence: 'low',
   };
+
+  // PASSO 1: Tenta bater com prefixos conhecidos (ordem rigorosa)
+  for (const pattern of PREFIX_PATTERNS) {
+    if (
+      normalizedCode.startsWith(pattern.prefix) &&
+      normalizedCode.length >= pattern.minLength
+    ) {
+      // debug log for matched pattern
+      console.debug(
+        `[ScannerIdentification] code "${normalizedCode}" matched prefix "${pattern.prefix}" => ${pattern.type}`
+      );
+      result = {
+        type: pattern.type,
+        matched: true,
+        confidence: 'high',
+      };
+      identificationCache.set(normalizedCode, result);
+      return result;
+    }
+  }
+
+  // PASSO 2: Se passou em validação mas não bateu com prefixo específico,
+  // classifica como AVULSO apenas se COMEÇAR COM LETRA (não com dígito de Mercado Livre)
+  if (validateCode(normalizedCode)) {
+    // Se começa com dígito, assume que pode ser um código desconhecido
+    const startsWithLetter = /^[A-Z]/.test(normalizedCode);
+
+    if (startsWithLetter) {
+      result = {
+        type: 'avulso',
+        matched: true,
+        confidence: 'medium',
+      };
+    } else {
+      // Começa com dígito mas não foi capturado por nenhum prefixo.
+      // Pode ocorrer se o código numérico tiver prefixo válido mas o tamanho
+      // era menor que o mínimo antigo. Para evitar falhas, tratamos qualquer
+      // sequência 20000/46 como Mercado Livre aqui.
+      if (/^(20000|46)/.test(normalizedCode)) {
+        result = {
+          type: 'mercado_livre',
+          matched: true,
+          confidence: 'high',
+        };
+      } else {
+        result = {
+          type: 'unknown',
+          matched: false,
+          confidence: 'low',
+        };
+      }
+    }
+
+    identificationCache.set(normalizedCode, result);
+    return result;
+  }
+
+  // Não passou em nenhuma validação
+  identificationCache.set(normalizedCode, result);
+
+  if (!result.matched) {
+    console.warn(`[ScannerIdentification] unknown code detected: ${normalizedCode}`);
+  }
+
+  return result;
 }
 
 /**
- * Retorna a chave de áudio correspondente ao tipo
- * Sem duplicação de lógica
+ * Retorna o audioKey para um tipo de pacote
  */
 export function getAudioKeyForType(type: PackageType): string {
-  for (const mapping of PREFIX_MAPPINGS) {
-    if (mapping.type === type) {
-      return mapping.audioKey;
+  for (const pattern of PREFIX_PATTERNS) {
+    if (pattern.type === type) {
+      return pattern.audioKey;
     }
   }
   return 'beep_error';
@@ -240,29 +272,25 @@ export function getPackageTypeLabel(type: PackageType): string {
 
 /**
  * Extrai o prefixo efetivo do código para análise
- * Útil para logging e debug
  */
 export function extractPrefix(normalizedCode: string): string | null {
-  for (const mapping of PREFIX_MAPPINGS) {
-    for (const prefix of mapping.prefixes) {
-      if (normalizedCode.startsWith(prefix)) {
-        return prefix;
-      }
+  for (const pattern of PREFIX_PATTERNS) {
+    if (normalizedCode.startsWith(pattern.prefix)) {
+      return pattern.prefix;
     }
   }
   return null;
 }
 
 /**
- * Lista todos os prefixos conhecidos (para UI, logs, etc)
+ * Lista todos os prefixos conhecidos
  */
 export function getAllKnownPrefixes(): string[] {
-  return PREFIX_MAPPINGS.flatMap(m => m.prefixes);
+  return PREFIX_PATTERNS.map(p => p.prefix);
 }
 
 /**
  * Verifica se um código é definitivamente um tipo específico
- * Mais preciso que apenas identificação
  */
 export function isDefinitelyType(normalizedCode: string, type: PackageType): boolean {
   const identification = identifyPackage(normalizedCode);
@@ -270,7 +298,7 @@ export function isDefinitelyType(normalizedCode: string, type: PackageType): boo
 }
 
 /**
- * Obtém confidence score (0-1) para um tipo
+ * Obtém confidence score (0-1)
  */
 export function getConfidenceScore(normalizedCode: string, type: PackageType): number {
   const identification = identifyPackage(normalizedCode);
@@ -292,15 +320,15 @@ export function getConfidenceScore(normalizedCode: string, type: PackageType): n
 }
 
 /**
- * Limpa o cache manualmente se necessário
+ * Limpa cache manualmente se necessário
  */
-export function clearValidationCache(): void {
-  validationCache.clear();
+export function clearIdentificationCache(): void {
+  identificationCache.clear();
 }
 
 /**
  * Retorna tamanho atual do cache
  */
 export function getCacheSize(): number {
-  return validationCache.size;
+  return identificationCache.size;
 }

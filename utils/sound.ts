@@ -1,96 +1,197 @@
 import { Audio } from 'expo-av';
 import { Platform } from 'react-native';
 
-let beepSound: Audio.Sound | null = null;
-let errorSound: Audio.Sound | null = null;
-let isLoaded = false;
-let loadPromise: Promise<void> | null = null;
+/**
+ * Sistema de Som Profissional
+ * Gerencia reprodução de áudio com retry logic e fallbacks
+ */
 
-async function loadSounds() {
-  if (Platform.OS === 'web') return;
-  if (isLoaded) return;
-  if (loadPromise) return loadPromise;
+interface SoundCache {
+  sound: Audio.Sound | null;
+  lastPlayTime: number;
+}
 
-  loadPromise = (async () => {
+let soundCache: Map<string, SoundCache> = new Map();
+let isInitialized = false;
+let initPromise: Promise<void> | null = null;
+
+const SOUND_FILES = {
+  beep: require('../assets/sounds/beep.mp3'),
+  error: require('../assets/sounds/error.mp3'),
+};
+
+const MIN_PLAY_INTERVAL_MS = 80; // Intervalo mínimo entre reproduções (80ms)
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 50;
+
+/**
+ * Inicializa o sistema de áudio
+ */
+async function initializeAudio(): Promise<void> {
+  if (isInitialized) return;
+  if (initPromise) return initPromise;
+
+  initPromise = (async () => {
     try {
+      if (Platform.OS === 'web') return;
+
       await Audio.setAudioModeAsync({
         playsInSilentModeIOS: true,
         allowsRecordingIOS: false,
         shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
       });
 
-      let beep, err;
-      
-      try {
-        beep = await Audio.Sound.createAsync(
-          require('../assets/sounds/beep.mp3'),
-          { shouldPlay: false, volume: 1.0 }
-        );
-      } catch {
-        console.log('beep.mp3 not found, using fallback');
-        // Create a simple fallback sound programmatically
-        beep = { sound: null };
-      }
-      
-      try {
-        err = await Audio.Sound.createAsync(
-          require('../assets/sounds/error.mp3'),
-          { shouldPlay: false, volume: 1.0 }
-        );
-      } catch {
-        console.log('error.mp3 not found, using fallback');
-        // Create a simple fallback sound programmatically
-        err = { sound: null };
-      }
-
-      beepSound = beep.sound;
-      errorSound = err.sound;
-      isLoaded = true;
+      isInitialized = true;
+      console.log('[Sound] Audio system initialized successfully');
+    } catch (error) {
+      console.error('[Sound] Failed to initialize audio:', error);
     } finally {
-      loadPromise = null;
+      initPromise = null;
     }
   })();
 
-  return loadPromise;
+  return initPromise;
 }
 
-async function replay(sound: Audio.Sound | null) {
-  if (Platform.OS === 'web') return;
+/**
+ * Carrega ou recupera um som do cache
+ */
+async function getSound(soundKey: string, soundFile: any): Promise<Audio.Sound | null> {
+  // Retorna do cache se disponível
+  const cached = soundCache.get(soundKey);
+  if (cached?.sound) {
+    return cached.sound;
+  }
+
+  if (Platform.OS === 'web') return null;
+
   try {
-    await loadSounds();
-    if (!sound) return;
+    const { sound } = await Audio.Sound.createAsync(soundFile, {
+      shouldPlay: false,
+      volume: 1.0,
+    });
+
+    // Armazena em cache
+    soundCache.set(soundKey, {
+      sound,
+      lastPlayTime: 0,
+    });
+
+    console.log(`[Sound] Som carregado: ${soundKey}`);
+    return sound;
+  } catch (error) {
+    console.warn(`[Sound] Falha ao carregar ${soundKey}:`, error);
+    soundCache.set(soundKey, { sound: null, lastPlayTime: 0 });
+    return null;
+  }
+}
+
+/**
+ * Reproduz um som com retry logic e controle de intervalo
+ */
+async function playSoundInternal(
+  soundKey: string,
+  soundFile: any,
+  soundLabel: string,
+  retries = 0
+): Promise<void> {
+  try {
+    await initializeAudio();
+
+    const cache = soundCache.get(soundKey);
+    const now = Date.now();
+
+    // Verifica intervalo mínimo entre reproduções
+    if (cache && now - cache.lastPlayTime < MIN_PLAY_INTERVAL_MS) {
+      console.log(
+        `[Sound] ${soundLabel}: intervalo mínimo não ating. Aguardando ${MIN_PLAY_INTERVAL_MS}ms`
+      );
+      await new Promise((resolve) =>
+        setTimeout(resolve, MIN_PLAY_INTERVAL_MS - (now - (cache?.lastPlayTime || 0)))
+      );
+    }
+
+    const sound = await getSound(soundKey, soundFile);
+    if (!sound) {
+      console.warn(`[Sound] ${soundLabel}: som não disponível`);
+      return;
+    }
+
+    // Toca o som
+    console.log(`[Sound] ▶ ${soundLabel}`);
     await sound.replayAsync();
-  } catch {
-    // ignore
+
+    // Atualiza tempo de reprodução
+    const cacheEntry = soundCache.get(soundKey);
+    if (cacheEntry) {
+      cacheEntry.lastPlayTime = Date.now();
+    }
+  } catch (error) {
+    console.warn(`[Sound] ${soundLabel} - Erro:`, error);
+
+    // Retry logic
+    if (retries < MAX_RETRIES) {
+      console.log(`[Sound] ${soundLabel} - Tentando novamente (${retries + 1}/${MAX_RETRIES})`);
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+      return playSoundInternal(soundKey, soundFile, soundLabel, retries + 1);
+    }
   }
 }
 
-export async function preloadSounds() {
-  await loadSounds();
-}
+// ============================================
+// APIs PÚBLICAS
+// ============================================
 
-export async function playBeep() {
-  await replay(beepSound);
-}
-
-export async function playError() {
-  await replay(errorSound);
-}
-
-export async function unloadSounds() {
-  if (Platform.OS === 'web') return;
+export async function preloadSounds(): Promise<void> {
+  console.log('[Sound] Pré-carregando sons...');
   try {
-    await beepSound?.unloadAsync();
-  } catch {
-    // ignore
+    await initializeAudio();
+    await getSound('beep', SOUND_FILES.beep);
+    await getSound('error', SOUND_FILES.error);
+    console.log('[Sound] Sons pré-carregados');
+  } catch (error) {
+    console.error('[Sound] Erro ao pré-carregar sons:', error);
   }
-  try {
-    await errorSound?.unloadAsync();
-  } catch {
-    // ignore
-  }
+}
 
-  beepSound = null;
-  errorSound = null;
-  isLoaded = false;
+/** Toca beep padrão (compatibilidade) */
+export async function playBeep(): Promise<void> {
+  await playSoundInternal('beep', SOUND_FILES.beep, 'Beep');
+}
+
+/** Toca beep A (Shopee) */
+export async function playBeepA(): Promise<void> {
+  await playSoundInternal('beep', SOUND_FILES.beep, '🔔 Beep A (Shopee)');
+}
+
+/** Toca beep B (Mercado Livre) */
+export async function playBeepB(): Promise<void> {
+  await playSoundInternal('beep', SOUND_FILES.beep, '🔔 Beep B (Mercado Livre)');
+}
+
+/** Toca beep C (Avulso) */
+export async function playBeepC(): Promise<void> {
+  await playSoundInternal('beep', SOUND_FILES.beep, '🔔 Beep C (Avulso)');
+}
+
+/** Toca beep de erro */
+export async function playError(): Promise<void> {
+  await playSoundInternal('error', SOUND_FILES.error, '❌ Beep Error');
+}
+
+export async function unloadSounds(): Promise<void> {
+  console.log('[Sound] Liberando recursos de áudio...');
+  try {
+    for (const [key, cache] of soundCache.entries()) {
+      if (cache.sound) {
+        await cache.sound.unloadAsync();
+        console.log(`[Sound] Som liberado: ${key}`);
+      }
+    }
+    soundCache.clear();
+    isInitialized = false;
+  } catch (error) {
+    console.error('[Sound] Erro ao liberar sons:', error);
+  }
 }

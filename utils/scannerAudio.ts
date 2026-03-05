@@ -1,12 +1,13 @@
 /**
- * Scanner Industrial - Serviço de Áudio
- * Gerencia bipes com garantias de:
- * - Sem sobreposição de áudio
- * - Sem múltiplos bipes em menos de 400ms
- * - Sem repetição para leitura duplicada
+ * Scanner Industrial - Serviço de Áudio Profissional
+ * Gerencia reprodução de áudio com:
+ * - Prevenção de sobreposição
+ * - Controle de gap mínimo entre sons
+ * - Fila de áudio para requisições rápidas
+ * - Erro handling robusto
  */
 
-import { playBeep, playError } from '@/utils/sound';
+import { playBeepA, playBeepB, playBeepC, playError } from '@/utils/sound';
 
 /**
  * Estados do reprodutor de áudio
@@ -39,13 +40,13 @@ interface AudioConfig {
  * Mapa de configurações de áudio
  */
 const AUDIO_CONFIGS: Record<ScannerAudioType, AudioConfig> = {
-  [ScannerAudioType.BEEP_A]: { type: ScannerAudioType.BEEP_A, durationMs: 150, minGapMs: 400 },
-  [ScannerAudioType.BEEP_B]: { type: ScannerAudioType.BEEP_B, durationMs: 150, minGapMs: 400 },
-  [ScannerAudioType.BEEP_C]: { type: ScannerAudioType.BEEP_C, durationMs: 150, minGapMs: 400 },
+  [ScannerAudioType.BEEP_A]: { type: ScannerAudioType.BEEP_A, durationMs: 150, minGapMs: 300 },
+  [ScannerAudioType.BEEP_B]: { type: ScannerAudioType.BEEP_B, durationMs: 150, minGapMs: 300 },
+  [ScannerAudioType.BEEP_C]: { type: ScannerAudioType.BEEP_C, durationMs: 150, minGapMs: 300 },
   [ScannerAudioType.BEEP_ERROR]: {
     type: ScannerAudioType.BEEP_ERROR,
     durationMs: 200,
-    minGapMs: 400,
+    minGapMs: 300,
   },
 };
 
@@ -58,25 +59,22 @@ export class ScannerAudioService {
   private lastAudioTime: number = 0;
   private audioQueue: ScannerAudioType[] = [];
   private lastPlayedType: ScannerAudioType | null = null;
+  private processing = false;
 
   /**
    * Toca um som de forma segura
    * Garante que não haverá sobreposição ou múltiplos bipes rápidos
-   *
-   * @param audioType - Tipo de áudio a tocar
-   * @param forcePlay - Força reprodução mesmo se gap insuficiente (para erros críticos)
-   * @returns Promise que resolve quando o áudio foi tocado ou fila processada
    */
   async playAudio(audioType: ScannerAudioType, forcePlay = false): Promise<void> {
     const now = Date.now();
     const config = AUDIO_CONFIGS[audioType];
 
-    // Se o mesmo som foi tocado recentemente, ignora (prevenção de duplicação)
+    // Prevenção dupla: ignorar se mesmo som tocado recentemente
     if (this.lastPlayedType === audioType && now - this.lastAudioTime < config.minGapMs) {
-      return; // Ignora silenciosamente
+      return;
     }
 
-    // Se estamos em gap, enfileira
+    // Se estamos tocando algo, enfileira
     if (this.state === AudioState.PLAYING && !forcePlay) {
       this.audioQueue.push(audioType);
       return;
@@ -94,7 +92,6 @@ export class ScannerAudioService {
 
   /**
    * Reproduz áudio internamente
-   * Marca tempo de início e gerencia estado
    */
   private async _playAudioInternal(audioType: ScannerAudioType): Promise<void> {
     const config = AUDIO_CONFIGS[audioType];
@@ -107,20 +104,24 @@ export class ScannerAudioService {
       // Mapeia tipo de áudio para função de reprodução
       switch (audioType) {
         case ScannerAudioType.BEEP_A:
+          await playBeepA();
+          break;
         case ScannerAudioType.BEEP_B:
+          await playBeepB();
+          break;
         case ScannerAudioType.BEEP_C:
-          await playBeep(); // Toca o beep padrão (pode ser customizado após)
+          await playBeepC();
           break;
         case ScannerAudioType.BEEP_ERROR:
           await playError();
           break;
       }
     } catch (error) {
-      console.warn('Erro ao tocar áudio:', error);
+      console.error('[ScannerAudio] Erro ao tocar áudio:', error);
     }
 
     // Espera a duração do áudio
-    await new Promise(resolve => setTimeout(resolve, config.durationMs));
+    await new Promise((resolve) => setTimeout(resolve, config.durationMs));
 
     this.state = AudioState.IDLE;
 
@@ -135,7 +136,6 @@ export class ScannerAudioService {
 
   /**
    * Limpa a fila de áudio
-   * Útil para reset ou parada de emergência
    */
   clearQueue(): void {
     this.audioQueue = [];
@@ -149,27 +149,14 @@ export class ScannerAudioService {
   }
 
   /**
-   * Retorna último tempo de áudio
-   */
-  getLastAudioTime(): number {
-    return this.lastAudioTime;
-  }
-
-  /**
-   * Retorna se está tocando
-   */
-  isPlaying(): boolean {
-    return this.state === AudioState.PLAYING;
-  }
-
-  /**
-   * Reset completo do serviço
+   * Reset completo
    */
   reset(): void {
     this.clearQueue();
     this.state = AudioState.IDLE;
     this.lastAudioTime = 0;
     this.lastPlayedType = null;
+    this.processing = false;
   }
 }
 

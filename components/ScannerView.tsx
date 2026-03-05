@@ -16,7 +16,8 @@ import * as Haptics from 'expo-haptics';
 import { ScannedPackage } from '@/types/session';
 import { classifyPackage, packageTypeLabel, packageTypeBadgeColors, generateId, getPackageValue, getSessionMetrics } from '@/utils/session';
 import { useAppTheme } from '@/utils/useAppTheme';
-import { playBeep, playError, preloadSounds, unloadSounds } from '@/utils/sound';
+import { preloadSounds, unloadSounds } from '@/utils/sound';
+import { ScannerAudioService, ScannerAudioType } from '@/utils/scannerAudio';
 
 interface ScannerViewProps {
   // Return true if the package was accepted, false for duplicates/limits
@@ -51,11 +52,26 @@ export default function ScannerView({
   const [barcodeLocked, setBarcodeLocked] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
   const lastAcceptedRef = useRef<{ code: string; at: number } | null>(null);
+  const audioService = useRef(new ScannerAudioService()).current;
 
   const metrics = getSessionMetrics(packages);
 
   // quick lookup set for faster duplicate detection
   const packageSet = useMemo(() => new Set(packages.map(p => p.code)), [packages]);
+
+  // Helper para mapear tipo de pacote para áudio
+  const getAudioTypeForPackage = (type: 'shopee' | 'mercado_livre' | 'avulso'): ScannerAudioType => {
+    switch (type) {
+      case 'shopee':
+        return ScannerAudioType.BEEP_A;
+      case 'mercado_livre':
+        return ScannerAudioType.BEEP_B;
+      case 'avulso':
+        return ScannerAudioType.BEEP_C;
+      default:
+        return ScannerAudioType.BEEP_ERROR;
+    }
+  };
 
   const [limitVisible, setLimitVisible] = useState(false);
   const [limitLabel, setLimitLabel] = useState('');
@@ -194,7 +210,7 @@ export default function ScannerView({
 
     if (packageSet.has(code)) {
       onDuplicate(code);
-      playError();
+      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       }
@@ -208,7 +224,7 @@ export default function ScannerView({
 
     // check limit
     if (!checkLimit(type)) {
-      playError();
+      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       }
@@ -227,12 +243,12 @@ export default function ScannerView({
     const accepted = onScan(pkg);
     if (accepted) {
       lastAcceptedRef.current = { code, at: Date.now() };
-      playBeep();
+      audioService.playAudio(getAudioTypeForPackage(type));
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       }
     } else {
-      playError();
+      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       }
@@ -253,7 +269,7 @@ export default function ScannerView({
 
     if (packageSet.has(code)) {
       onDuplicate(code);
-      playError();
+      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       }
@@ -265,7 +281,7 @@ export default function ScannerView({
 
     // check per‑type limit before emitting
     if (!checkLimit(type)) {
-      playError();
+      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       }
@@ -283,12 +299,12 @@ export default function ScannerView({
     const accepted = onScan(pkg);
     if (accepted) {
       lastAcceptedRef.current = { code, at: now };
-      playBeep();
+      audioService.playAudio(getAudioTypeForPackage(type));
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       }
     } else {
-      playError();
+      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       }

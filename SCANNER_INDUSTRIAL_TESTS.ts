@@ -37,7 +37,7 @@ export const identificationTests = () => {
   console.assert(mlPrefixB.type === 'mercado_livre', '46 deve ser Mercado Livre');
 
   const mlPrefixC = identifyPackage('45987654321');
-  console.assert(mlPrefixC.type === 'mercado_livre', '45 deve ser Mercado Livre');
+  console.assert(mlPrefixC.type !== 'mercado_livre', '45 NÃO deve ser Mercado Livre');
 
   // Test 4: Identify Avulso
   const avulsoA = identifyPackage('LM123456789');

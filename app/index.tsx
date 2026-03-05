@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, SafeAreaView, StatusBar } from 'react-native';
 import { Session, ScannedPackage } from '@/types/session';
-import { getSessionMetrics, generateId } from '@/utils/session';
+import { getSessionMetrics, generateId, getPackageValue } from '@/utils/session';
 import { addSession, loadSessions } from '@/utils/storage';
 import { useAppTheme } from '@/utils/useAppTheme';
 
 import SessionInitModal from '@/components/SessionInitModal';
-import ScannerView from '@/components/ScannerView';
+import IndustrialScannerView from '@/components/IndustrialScannerView';
 import MetricsDashboard from '@/components/MetricsDashboard';
 import PackageList from '@/components/PackageList';
 import DuplicateModal from '@/components/DuplicateModal';
@@ -70,7 +70,7 @@ export default function HomeScreen() {
     setPackageListExpanded(false);
   };
 
-  const handleScan = (pkg: ScannedPackage) => {
+  const handlePackageScanned = (pkg: ScannedPackage) => {
     if (!currentSession) return false;
     const updated = {
       ...currentSession,
@@ -86,6 +86,23 @@ export default function HomeScreen() {
       setDivergenceVisible(false);
     }
     return true;
+  };
+
+  const handleScanned = (code: string, type: string) => {
+    const pkgType = type as 'shopee' | 'mercado_livre' | 'avulso';
+    const pkg: ScannedPackage = {
+      id: generateId(),
+      code,
+      type: pkgType,
+      value: getPackageValue(pkgType),
+      scannedAt: new Date().toISOString(),
+    };
+    handlePackageScanned(pkg);
+  };
+
+  const handleLimitReached = (limitedTypes: string[]) => {
+    // TODO: implementar lógica para quando limites são atingidos
+    console.log('Limites atingidos para:', limitedTypes);
   };
 
   const handleRequestPhoto = (pkg: ScannedPackage) => {
@@ -197,14 +214,11 @@ export default function HomeScreen() {
 
               {/* Scanner */}
               <View style={{ flex: 1 }}>
-                <ScannerView
-                  onScan={handleScan}
-                  onDuplicate={handleDuplicate}
-                  packages={currentSession.packages}
-                  declaredCounts={currentSession.declaredCounts}
-                  lastScanned={lastScanned}
+                <IndustrialScannerView
+                  maxScans={currentSession.declaredCounts}
+                  onScanned={handleScanned}
+                  onLimitReached={handleLimitReached}
                   onEndSession={handleEndSession}
-                  onRequestPhoto={handleRequestPhoto}
                 />
               </View>
 

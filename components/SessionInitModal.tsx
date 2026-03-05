@@ -13,12 +13,11 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { MaterialIcons } from '@expo/vector-icons';
-
 import { Driver } from '@/services/firestore';
+import DriversSelector from '@/components/DriversSelector';
 
 interface SessionInitModalProps {
   visible: boolean;
@@ -35,13 +34,9 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
   const { width } = useWindowDimensions();
 
   const [operatorName, setOperatorName] = useState('');
-  const [driverName, setDriverName] = useState('');
   const [driverId, setDriverId] = useState<string | null>(null);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loadingDrivers, setLoadingDrivers] = useState(false);
-  const [newDriverName, setNewDriverName] = useState('');
-  const [showNewDriver, setShowNewDriver] = useState(false);
-  const [savingDriver, setSavingDriver] = useState(false);
   const [shopeeCount, setShopeeCount] = useState('');
   const [mercadoLivreCount, setMercadoLivreCount] = useState('');
   const [avulsoCount, setAvulsoCount] = useState('');
@@ -50,7 +45,7 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!operatorName.trim()) newErrors.operatorName = 'Campo obrigatório';
-    if (!driverId && !driverName.trim()) newErrors.driverName = 'Campo obrigatório';
+    if (!driverId) newErrors.driverName = 'Campo obrigatório';
     
     const shopee = Number(shopeeCount) || 0;
     const mercadoLivre = Number(mercadoLivreCount) || 0;
@@ -67,14 +62,14 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
 
   const handleStart = () => {
     if (!validate()) return;
+    const driverName = drivers.find(d => d.id === driverId)?.name || '';
     const declaredCounts = {
       shopee: Number(shopeeCount) || 0,
       mercadoLivre: Number(mercadoLivreCount) || 0,
       avulso: Number(avulsoCount) || 0,
     };
-    onStart(operatorName.trim(), driverId ? drivers.find(d=>d.id===driverId)?.name || '' : driverName.trim(), declaredCounts, driverId || undefined);
+    onStart(operatorName.trim(), driverName, declaredCounts, driverId || undefined);
     setOperatorName('');
-    setDriverName('');
     setDriverId(null);
     setShopeeCount('');
     setMercadoLivreCount('');
@@ -98,21 +93,27 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
     loadDrivers();
   }, []);
 
-  const handleAddDriver = async () => {
-    if (!newDriverName.trim()) return;
-    setSavingDriver(true);
+  const handleAddDriver = async (name: string) => {
     try {
       const { upsertDriver, fetchDriversWithCache } = await import('@/services/firestore');
-      await upsertDriver({ name: newDriverName.trim(), active: true });
-      // refresh list
+      await upsertDriver({ name: name.trim(), active: true });
       const updated = await fetchDriversWithCache();
       setDrivers(updated);
-      setNewDriverName('');
-      setShowNewDriver(false);
     } catch (e) {
       console.warn('failed to add driver', e);
-    } finally {
-      setSavingDriver(false);
+      throw e;
+    }
+  };
+
+  const handleDeleteDriver = async (driverId: string) => {
+    try {
+      const { deleteDriver, fetchDriversWithCache } = await import('@/services/firestore');
+      await deleteDriver(driverId);
+      const updated = await fetchDriversWithCache();
+      setDrivers(updated);
+    } catch (e) {
+      console.warn('failed to delete driver', e);
+      throw e;
     }
   };
 
@@ -186,99 +187,15 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                 )}
               </View>
 
-              {/* Driver Picker */}
-              <View style={{ marginBottom: 20 }}>
-                <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
-                  Motorista
-                </Text>
-                {loadingDrivers ? (
-                  <ActivityIndicator color={colors.text} />
-                ) : (
-                  <>
-                    <Picker
-                      selectedValue={driverId}
-                      onValueChange={val => setDriverId(val as string)}
-                      style={{
-                        backgroundColor: colors.surface2,
-                        borderWidth: 1,
-                        borderColor: errors.driverName ? colors.danger : colors.border2,
-                        borderRadius: 10,
-                        color: colors.text,
-                      }}
-                    >
-                      <Picker.Item label="Selecione" value="" />
-                      {drivers.map(d => (
-                        <Picker.Item key={d.id} label={d.name} value={d.id} />
-                      ))}
-                    </Picker>
-                    <TouchableOpacity
-                      onPress={() => setShowNewDriver(!showNewDriver)}
-                      style={{
-                        marginTop: 10,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 6,
-                      }}
-                    >
-                      <MaterialIcons name="add-circle" size={18} color={colors.primary} />
-                      <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600' }}>
-                        Adicionar novo motorista
-                      </Text>
-                    </TouchableOpacity>
-
-                    {showNewDriver && (
-                      <View style={{
-                        marginTop: 12,
-                        borderRadius: 10,
-                        backgroundColor: colors.surface2,
-                        padding: 12,
-                        borderWidth: 1,
-                        borderColor: colors.border,
-                      }}>
-                        <TextInput
-                          value={newDriverName}
-                          onChangeText={setNewDriverName}
-                          placeholder="Nome do novo motorista"
-                          placeholderTextColor={colors.textSubtle}
-                          style={{
-                            backgroundColor: colors.surface,
-                            borderWidth: 1,
-                            borderColor: colors.border2,
-                            borderRadius: 8,
-                            padding: 10,
-                            color: colors.text,
-                            fontSize: 14,
-                            marginBottom: 10,
-                          }}
-                        />
-                        <TouchableOpacity
-                          onPress={handleAddDriver}
-                          disabled={savingDriver || !newDriverName.trim()}
-                          style={{
-                            backgroundColor: colors.primary,
-                            borderRadius: 8,
-                            padding: 10,
-                            alignItems: 'center',
-                            opacity: savingDriver || !newDriverName.trim() ? 0.5 : 1,
-                          }}
-                        >
-                          {savingDriver ? (
-                            <ActivityIndicator color={colors.secondary} size="small" />
-                          ) : (
-                            <Text style={{ color: colors.secondary, fontWeight: '600', fontSize: 13 }}>
-                              Salvar
-                            </Text>
-                          )}
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </>
-                )}
-                {errors.driverName && (
-                  <Text style={{ color: colors.danger, fontSize: 12, marginTop: 4 }}>{errors.driverName}</Text>
-                )}
-              </View>
+              {/* Driver Selector */}
+              <DriversSelector
+                drivers={drivers}
+                selectedDriverId={driverId}
+                onSelectionChange={setDriverId}
+                onAddDriver={handleAddDriver}
+                onDeleteDriver={handleDeleteDriver}
+                loadingDrivers={loadingDrivers}
+              />
 
               {/* Declared Counts */}
               <View style={{ marginBottom: 28 }}>

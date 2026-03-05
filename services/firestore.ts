@@ -220,6 +220,15 @@ export async function upsertDriver(driver: Partial<Driver> & { id?: string }) {
   return ref.id;
 }
 
+// soft delete driver (mark as inactive)
+export async function deleteDriver(driverId: string) {
+  const ref = doc(db, 'drivers', driverId);
+  await updateDoc(ref, { active: false });
+  // refresh cache
+  const updated = await fetchDrivers();
+  await cacheDrivers(updated);
+}
+
 // --------------------------------------------------
 // AUTH helpers (firestore authentication is optional) 
 // --------------------------------------------------

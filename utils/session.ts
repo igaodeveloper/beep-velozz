@@ -93,60 +93,39 @@ export function formatWhatsAppMessage(session: Session): string {
   const metrics = getSessionMetrics(session.packages);
   const hasDivergence = session.hasDivergence;
   const percentualVerificacao = session.declaredCount > 0 
-    ? ((metrics.total / session.declaredCount) * 100).toFixed(1)
-    : '0.0';
+    ? ((metrics.total / session.declaredCount) * 100).toFixed(0)
+    : '0';
   const divergenciaValor = metrics.total - session.declaredCount;
   
   const statusHeader = hasDivergence
     ? `⚠️  *RELATÓRIO COM DIVERGÊNCIA*`
-    : `✅ *RELATÓRIO DE CONFORMIDADE*`;
+    : `✅ *CONFORMIDADE TOTAL*`;
 
   const divergenceInfo = hasDivergence
-    ? `
-┌─ *ANÁLISE DE DIVERGÊNCIA*
-├─ Pacotes Conferidos: ${metrics.total}
-├─ Pacotes Declarados: ${session.declaredCount}
-├─ Diferença: ${divergenciaValor > 0 ? '+' : ''}${divergenciaValor}
-└─ Conformidade: ${percentualVerificacao}%`
-    : `
-┌─ *RESULTADO: CONFORMIDADE TOTAL*
-├─ Pacotes Conferidos: ${metrics.total}
-├─ Pacotes Declarados: ${session.declaredCount}
-└─ Conformidade: 100%`;
+    ? `● Pacotes Conferidos: ${metrics.total} | Declarados: ${session.declaredCount}
+● Diferença: ${divergenciaValor > 0 ? '+' : ''}${divergenciaValor} pacotes
+● Conformidade: ${percentualVerificacao}%`
+    : `● Pacotes Conferidos: ${metrics.total}
+● Pacotes Declarados: ${session.declaredCount}
+● Conformidade: 100%`;
 
   return `${statusHeader}
 
-╔════════════════════════════════╗
-║   RELATÓRIO DE CONFERÊNCIA     ║
-╚════════════════════════════════╝
+*IDENTIFICAÇÃO*
+● Data: ${formatDate(session.startedAt)}
+● Horário: ${formatTimestamp(session.startedAt)}${session.completedAt ? ` às ${formatTimestamp(session.completedAt)}` : ''}
+● Operador: ${session.operatorName}
+● Motorista: ${session.driverName}
 
-┌─ *IDENTIFICAÇÃO*
-├─ Data: ${formatDate(session.startedAt)}
-├─ Horário Inicial: ${formatTimestamp(session.startedAt)}
-${session.completedAt ? `├─ Horário Final: ${formatTimestamp(session.completedAt)}` : ''}
-├─ Operador: ${session.operatorName}
-└─ Motorista: ${session.driverName}
+*DISTRIBUIÇÃO DE PACOTES*
+🟠 Shopee: ${metrics.shopee} unid. | R$ ${metrics.valueShopee.toFixed(2).replace('.', ',')}
+🟡 Mercado Livre: ${metrics.mercadoLivre} unid. | R$ ${metrics.valueMercadoLivre.toFixed(2).replace('.', ',')}
+🔵 Avulsos: ${metrics.avulsos} unid. | R$ ${metrics.valueAvulsos.toFixed(2).replace('.', ',')}
 
-┌─ *DISTRIBUIÇÃO DE PACOTES*
-├─ 🛍️  Shopee
-│   ├─ Quantidade: ${metrics.shopee}
-│   └─ Valor: R$ ${metrics.valueShopee.toFixed(2).replace('.', ',')}
-├─ 🟡 Mercado Livre
-│   ├─ Quantidade: ${metrics.mercadoLivre}
-│   └─ Valor: R$ ${metrics.valueMercadoLivre.toFixed(2).replace('.', ',')}
-└─ 📦 Pacotes Avulsos
-    ├─ Quantidade: ${metrics.avulsos}
-    └─ Valor: R$ ${metrics.valueAvulsos.toFixed(2).replace('.', ',')}
-
-┌─ *RESUMO EXECUTIVO*
-├─ Total de Pacotes: ${metrics.total}
-├─ Valor Total: R$ ${metrics.valueTotal.toFixed(2).replace('.', ',')}
-└─ Ticket Médio: R$ ${(metrics.valueTotal / Math.max(metrics.total, 1)).toFixed(2).replace('.', ',')}
-${divergenceInfo}
-
-╔════════════════════════════════╗
-║  FIM DO RELATÓRIO              ║
-╚════════════════════════════════╝`;
+*RESUMO EXECUTIVO*
+● Total: ${metrics.total} pacotes | R$ ${metrics.valueTotal.toFixed(2).replace('.', ',')}
+● Ticket Médio: R$ ${(metrics.valueTotal / Math.max(metrics.total, 1)).toFixed(2).replace('.', ',')}
+${divergenceInfo}`;
 }
 
 export function generateId(): string {

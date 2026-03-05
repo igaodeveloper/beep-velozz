@@ -1,19 +1,19 @@
-import { Session } from '@/types/session';
+﻿import { Session } from '@/types/session';
 import { getSessionMetrics } from './session';
 import { getSessionPhotos, photoToBase64 } from './photoStorage';
 import * as Print from 'expo-print';
 import { Share } from 'react-native';
 
 /**
- * Gera HTML para um relatório PDF profissional
+ * Gera HTML para um relatório PDF profissional, minimalista e moderno
  */
 function generateReportHTML(session: Session): string {
   const metrics = getSessionMetrics(session.packages);
   const hasDivergence = session.hasDivergence;
   const divergenceValue = session.packages.length - session.declaredCount;
 
-  const statusBgColor = hasDivergence ? '#fef3c7' : '#dcfce7';
-  const statusTextColor = hasDivergence ? '#b45309' : '#166534';
+  const statusBgColor = hasDivergence ? '#fef3c7' : '#d1fae5';
+  const statusTextColor = hasDivergence ? '#b45309' : '#065f46';
   const statusIcon = hasDivergence ? '⚠️' : '✅';
 
   return `
@@ -42,15 +42,15 @@ function generateReportHTML(session: Session): string {
           max-width: 800px;
           margin: 0 auto;
           background: white;
-          border-radius: 12px;
+          border-radius: 8px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
           overflow: hidden;
         }
         
         .header {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
           color: white;
-          padding: 30px;
+          padding: 24px;
           text-align: center;
         }
         
@@ -70,7 +70,7 @@ function generateReportHTML(session: Session): string {
           border-left: 4px solid ${statusTextColor};
           padding: 16px 20px;
           margin: 20px;
-          border-radius: 8px;
+          border-radius: 6px;
           display: flex;
           align-items: center;
           gap: 12px;
@@ -105,7 +105,7 @@ function generateReportHTML(session: Session): string {
         }
         
         .section-title {
-          color: #667eea;
+          color: #374151;
           font-size: 12px;
           font-weight: 700;
           text-transform: uppercase;
@@ -125,8 +125,8 @@ function generateReportHTML(session: Session): string {
         .info-item {
           background: #f9fafb;
           padding: 12px;
-          border-radius: 8px;
-          border-left: 3px solid #667eea;
+          border-radius: 6px;
+          border-left: 3px solid #d1d5db;
         }
         
         .info-label {
@@ -154,38 +154,65 @@ function generateReportHTML(session: Session): string {
         .metric-card {
           background: #f9fafb;
           padding: 14px;
-          border-radius: 8px;
+          border-radius: 6px;
           text-align: center;
-          border: 1px solid #e5e7eb;
+          border: 2px solid #e5e7eb;
+          transition: all 0.2s ease;
+        }
+        
+        .metric-card:nth-child(1) {
+          border-color: #ff5722;
+          background: rgba(255, 87, 34, 0.05);
+        }
+        
+        .metric-card:nth-child(2) {
+          border-color: #ffd700;
+          background: rgba(255, 215, 0, 0.08);
+        }
+        
+        .metric-card:nth-child(3) {
+          border-color: #2563eb;
+          background: rgba(37, 99, 235, 0.05);
         }
         
         .metric-label {
           color: #6b7280;
-          font-size: 10px;
-          font-weight: 600;
+          font-size: 11px;
+          font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.5px;
-          margin-bottom: 4px;
+          margin-bottom: 6px;
         }
         
         .metric-value {
-          color: #667eea;
-          font-size: 18px;
+          font-size: 20px;
           font-weight: 800;
           margin-bottom: 2px;
+        }
+        
+        .metric-card:nth-child(1) .metric-value {
+          color: #ff5722;
+        }
+        
+        .metric-card:nth-child(2) .metric-value {
+          color: #d97706;
+        }
+        
+        .metric-card:nth-child(3) .metric-value {
+          color: #2563eb;
         }
         
         .metric-subtitle {
           color: #9ca3af;
           font-size: 11px;
-          font-weight: 500;
+          font-weight: 600;
         }
         
         .summary-box {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
           color: white;
           padding: 16px;
-          border-radius: 8px;
+          border-radius: 6px;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -229,32 +256,32 @@ function generateReportHTML(session: Session): string {
         
         .package-badge {
           display: inline-block;
-          padding: 2px 8px;
+          padding: 3px 10px;
           border-radius: 4px;
           font-size: 10px;
-          font-weight: 600;
+          font-weight: 700;
         }
         
         .package-badge.shopee {
-          background-color: rgba(255, 87, 34, 0.1);
+          background-color: rgba(255, 87, 34, 0.15);
           color: #ff5722;
         }
         
         .package-badge.ml {
-          background-color: rgba(255, 230, 0, 0.2);
-          color: #b59500;
+          background-color: rgba(255, 215, 0, 0.2);
+          color: #d97706;
         }
         
         .package-badge.avulso {
-          background-color: rgba(100, 116, 139, 0.1);
-          color: #64748b;
+          background-color: rgba(37, 99, 235, 0.15);
+          color: #2563eb;
         }
         
         .package-with-photo {
           margin-bottom: 20px;
           padding: 16px;
           background: #f9fafb;
-          border-radius: 8px;
+          border-radius: 6px;
           border: 1px solid #e5e7eb;
         }
         
@@ -358,7 +385,7 @@ function generateReportHTML(session: Session): string {
             <div class="section-title">Distribuição de Pacotes</div>
             <div class="metrics-row">
               <div class="metric-card">
-                <div class="metric-label">🛍️ Shopee</div>
+                <div class="metric-label">🟠 Shopee</div>
                 <div class="metric-value">${metrics.shopee}</div>
                 <div class="metric-subtitle">R$ ${metrics.valueShopee.toFixed(2).replace('.', ',')}</div>
               </div>
@@ -368,7 +395,7 @@ function generateReportHTML(session: Session): string {
                 <div class="metric-subtitle">R$ ${metrics.valueMercadoLivre.toFixed(2).replace('.', ',')}</div>
               </div>
               <div class="metric-card">
-                <div class="metric-label">📦 Avulsos</div>
+                <div class="metric-label">🔵 Avulsos</div>
                 <div class="metric-value">${metrics.avulsos}</div>
                 <div class="metric-subtitle">R$ ${metrics.valueAvulsos.toFixed(2).replace('.', ',')}</div>
               </div>
@@ -392,7 +419,7 @@ function generateReportHTML(session: Session): string {
                     </span>
                   </div>
                   <div style="font-weight: 600;">${pkg.code}</div>
-                  <div style="color: #667eea; font-weight: 700;">R$ ${pkg.value.toFixed(2).replace('.', ',')}</div>
+                  <div style="color: #1f2937; font-weight: 700;">R$ ${pkg.value.toFixed(2).replace('.', ',')}</div>
                 </div>
               `
                 )
@@ -510,15 +537,15 @@ async function generateReportHTMLWithPhotos(session: Session): Promise<string> {
           max-width: 800px;
           margin: 0 auto;
           background: white;
-          border-radius: 12px;
+          border-radius: 8px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
           overflow: hidden;
         }
         
         .header {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
           color: white;
-          padding: 30px;
+          padding: 24px;
           text-align: center;
         }
         
@@ -538,7 +565,7 @@ async function generateReportHTMLWithPhotos(session: Session): Promise<string> {
           border-left: 4px solid ${statusTextColor};
           padding: 16px 20px;
           margin: 20px;
-          border-radius: 8px;
+          border-radius: 6px;
           display: flex;
           align-items: center;
           gap: 12px;
@@ -573,7 +600,7 @@ async function generateReportHTMLWithPhotos(session: Session): Promise<string> {
         }
         
         .section-title {
-          color: #667eea;
+          color: #374151;
           font-size: 12px;
           font-weight: 700;
           text-transform: uppercase;
@@ -593,8 +620,8 @@ async function generateReportHTMLWithPhotos(session: Session): Promise<string> {
         .info-item {
           background: #f9fafb;
           padding: 12px;
-          border-radius: 8px;
-          border-left: 3px solid #667eea;
+          border-radius: 6px;
+          border-left: 3px solid #d1d5db;
         }
         
         .info-label {
@@ -616,7 +643,7 @@ async function generateReportHTMLWithPhotos(session: Session): Promise<string> {
           margin-bottom: 20px;
           padding: 16px;
           background: #f9fafb;
-          border-radius: 8px;
+          border-radius: 6px;
           border: 1px solid #e5e7eb;
           page-break-inside: avoid;
         }
@@ -741,7 +768,7 @@ async function generateReportHTMLWithPhotos(session: Session): Promise<string> {
                     ${pkg.type === 'shopee' ? 'Shopee' : pkg.type === 'mercado_livre' ? 'ML' : 'Avulso'}
                   </span>
                 </div>
-                <div style="color: #667eea; font-weight: 700; font-size: 13px;">R$ ${pkg.value.toFixed(2).replace('.', ',')}</div>
+                <div style="color: #1f2937; font-weight: 700; font-size: 13px;">R$ ${pkg.value.toFixed(2).replace('.', ',')}</div>
                 ${
                   photosBase64[pkg.code]
                     ? `<img src="${photosBase64[pkg.code]}" class="package-photo" alt="Foto - ${pkg.code}" /><div class="photo-label">✓ Foto capturada</div>`
@@ -804,3 +831,10 @@ export async function exportMultipleSessionsToPDF(sessions: Session[]): Promise<
     throw error;
   }
 }
+
+
+
+
+
+
+

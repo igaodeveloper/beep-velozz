@@ -50,7 +50,14 @@
       "router": {},
       "eas": {
         "projectId": "9a9e3814-54fe-4f94-892d-a55bbe897cf0"
-      }
+      },
+      "firebaseApiKey": "AIzaSyAqS_rWdY5yhXwBLXL48Nooc-xfHpi5f5c",
+      "firebaseAuthDomain": "beepvelozz.firebaseapp.com",
+      "firebaseProjectId": "beepvelozz",
+      "firebaseStorageBucket": "beepvelozz.firebasestorage.app",
+      "firebaseMessagingSenderId": "418888118827",
+      "firebaseAppId": "1:418888118827:web:155021bed2f6cf095c706e",
+      "measurementId": "G-PVB66RW3B7"
     },
     "owner": "igaonamikaze"
   }

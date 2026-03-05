@@ -1,0 +1,32 @@
+FIRESTORE RULES - DESENVOLVIMENTO (SEM RESTRIÇÕES)
+
+Cole estas regras no Console Firebase > Firestore > Rules > Publicar
+
+---
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // DESENVOLVIMENTO: sem restrições
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+
+---
+
+INSTRUÇÕES:
+1. Abra https://console.firebase.google.com
+2. Selecione "beepvelozz"
+3. Vá para Firestore Database > Rules
+4. Apague tudo e cole o código acima
+5. Clique "Publicar"
+6. Aguarde a confirmação
+7. Reinicie o app: expo start (ou aperte 'r' no terminal)
+
+Agora todo acesso será permitido e você conseguirá:
+✅ Adicionar novos motoboys
+✅ Ler drivers, operators, packages
+✅ Atualizar registos
+✅ Criar sessões

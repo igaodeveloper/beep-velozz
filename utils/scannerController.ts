@@ -1,10 +1,12 @@
 /**
- * Scanner Industrial - Controlador Principal
- * Orquestra todos os módulos:
- * - Identificação de pacote
- * - Controle de limite
- * - Serviço de áudio
- * Implementa prevenção de race conditions e duplicação
+ * Scanner Industrial - Controlador Principal v2.0
+ * Orquestra todos os módulos com lógica avançada:
+ * - Identificação inteligente de pacote
+ * - Controle robusto de limite
+ * - Serviço de áudio com fila
+ * - Prevenção de race conditions
+ * - Detecção inteligente de duplicação
+ * - Logging e auditoria
  */
 
 import { PackageType, ScannerState, ScanResult, ScannerConfig, ScannerInternalState } from '@/types/scanner';
@@ -14,6 +16,8 @@ import {
   getAudioKeyForType,
   validateCode,
   getPackageTypeLabel,
+  isDefinitelyType,
+  getConfidenceScore,
 } from '@/utils/scannerIdentification';
 import { ScannerAudioService, ScannerAudioType, getScannerAudioService } from '@/utils/scannerAudio';
 import { ScanLimitController } from '@/utils/scannerLimitController';
@@ -21,12 +25,26 @@ import * as Haptics from 'expo-haptics';
 import { Platform } from 'react-native';
 
 /**
- * Controlador principal do scanner industrial
+ * Resultado detalhado de auditoria para logging
+ */
+interface AuditLog {
+  timestamp: number;
+  rawCode: string;
+  normalizedCode: string;
+  result: ScanResult;
+  confidenceScore: number;
+  validationDuration: number;
+}
+
+/**
+ * Controlador principal do scanner industrial v2.0
  * Responsável por:
- * - Orquestrar identificação, limite e áudio
- * - Prevenir race conditions
- * - Prevenir duplicação de leitura
- * - Manter estado determinístico
+ * - Orquestrar identificação inteligente
+ * - Controle robusto de limite com prevenção de overflow
+ * - Áudio sincronizado com fila
+ * - Prevenção avançada de race conditions
+ * - Detecção inteligente de duplicação com análise temporal
+ * - Auditoria completa de scans
  */
 export class IndustrialScannerController {
   private config: ScannerConfig;
@@ -35,6 +53,14 @@ export class IndustrialScannerController {
   private internalState: ScannerInternalState;
   private processingLock: boolean = false;
   private debounceMs: number;
+  private auditLog: AuditLog[] = [];
+  private scanHistory: Map<string, { type: PackageType; timestamps: number[] }> = new Map();
+
+  // when a driver is selected we can optionally provide the list of
+  // package codes that should be accepted. any scan outside this set
+  // will be rejected with a `wrong_driver` result so the user can
+  // avoid accidentally scanning a package belonging to another motoboy.
+  private allowedCodes?: Set<string>;
 
   constructor(config: ScannerConfig) {
     this.config = config;
@@ -65,9 +91,22 @@ export class IndustrialScannerController {
   }
 
   /**
-   * Processa um código escaneado
-   * Implementa toda a lógica de validação, limite e áudio
+   * Processa um código escaneado com lógica avançada
+   * Implementa:
+   * - Validação rigorosa
+   * - Controle de limite inteligente
+   * - Detecção de duplicação temporal
+   * - Auditoria completa
    */
+  /**
+   * set the list of package codes that are valid for the current
+   * "session" (typically the motoboy who is being checked). call this
+   * whenever the driver/route changes.
+   */
+  public setAllowedCodes(codes: string[]) {
+    this.allowedCodes = new Set(codes.map(c => normalizeCode(c)));
+  }
+
   async processScan(rawCode: string): Promise<ScanResult> {
     const startTime = Date.now();
 
@@ -91,6 +130,12 @@ export class IndustrialScannerController {
       // 2. Valida código
       if (!validateCode(normalizedCode)) {
         await this._playErrorAudio();
+        this._logAudit(rawCode, normalizedCode, {
+          success: false,
+          code: rawCode,
+          reason: 'invalid',
+          timestamp: startTime,
+        }, 0);
         return {
           success: false,
           code: rawCode,
@@ -99,29 +144,76 @@ export class IndustrialScannerController {
         };
       }
 
-      // 3. Incrementa contador total
-      this.internalState.stats.totalScans++;
-
-      // 4. Verifica duplicação (mesma leitura nos últimos N ms)
-      if (this._isDuplicate(normalizedCode)) {
-        this.internalState.stats.duplicates++;
+      // 3. Se scanner está pausado, rejeita
+      if (this.internalState.state === ScannerState.PAUSED) {
         await this._playErrorAudio();
         return {
           success: false,
           code: normalizedCode,
+          reason: 'rate_limited',
+          timestamp: startTime,
+        };
+      }
+
+      // 4. Incrementa contador total
+      this.internalState.stats.totalScans++;
+
+      // 5. Identifica tipo com confiança
+      const identification = identifyPackage(normalizedCode);
+
+      // 5b. Se um conjunto de códigos válidos foi definido, rejeita
+      // aquilo que não pertence ao motorista atual.
+      if (this.allowedCodes && !this.allowedCodes.has(normalizedCode)) {
+        await this._playErrorAudio();
+        this._logAudit(rawCode, normalizedCode, {
+          success: false,
+          code: normalizedCode,
+          reason: 'wrong_driver',
+          timestamp: startTime,
+        }, getConfidenceScore(normalizedCode, identification.type));
+        return {
+          success: false,
+          code: normalizedCode,
+          reason: 'wrong_driver',
+          timestamp: startTime,
+        };
+      }
+      const type: PackageType = identification.type;
+      const confidence = getConfidenceScore(normalizedCode, type);
+
+      // 6. Verifica duplicação inteligente
+      const duplicateCheckResult = this._checkDuplicateAdvanced(normalizedCode, type);
+      if (duplicateCheckResult.isDuplicate) {
+        this.internalState.stats.duplicates++;
+        await this._playErrorAudio();
+        this._logAudit(rawCode, normalizedCode, {
+          success: false,
+          code: normalizedCode,
+          type,
+          isDuplicate: true,
+          reason: 'duplicate',
+          timestamp: startTime,
+        }, confidence);
+        return {
+          success: false,
+          code: normalizedCode,
+          type,
           isDuplicate: true,
           reason: 'duplicate',
           timestamp: startTime,
         };
       }
 
-      // 5. Identifica tipo
-      const identification = identifyPackage(normalizedCode);
-      const type: PackageType = identification.type;
-
-      // 6. Verifica se limite foi atingido
-      if (this.internalState.state === ScannerState.LIMIT_REACHED) {
+      // 7. Verifica se limite foi atingido para este tipo
+      if (this.limitController.hasLimitReached(type)) {
         await this._playErrorAudio();
+        this._logAudit(rawCode, normalizedCode, {
+          success: false,
+          code: normalizedCode,
+          type,
+          reason: 'limit_reached',
+          timestamp: startTime,
+        }, confidence);
         return {
           success: false,
           code: normalizedCode,
@@ -131,7 +223,7 @@ export class IndustrialScannerController {
         };
       }
 
-      // 7. Tenta incrementar limite do tipo
+      // 8. Tenta incrementar limite do tipo
       const canIncrement = this.limitController.tryIncrement(type);
       if (!canIncrement) {
         // Verifica se todos os tipos atingiram limite
@@ -141,6 +233,13 @@ export class IndustrialScannerController {
         }
 
         await this._playErrorAudio();
+        this._logAudit(rawCode, normalizedCode, {
+          success: false,
+          code: normalizedCode,
+          type,
+          reason: 'limit_reached',
+          timestamp: startTime,
+        }, confidence);
         return {
           success: false,
           code: normalizedCode,
@@ -150,7 +249,7 @@ export class IndustrialScannerController {
         };
       }
 
-      // 8. Leitura bem-sucedida - atualiza estado
+      // 9. Leitura bem-sucedida - atualiza estado
       this.internalState.stats.validScans++;
       this.internalState.scanCounts[type]++;
 
@@ -160,14 +259,26 @@ export class IndustrialScannerController {
         timestamp: startTime,
       };
 
-      // 9. Toca áudio correspondente
+      // 10. Registra no histórico de scans
+      this._addToScanHistory(normalizedCode, type, startTime);
+
+      // 11. Toca áudio correspondente
       await this._playAudioForType(type);
 
-      // 10. Haptics
+      // 12. Haptics
       this._playHaptics();
 
-      // 11. Callback de atualização de estatísticas
+      // 13. Callback de atualização de estatísticas
       this.config.onStatsUpdate?.(this.internalState.stats);
+
+      // 14. Log de auditoria
+      this._logAudit(rawCode, normalizedCode, {
+        success: true,
+        code: normalizedCode,
+        type,
+        isDuplicate: false,
+        timestamp: startTime,
+      }, confidence);
 
       return {
         success: true,
@@ -185,20 +296,46 @@ export class IndustrialScannerController {
   }
 
   /**
-   * Verifica se é duplicação (mesmo código nos últimos ms)
+   * Verifica duplicação de forma avançada:
+   * - Mesmo código nos últimos 2 segundos = duplicata
+   * - Considera tipo do pacote
+   * - Usa histórico temporal
    */
-  private _isDuplicate(normalizedCode: string): boolean {
+  private _checkDuplicateAdvanced(normalizedCode: string, type: PackageType): { isDuplicate: boolean; reason?: string } {
     const lastScan = this.internalState.lastValidScan;
-    if (!lastScan) return false;
+    if (!lastScan) return { isDuplicate: false };
 
     const now = Date.now();
     const timeSinceLastScan = now - lastScan.timestamp;
 
     // Considera duplicata se mesmo código nos últimos 2 segundos
-    return (
-      lastScan.code === normalizedCode &&
-      timeSinceLastScan < 2000
-    );
+    if (lastScan.code === normalizedCode && timeSinceLastScan < 2000) {
+      return { isDuplicate: true, reason: 'same_code_quick_scan' };
+    }
+
+    // Verifica histórico de scans para detecção adicional
+    const history = this.scanHistory.get(normalizedCode);
+    if (history && history.type === type) {
+      const recentScans = history.timestamps.filter(ts => now - ts < 3000);
+      if (recentScans.length >= 1) {
+        return { isDuplicate: true, reason: 'repeated_scan_window' };
+      }
+    }
+
+    return { isDuplicate: false };
+  }
+
+  /**
+   * Adiciona ao histórico de scans para análise
+   */
+  private _addToScanHistory(normalizedCode: string, type: PackageType, timestamp: number): void {
+    const history = this.scanHistory.get(normalizedCode) || { type, timestamps: [] };
+    history.timestamps.push(timestamp);
+
+    // Limpa timestamps antigos (mais de 5 minutos)
+    history.timestamps = history.timestamps.filter(ts => Date.now() - ts < 5 * 60 * 1000);
+
+    this.scanHistory.set(normalizedCode, history);
   }
 
   /**
@@ -265,6 +402,29 @@ export class IndustrialScannerController {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     } catch (error) {
       console.warn('Erro ao reproduzir haptics:', error);
+    }
+  }
+
+  /**
+   * Log de auditoria completo para fins de rastreamento
+   */
+  private _logAudit(rawCode: string, normalizedCode: string, result: ScanResult, confidence: number): void {
+    const validationDuration = result.timestamp ? Date.now() - result.timestamp : 0;
+
+    const log: AuditLog = {
+      timestamp: Date.now(),
+      rawCode,
+      normalizedCode,
+      result,
+      confidenceScore: confidence,
+      validationDuration,
+    };
+
+    this.auditLog.push(log);
+
+    // Mantém apenas últimos 1000 logs
+    if (this.auditLog.length > 1000) {
+      this.auditLog = this.auditLog.slice(-1000);
     }
   }
 
@@ -348,6 +508,32 @@ export class IndustrialScannerController {
   }
 
   /**
+   * Retorna audit log para análise
+   */
+  getAuditLog(): AuditLog[] {
+    return [...this.auditLog];
+  }
+
+  /**
+   * Retorna resumo de audit log
+   */
+  getAuditSummary() {
+    const total = this.auditLog.length;
+    const successful = this.auditLog.filter(log => log.result.success).length;
+    const duplicates = this.auditLog.filter(log => log.result.isDuplicate).length;
+    const avgValidationDuration = this.auditLog.reduce((sum, log) => sum + log.validationDuration, 0) / (total || 1);
+
+    return {
+      totalProcessed: total,
+      successful,
+      failed: total - successful,
+      duplicates,
+      averageValidationMs: Math.round(avgValidationDuration),
+      successRate: total > 0 ? ((successful / total) * 100).toFixed(2) + '%' : '0%',
+    };
+  }
+
+  /**
    * Reset completo do scanner
    * Zera contadores, limpa última leitura e reativa
    */
@@ -355,6 +541,8 @@ export class IndustrialScannerController {
     this.limitController.reset();
     this.audioService.clearQueue();
     this.processingLock = false;
+    this.auditLog = [];
+    this.scanHistory.clear();
 
     this.internalState = {
       state: ScannerState.ACTIVE,
@@ -395,5 +583,18 @@ export class IndustrialScannerController {
       this.internalState.state = ScannerState.ACTIVE;
       this.config.onStateChange?.(ScannerState.ACTIVE);
     }
+  }
+
+  /**
+   * Exporta dados para análise
+   */
+  exportData() {
+    return {
+      config: this.config,
+      stats: this.getStats(),
+      auditSummary: this.getAuditSummary(),
+      auditLog: this.getAuditLog(),
+      internalState: this.internalState,
+    };
   }
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "418888118827",
+    "project_id": "beepvelozz",
+    "storage_bucket": "beepvelozz.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:418888118827:android:5d5ccf95e6cf6d755c706e",
+        "android_client_info": {
+          "package_name": "com.igaonamikaze.beepvelozz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDwaUPfxiXI5fTEQpYApbUmxujqcpars0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

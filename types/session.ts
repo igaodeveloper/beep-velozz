@@ -11,7 +11,9 @@ export interface Session {
   notes: any;
   id: string;
   operatorName: string;
+  operatorId?: string;
   driverName: string;
+  driverId?: string;
   declaredCount: number;
   declaredCounts: {
     shopee: number;

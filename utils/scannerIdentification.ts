@@ -80,6 +80,14 @@ const PREFIX_PATTERNS = [
     audioKey: 'beep_b',
     description: 'Mercado Livre (prefixo 46)',
   },
+  // Mercado Livre - Prefixo 45
+  {
+    prefix: '45',
+    minLength: 2, // apenas 45, qualquer extensão
+    type: 'mercado_livre' as PackageType,
+    audioKey: 'beep_b',
+    description: 'Mercado Livre (prefixo 45)',
+  },
 ];
 
 /**
@@ -104,25 +112,31 @@ setInterval(() => {
  */
 export function normalizeCode(rawCode: string): string {
   if (!rawCode || typeof rawCode !== 'string') {
+    console.debug(`[normalizeCode] ⚠️ INVALID INPUT: ${typeof rawCode} = ${rawCode}`);
     return '';
   }
 
   const trimmed = rawCode.trim().toUpperCase();
 
   if (trimmed.length === 0) {
+    console.debug(`[normalizeCode] ⚠️ EMPTY AFTER TRIM`);
     return '';
   }
 
   // Remove caracteres que não são alfanuméricos
   let normalized = trimmed.replace(/[^0-9A-Z]/g, '');
+  console.debug(`[normalizeCode] STEP1: "${rawCode}" → "${trimmed}" → "${normalized}"`);
 
   // Many scanners prepend an "ID" before numeric ML prefixes (e.g. "ID46...").
   // If the code begins with ID followed by a digit, strip the ID so our
   // prefix patterns work correctly. This does not affect codes like "IDLM..."
   if (/^ID[0-9]/.test(normalized)) {
+    const beforeStrip = normalized;
     normalized = normalized.slice(2);
+    console.debug(`[normalizeCode] STEP2: Removed ID prefix: "${beforeStrip}" → "${normalized}"`);
   }
 
+  console.debug(`[normalizeCode] ✅ FINAL: "${normalized}"`);
   return normalized;
 }
 
@@ -132,11 +146,18 @@ export function normalizeCode(rawCode: string): string {
  */
 export function validateCode(normalizedCode: string): boolean {
   if (!normalizedCode || normalizedCode.length < 4) {
+    console.debug(`[validateCode] ❌ INVALID: length=${normalizedCode?.length}, minRequired=4`);
     return false;
   }
 
   // Apenas alfanuméricos
-  return /^[A-Z0-9]+$/.test(normalizedCode);
+  const valid = /^[A-Z0-9]+$/.test(normalizedCode);
+  if (!valid) {
+    console.debug(`[validateCode] ❌ INVALID CHARS: "${normalizedCode}" (contains non-alphanumeric)`);
+  } else {
+    console.debug(`[validateCode] ✅ VALID: "${normalizedCode}"`);
+  }
+  return valid;
 }
 
 /**
@@ -180,9 +201,8 @@ export function identifyPackage(normalizedCode: string): PackageIdentification {
       normalizedCode.startsWith(pattern.prefix) &&
       normalizedCode.length >= pattern.minLength
     ) {
-      // debug log for matched pattern
       console.debug(
-        `[ScannerIdentification] code "${normalizedCode}" matched prefix "${pattern.prefix}" => ${pattern.type}`
+        `[identifyPackage] ✅ MATCH ENCONTRADO: "${normalizedCode}" matches prefix "${pattern.prefix}" (minLength=${pattern.minLength}) => type="${pattern.type}"`
       );
       result = {
         type: pattern.type,
@@ -193,6 +213,8 @@ export function identifyPackage(normalizedCode: string): PackageIdentification {
       return result;
     }
   }
+
+  console.debug(`[identifyPackage] ❌ NO PREFIX MATCH: "${normalizedCode}" against all ${PREFIX_PATTERNS.length} patterns`);
 
   // PASSO 2: Se passou em validação mas não bateu com prefixo específico,
   // classifica como AVULSO apenas se COMEÇAR COM LETRA (não com dígito de Mercado Livre)
@@ -234,7 +256,7 @@ export function identifyPackage(normalizedCode: string): PackageIdentification {
   identificationCache.set(normalizedCode, result);
 
   if (!result.matched) {
-    console.warn(`[ScannerIdentification] unknown code detected: ${normalizedCode}`);
+    console.warn(`[ScannerIdentification] ⚠️ UNKNOWN CODE: "${normalizedCode}" -> ${result.type}`);
   }
 
   return result;

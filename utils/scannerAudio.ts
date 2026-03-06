@@ -66,27 +66,32 @@ export class ScannerAudioService {
    * Garante que não haverá sobreposição ou múltiplos bipes rápidos
    */
   async playAudio(audioType: ScannerAudioType, forcePlay = false): Promise<void> {
+    console.log(`[ScannerAudioService] 🔊 playAudio requested: type="${audioType}"`);
     const now = Date.now();
     const config = AUDIO_CONFIGS[audioType];
 
     // Prevenção dupla: ignorar se mesmo som tocado recentemente
     if (this.lastPlayedType === audioType && now - this.lastAudioTime < config.minGapMs) {
+      console.log(`[ScannerAudioService] ⏭️ SKIPPED (duplicate too soon): "${audioType}"`);
       return;
     }
 
     // Se estamos tocando algo, enfileira
     if (this.state === AudioState.PLAYING && !forcePlay) {
+      console.log(`[ScannerAudioService] 📋 QUEUED: "${audioType}" (currently playing)`);
       this.audioQueue.push(audioType);
       return;
     }
 
     // Se tempo insuficiente desde último áudio, enfileira
     if (now - this.lastAudioTime < config.minGapMs && !forcePlay) {
+      console.log(`[ScannerAudioService] 📋 QUEUED: "${audioType}" (gap too short)`);
       this.audioQueue.push(audioType);
       return;
     }
 
     // Toca o áudio
+    console.log(`[ScannerAudioService] ▶️ PLAYING: "${audioType}"`);
     await this._playAudioInternal(audioType);
   }
 
@@ -101,18 +106,23 @@ export class ScannerAudioService {
     this.lastPlayedType = audioType;
 
     try {
+      console.log(`[ScannerAudioService] 🎵 Executando áudio: "${audioType}" (duração: ${config.durationMs}ms)`);
       // Mapeia tipo de áudio para função de reprodução
       switch (audioType) {
         case ScannerAudioType.BEEP_A:
+          console.log(`[ScannerAudio] ▶️ BEEP_A (Shopee)`);
           await playBeepA();
           break;
         case ScannerAudioType.BEEP_B:
+          console.log(`[ScannerAudio] ▶️ BEEP_B (Mercado Livre)`);
           await playBeepB();
           break;
         case ScannerAudioType.BEEP_C:
+          console.log(`[ScannerAudio] ▶️ BEEP_C (Avulso)`);
           await playBeepC();
           break;
         case ScannerAudioType.BEEP_ERROR:
+          console.log(`[ScannerAudio] ▶️ BEEP_ERROR`);
           await playError();
           break;
       }
@@ -129,6 +139,7 @@ export class ScannerAudioService {
     if (this.audioQueue.length > 0) {
       const next = this.audioQueue.shift();
       if (next) {
+        console.log(`[ScannerAudio] 📋 Processando próximo da fila: "${next}"`);
         await this.playAudio(next);
       }
     }

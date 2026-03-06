@@ -236,8 +236,13 @@ export default function ScannerView({
   };
 
   const handleScannedCode = (raw: string) => {
+    console.log(`[ScannerView] 📥 ENTRADA: "${raw}"`);
     const code = normalizeScannerCode(raw);
-    if (!code) return;
+    console.log(`[ScannerView] 🔄 NORMALIZADO: "${code}"`);
+    if (!code) {
+      console.log(`[ScannerView] ❌ CÓDIGO VAZIO APÓS NORMALIZAÇÃO`);
+      return;
+    }
 
     const now = Date.now();
     const lastAccepted = lastAcceptedRef.current;
@@ -256,6 +261,7 @@ export default function ScannerView({
 
     const pkgInfo = identifyPackage(code);
     const type = pkgInfo.type;
+    console.log(`[ScannerView] 🎯 IDENTIFICADO: type="${type}", matched=${pkgInfo.matched}, confidence=${pkgInfo.confidence}`);
 
     // check per‑type limit before emitting
     if (!checkLimit(type)) {
@@ -277,7 +283,9 @@ export default function ScannerView({
     const accepted = onScan(pkg);
     if (accepted) {
       lastAcceptedRef.current = { code, at: now };
-      audioService.playAudio(getAudioTypeForPackage(type));
+      const audioType = getAudioTypeForPackage(type);
+      console.log(`[ScannerView] ✅ ACEITO: type="${type}" -> audioType="${audioType}"`);
+      audioService.playAudio(audioType);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       }

@@ -175,7 +175,13 @@ export default function DriversSelector({
                 maxHeight: width > 480 ? 300 : 250,
               }}
             >
-              <ScrollView scrollEnabled={drivers.length > 5} bounces={false}>
+              <ScrollView
+                style={{ maxHeight: width > 480 ? 300 : 250 }}
+                nestedScrollEnabled={true}
+                scrollEnabled={true}
+                showsVerticalScrollIndicator={true}
+                bounces={false}
+              >
                 {drivers.length > 0 ? (
                   drivers.map((driver, index) => {
                     const isSelected = driver.id === selectedDriverId;

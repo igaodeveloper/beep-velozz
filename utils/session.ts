@@ -1,4 +1,5 @@
-import { PackageType, ScannedPackage, Session } from '@/types/session';
+import { PackageType } from '@/types/scanner';
+import { ScannedPackage, Session } from '@/types/session';
 
 // Valores de cada pacote por marketplace
 const PACKAGE_VALUES: Record<PackageType, number> = {

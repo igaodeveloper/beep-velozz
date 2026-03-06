@@ -1,4 +1,4 @@
-export type PackageType = 'shopee' | 'mercado_livre' | 'avulso';
+import { PackageType } from './scanner';
 
 export interface ScannedPackage {
   id: string;

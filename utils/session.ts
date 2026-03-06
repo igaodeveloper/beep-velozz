@@ -14,7 +14,15 @@ export function getPackageValue(type: PackageType): number {
 export function classifyPackage(code: string): PackageType {
   const normalized = (code ?? '').trim();
   const cleaned = normalized.replace(/[^0-9a-zA-Z]/g, '');
-  const upper = cleaned.toUpperCase();
+  let upper = cleaned.toUpperCase();
+
+  // Alguns leitores inserem prefixo "ID" antes do número (ex. "ID46…").
+  // Para evitar classificação errada como avulso, removemos o "ID" quando
+  // é seguido por dígito, espelhando a normalização usada em
+  // scannerIdentification.normalizeCode.
+  if (/^ID(?=\d)/.test(upper)) {
+    upper = upper.slice(2);
+  }
 
   if (upper.startsWith('BR')) {
     return 'shopee';

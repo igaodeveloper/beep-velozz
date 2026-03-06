@@ -39,6 +39,13 @@ export const identificationTests = () => {
   const mlPrefixC = identifyPackage('45987654321');
   console.assert(mlPrefixC.type !== 'mercado_livre', '45 NÃO deve ser Mercado Livre');
 
+  // Teste adicional: prefixo ID46/ID20000 não devem ser classificados como avulso
+  const mlId46 = identifyPackage(normalizeCode('ID46987654321'));
+  console.assert(mlId46.type === 'mercado_livre', 'ID46 deve ser Mercado Livre');
+
+  const mlId20000 = identifyPackage(normalizeCode('ID20000987654321'));
+  console.assert(mlId20000.type === 'mercado_livre', 'ID20000 deve ser Mercado Livre');
+
   // Test 4: Identify Avulso
   const avulsoA = identifyPackage('LM123456789');
   console.assert(avulsoA.type === 'avulso', 'LM deve ser Avulso');

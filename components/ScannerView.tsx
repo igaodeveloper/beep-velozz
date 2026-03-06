@@ -14,7 +14,8 @@ import {
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { ScannedPackage } from '@/types/session';
-import { classifyPackage, packageTypeLabel, packageTypeBadgeColors, generateId, getPackageValue, getSessionMetrics } from '@/utils/session';
+import { packageTypeLabel, packageTypeBadgeColors, generateId, getPackageValue, getSessionMetrics } from '@/utils/session';
+import { normalizeCode as normalizeScannerCode, identifyPackage } from '@/utils/scannerIdentification';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { preloadSounds, unloadSounds } from '@/utils/sound';
 import { ScannerAudioService, ScannerAudioType } from '@/utils/scannerAudio';
@@ -107,29 +108,6 @@ export default function ScannerView({
     return true;
   };
 
-  const normalizeCode = (raw: string) => {
-    const trimmed = (raw ?? '').trim();
-    const upperRaw = trimmed.toUpperCase();
-
-    const extracted =
-      upperRaw.match(/(BR[0-9A-Z]{6,})/)?.[1] ||
-      upperRaw.match(/(20000[0-9]{6,})/)?.[1] ||
-      upperRaw.match(/(46[0-9]{6,})/)?.[1] ||
-      upperRaw.match(/(45[0-9]{6,})/)?.[1] ||
-      upperRaw.match(/(LM[0-9A-Z]{2,})/)?.[1];
-
-    if (extracted) return extracted;
-
-    const cleaned = trimmed.replace(/[^0-9a-zA-Z]/g, '');
-    return cleaned.toUpperCase();
-  };
-
-  const forceTypeByPrefix = (upperCleaned: string) => {
-    if (upperCleaned.startsWith('BR')) return 'shopee' as const;
-    if (upperCleaned.startsWith('20000') || upperCleaned.startsWith('46')) return 'mercado_livre' as const;
-    if (upperCleaned.startsWith('LM')) return 'avulso' as const;
-    return null;
-  };
 
   // Pulse animation for reticle
   useEffect(() => {
@@ -202,7 +180,7 @@ export default function ScannerView({
 
   const handleManualSubmit = () => {
     setManualError(null);
-    const code = normalizeCode(manualCode);
+    const code = normalizeScannerCode(manualCode);
     if (!code) {
       setManualError('Código inválido');
       return;
@@ -219,8 +197,8 @@ export default function ScannerView({
       return;
     }
 
-    const forced = forceTypeByPrefix(code);
-    const type = forced ?? classifyPackage(code);
+    const pkgInfo = identifyPackage(code);
+    const type = pkgInfo.type;
 
     // check limit
     if (!checkLimit(type)) {
@@ -258,7 +236,7 @@ export default function ScannerView({
   };
 
   const handleScannedCode = (raw: string) => {
-    const code = normalizeCode(raw);
+    const code = normalizeScannerCode(raw);
     if (!code) return;
 
     const now = Date.now();
@@ -276,8 +254,8 @@ export default function ScannerView({
       return;
     }
 
-    const forced = forceTypeByPrefix(code);
-    const type = forced ?? classifyPackage(code);
+    const pkgInfo = identifyPackage(code);
+    const type = pkgInfo.type;
 
     // check per‑type limit before emitting
     if (!checkLimit(type)) {

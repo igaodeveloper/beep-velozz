@@ -113,9 +113,16 @@ export default function MyScanner() {
 - `[0-9]{13}` - EAN-13 com validação de checksum
 
 ### Mercado Livre
-- `20000[0-9]{6,}` - Prefixo 20000 + EAN-13
-- `46[0-9]{8,}` - Prefixo 46 + EAN-13
-- `[0-9]{13}` - EAN-13 genérico
+- `20000[0-9]{6,}` - Prefixo 20000 + EAN-13 (aceito mesmo com checksum inválido)
+- `46[0-9]{8,}` - Prefixo 46 + EAN-13 (aceito mesmo com checksum inválido)
+
+> **Nota**: a validação de checksum EAN-13 foi removida para Mercado Livre para evitar
+> rejeições de códigos válidos que possam ter checksum incorreto. O foco é no prefixo.
+
+### Funções Auxiliares
+- `normalizeMercadoLivreCode(raw)` – normaliza e assegura o prefixo exigido.
+- `analyzeMercadoLivreCode(raw)` – análise avançada com checksum e flags;
+  retorna `confidence='rejected'` para entradas fora de 20000/46.
 
 ### Avulso
 - `LM[0-9A-Z]{2,}` - Códigos internos (máxima prioridade)

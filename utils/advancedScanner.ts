@@ -131,7 +131,30 @@ const ADVANCED_PATTERNS: CodePattern[] = [
     priority: 80,
   },
 
-  // MERCADO LIVRE - Múltiplos prefixos
+  // MERCADO LIVRE - Múltiplos prefixos (sem validação de checksum para evitar rejeições)
+  {
+    name: 'Mercado Livre 20000',
+    regex: /^20000[0-9]{6,}$/,
+    minLength: 11,
+    maxLength: 20,
+    // checksumValidator removido para aceitar códigos mesmo com checksum inválido
+    marketplace: 'Mercado Livre',
+    type: 'mercado_livre',
+    priority: 85,
+  },
+  {
+    name: 'Mercado Livre 46',
+    regex: /^46[0-9]{8,}$/,
+    minLength: 10,
+    maxLength: 20,
+    // checksumValidator removido
+    marketplace: 'Mercado Livre',
+    type: 'mercado_livre',
+    priority: 85,
+  },
+  // Nota: Mercado Livre agora aceita **apenas** códigos que começam com
+  // 20000 ou 46. A lógica anterior de EAN‑13 genérico foi removida para evitar
+  // reconhecimento acidental de outros códigos numéricos.
   {
     name: 'Mercado Livre 20000',
     regex: /^20000[0-9]{6,}$/,
@@ -152,18 +175,8 @@ const ADVANCED_PATTERNS: CodePattern[] = [
     type: 'mercado_livre',
     priority: 85,
   },
-  {
-    name: 'Mercado Livre EAN-13',
-    regex: /^[0-9]{13}$/,
-    minLength: 13,
-    maxLength: 13,
-    checksumValidator: code => ChecksumValidators.validateEAN13(code),
-    marketplace: 'Mercado Livre',
-    type: 'mercado_livre',
-    priority: 75,
-  },
 
-  // Fallback genérico
+  // Fallback genérico (mantém para outros usos, mas não será aplicado como ML)
   {
     name: 'Generic Alphanumeric',
     regex: /^[A-Z0-9]{4,}$/,
@@ -179,21 +192,103 @@ const ADVANCED_PATTERNS: CodePattern[] = [
  * Normaliza código com extração precisa
  */
 export function advancedNormalizeCode(rawCode: string): string {
+  console.debug(`[advancedNormalizeCode] Input: "${rawCode}"`);
   if (!rawCode || typeof rawCode !== 'string') return '';
 
-  const trimmed = rawCode.trim().toUpperCase();
+  // extract id from JSON payload if present
+  let input = rawCode;
+  if (input.startsWith('{') && input.endsWith('}')) {
+    try {
+      const obj = JSON.parse(input);
+      if (obj && typeof obj.id === 'string') {
+        input = obj.id;
+        console.debug(`[advancedNormalizeCode] extracted id from JSON: "${input}"`);
+      }
+    } catch {
+      // ignore invalid JSON
+    }
+  }
+
+  const trimmed = input.trim().toUpperCase();
   if (trimmed.length === 0) return '';
 
   // Remove espaços extras e caracteres de controle
-  const cleaned = trimmed.replace(/[\s\0\t\r\n]/g, '');
+  const cleaned = trimmed.replace(/[\\s\\0\\t\\r\\n]/g, '');
+  console.debug(`[advancedNormalizeCode] Cleaned: "${cleaned}"`);
 
   // Tenta extrair padrões conhecidos em ordem de prioridade
   for (const pattern of ADVANCED_PATTERNS) {
     const extracted = cleaned.match(pattern.regex)?.[0];
-    if (extracted) return extracted;
+    if (extracted) {
+      console.debug(`[advancedNormalizeCode] Matched pattern "${pattern.name}": "${extracted}"`);
+      return extracted;
+    }
   }
 
+  console.debug(`[advancedNormalizeCode] No pattern matched, returning cleaned: "${cleaned}"`);
   return cleaned;
+}
+
+/**
+ * Functions specialized for Mercado Livre packages. The requirement is strict
+ * – only codes that start with 20000 or 46 are considered valid. This
+ * isolates Mercado Livre scanning from the more general engine and prevents
+ * accidental acceptance of arbitrary EAN‑13 numbers.
+ */
+
+export function normalizeMercadoLivreCode(rawCode: string): string {
+  console.debug(`[normalizeMercadoLivreCode] Input: "${rawCode}"`);
+  const normalized = advancedNormalizeCode(rawCode);
+  console.debug(`[normalizeMercadoLivreCode] Advanced normalized: "${normalized}"`);
+  if (/^(20000|46)/.test(normalized)) {
+    console.debug(`[normalizeMercadoLivreCode] Accepted prefix: "${normalized}"`);
+    return normalized;
+  }
+  console.debug(`[normalizeMercadoLivreCode] Rejected: no valid prefix in "${normalized}"`);
+  // Empty string signals invalid Mercadolivre format
+  return '';
+}
+
+export function analyzeMercadoLivreCode(rawCode: string): AdvancedScanAnalysis {
+  console.debug(`[analyzeMercadoLivreCode] Input: "${rawCode}"`);
+  const normalized = normalizeMercadoLivreCode(rawCode);
+  console.debug(`[analyzeMercadoLivreCode] Normalized: "${normalized}"`);
+  const raw_analysis = {
+    length: normalized.length,
+    has_only_alphanumeric: /^[A-Z0-9]+$/.test(normalized),
+    prefix: extractCodePrefix(normalized),
+    contains_special_chars: /[^A-Z0-9]/.test(normalized),
+    looks_like_barcode: /^[0-9]{8,14}$/.test(normalized),
+    matches_multiple_patterns: 0,
+  };
+
+  if (!normalized) {
+    console.debug(`[analyzeMercadoLivreCode] Rejected: empty normalized`);
+    return {
+      code: rawCode,
+      normalized,
+      type: 'unknown',
+      confidence: 'rejected',
+      confidence_score: 0,
+      is_suspicious: true,
+      anomaly_flags: ['prefix_invalido_mercadolivre'],
+      raw_analysis,
+    };
+  }
+
+  console.debug(`[analyzeMercadoLivreCode] Accepted: "${normalized}"`);
+  // Continue with analysis...
+
+  // Use the generic analysis but require marketplace to be Mercado Livre
+  const result = analyzeCodeAdvanced(normalized);
+  if (result.type !== 'mercado_livre') {
+    result.anomaly_flags.push('não_é_mercado_livre');
+    result.is_suspicious = true;
+    result.confidence = 'low';
+    result.confidence_score = Math.min(result.confidence_score, 20);
+  }
+
+  return result;
 }
 
 /**

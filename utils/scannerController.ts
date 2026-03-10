@@ -19,6 +19,9 @@ import {
   isDefinitelyType,
   getConfidenceScore,
 } from '@/utils/scannerIdentification';
+
+// used for additional Mercado Livre validation rules
+import { analyzeMercadoLivreCode } from '@/utils/advancedScanner';
 import { ScannerAudioService, ScannerAudioType, getScannerAudioService } from '@/utils/scannerAudio';
 import { ScanLimitController } from '@/utils/scannerLimitController';
 import * as Haptics from 'expo-haptics';
@@ -161,6 +164,33 @@ export class IndustrialScannerController {
       // 5. Identifica tipo com confiança
       const identification = identifyPackage(normalizedCode);
 
+      // additional verification for Mercado Livre codes using advanced engine
+      if (identification.type === 'mercado_livre') {
+        console.debug(`[processScan] Processing Mercado Livre: ${normalizedCode}`);
+        const adv = analyzeMercadoLivreCode(normalizedCode);
+        console.debug(`[processScan] Advanced analysis: confidence=${adv.confidence}, anomaly_flags=${adv.anomaly_flags.join(',')}`);
+        // if advanced analysis rejects it, treat as invalid
+        if (adv.confidence === 'rejected') {
+          console.debug(
+            `[processScan] advancedMercadoLivreCode rejected ${normalizedCode}`
+          );
+          await this._playErrorAudio();
+          this._logAudit(rawCode, normalizedCode, {
+            success: false,
+            code: normalizedCode,
+            reason: 'invalid_prefix_ml',
+            timestamp: startTime,
+          }, 0);
+          return {
+            success: false,
+            code: normalizedCode,
+            reason: 'invalid',
+            timestamp: startTime,
+          };
+        }
+        console.debug(`[processScan] Mercado Livre accepted: ${normalizedCode}`);
+      }
+
       // 5b. Se um conjunto de códigos válidos foi definido, rejeita
       // aquilo que não pertence ao motorista atual.
       if (this.allowedCodes && !this.allowedCodes.has(normalizedCode)) {
@@ -179,7 +209,15 @@ export class IndustrialScannerController {
         };
       }
       const type: PackageType = identification.type;
-      const confidence = getConfidenceScore(normalizedCode, type);
+      // base confidence based on prefix identification
+      let confidence = getConfidenceScore(normalizedCode, type);
+      // augment confidence with advanced ML analysis if relevant
+      if (type === 'mercado_livre') {
+        const adv = analyzeMercadoLivreCode(normalizedCode);
+        // adv.confidence_score is 0-100, convert to 0-1
+        const advScore = Math.min(Math.max(adv.confidence_score / 100, 0), 1);
+        confidence = Math.max(confidence, advScore);
+      }
 
       // 6. Verifica duplicação inteligente
       const duplicateCheckResult = this._checkDuplicateAdvanced(normalizedCode, type);

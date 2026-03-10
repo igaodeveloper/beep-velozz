@@ -10,7 +10,7 @@
 
 ✅ Identificação automática por prefixo
    ├─ Shopee (BR)
-   ├─ Mercado Livre (20000, 46, 45)
+   ├─ Mercado Livre (20000, 46)
    ├─ Avulso (LM, 14)
    ├─ Case insensitive
    ├─ Baseada em startsWith

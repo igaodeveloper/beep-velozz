@@ -188,7 +188,7 @@ Testes unitários completos:
 ```
 IMPLEMENTADO:
 ✓ Shopee: BR
-✓ Mercado Livre: 20000, 46, 45
+✓ Mercado Livre: 20000, 46 (45 removido)
 ✓ Avulso: LM, 14
 ✓ Case insensitive
 ✓ Baseada em startsWith

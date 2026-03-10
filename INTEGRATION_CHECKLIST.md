@@ -49,7 +49,7 @@ const result = identifyPackage('BR123456');
 // deve retornar: { type: 'shopee', matched: true, confidence: 'high' }
 ```
 - [ ] Identifica Shopee (BR)
-- [ ] Identifica Mercado Livre (20000, 46, 45)
+- [ ] Identifica Mercado Livre (20000, 46)
 - [ ] Identifica Avulso (LM, 14)
 - [ ] Retorna unknown para códigos desconhecidos
 

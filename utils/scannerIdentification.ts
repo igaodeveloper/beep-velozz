@@ -11,6 +11,10 @@
  * 6. ID46 ou 46 → MERCADO LIVRE (qualquer comprimento)
  * 7. Qualquer outro com 4+ caracteres → AVULSO (fallback)
  * 8. Menos de 4 caracteres → INVÁLIDO
+ *
+ * Observação: a partir desta versão só aceitamos prefixos 20000 ou 46 para
+ * Mercado Livre; qualquer outro número iniciando por 4x, incluindo "45", não
+ * será tratado como Mercado Livre e cairá no fallback.
  */
 
 import {
@@ -80,14 +84,7 @@ const PREFIX_PATTERNS = [
     audioKey: 'beep_b',
     description: 'Mercado Livre (prefixo 46)',
   },
-  // Mercado Livre - Prefixo 45
-  {
-    prefix: '45',
-    minLength: 2, // apenas 45, qualquer extensão
-    type: 'mercado_livre' as PackageType,
-    audioKey: 'beep_b',
-    description: 'Mercado Livre (prefixo 45)',
-  },
+  // [REMOVIDO] O prefixo 45 foi excluído por não ser mais suportado.
 ];
 
 /**
@@ -116,7 +113,22 @@ export function normalizeCode(rawCode: string): string {
     return '';
   }
 
-  const trimmed = rawCode.trim().toUpperCase();
+  // Extrair ID de payload JSON, caso o scanner retorne uma string serializada
+  // que contenha {"id":"..."}. Isso resolve o caso observado no log.
+  let input = rawCode;
+  if (input.startsWith('{') && input.endsWith('}')) {
+    try {
+      const obj = JSON.parse(input);
+      if (obj && typeof obj.id === 'string') {
+        input = obj.id;
+        console.debug(`[normalizeCode] extract id from JSON → ${input}`);
+      }
+    } catch {
+      // não é JSON válido; seguir com rawCode original
+    }
+  }
+
+  const trimmed = input.trim().toUpperCase();
 
   if (trimmed.length === 0) {
     console.debug(`[normalizeCode] ⚠️ EMPTY AFTER TRIM`);

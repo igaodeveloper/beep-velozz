@@ -14,6 +14,16 @@ import {
   getPackageTypeLabel,
 } from '@/utils/scannerIdentification';
 
+// constant shared with parser and API config
+import { PEDIDO_TYPES } from '@/config/apiConfig';
+import { ScannerParser } from '@/src/utils/scannerParser';
+
+// helpers introduced for Mercado Livre advanced scanning
+import {
+  normalizeMercadoLivreCode,
+  analyzeMercadoLivreCode,
+} from '@/utils/advancedScanner';
+
 export const identificationTests = () => {
   console.log('🧪 TESTES DE IDENTIFICAÇÃO');
 
@@ -29,6 +39,50 @@ export const identificationTests = () => {
   console.assert(shopee.matched === true, 'Deve ter matched');
   console.assert(shopee.confidence === 'high', 'Confiança deve ser alta');
 
+  // Test 2.2: Código embutido em JSON deveria ser extraído automaticamente
+  const payload = '{"id":"46621440720","sender_id":14937436}';
+  const jsonNorm = normalizeCode(payload);
+  console.assert(jsonNorm === '46621440720', 'normalizeCode deve extrair id de JSON');
+  const jsonId = identifyPackage(payload);
+  console.assert(jsonId.type === 'mercado_livre', 'JSON com id 46xx deve ser Mercado Livre');
+  const jsonParse = ScannerParser.parseCode(payload);
+  console.assert(jsonParse.tipo === PEDIDO_TYPES.MERCADO_LIVRE, 'ScannerParser deve extrair id de JSON e classificar ML');
+
+  // Test 2.1: Parser básico (ScannerParser) também deve reconhecer Mercado Livre
+  const sp1 = ScannerParser.parseCode('20000987654321');
+  console.assert(
+    sp1.tipo === PEDIDO_TYPES.MERCADO_LIVRE,
+    'ScannerParser deve classificar prefixo 20000 como Mercado Livre'
+  );
+  const sp2 = ScannerParser.parseCode('46987654321');
+  console.assert(
+    sp2.tipo === PEDIDO_TYPES.MERCADO_LIVRE,
+    'ScannerParser deve classificar prefixo 46 como Mercado Livre'
+  );
+  const sp3 = ScannerParser.parseCode('45987654321');
+  console.assert(
+    sp3.tipo !== PEDIDO_TYPES.MERCADO_LIVRE,
+    'ScannerParser não deve classificar prefixo 45 como Mercado Livre'
+  );
+
+  // Test 2b: Advanced Mercado Livre analysis helper
+  // We directly exercise normalizeMercadoLivreCode/analyzeMercadoLivreCode
+  // to ensure rejects other prefixes and only accepts 20000/46.
+  import { normalizeMercadoLivreCode, analyzeMercadoLivreCode } from '@/utils/advancedScanner';
+  const advGood1 = normalizeMercadoLivreCode('20000987654321');
+  console.assert(advGood1 === '20000987654321', 'Normaliza 20000 corretamente');
+  const advGood2 = normalizeMercadoLivreCode('46987654321');
+  console.assert(advGood2 === '46987654321', 'Normaliza 46 corretamente');
+  const advJson = normalizeMercadoLivreCode('{"id":"20000987654321"}');
+  console.assert(advJson === '20000987654321', 'normalizeMercadoLivreCode deve extrair id de JSON');
+
+  const advBad = normalizeMercadoLivreCode('45987654321');
+  console.assert(advBad === '', 'Prefixo 45 deve ser rejeitado');
+  const analysisBad = analyzeMercadoLivreCode('45987654321');
+  console.assert(analysisBad.confidence === 'rejected', 'Análise deve rejeitar 45 prefix');
+  const analysisOk = analyzeMercadoLivreCode('20000987654321');
+  console.assert(analysisOk.type === 'mercado_livre', 'Análise deve classificar ML');
+
   // Test 3: Identify Mercado Livre
   const mlPrefixA = identifyPackage('20000987654321');
   console.assert(mlPrefixA.type === 'mercado_livre', '20000 deve ser Mercado Livre');
@@ -36,8 +90,6 @@ export const identificationTests = () => {
   const mlPrefixB = identifyPackage('46987654321');
   console.assert(mlPrefixB.type === 'mercado_livre', '46 deve ser Mercado Livre');
 
-  const mlPrefixC = identifyPackage('45987654321');
-  console.assert(mlPrefixC.type === 'mercado_livre', '45 deve ser Mercado Livre');
 
   // Teste adicional: prefixo ID46/ID20000 não devem ser classificados como avulso
   const mlId46 = identifyPackage(normalizeCode('ID46987654321'));
@@ -46,9 +98,6 @@ export const identificationTests = () => {
   const mlId20000 = identifyPackage(normalizeCode('ID20000987654321'));
   console.assert(mlId20000.type === 'mercado_livre', 'ID20000 deve ser Mercado Livre');
 
-  // Teste adicional: prefixo 45
-  const ml45 = identifyPackage('45987654321');
-  console.assert(ml45.type === 'mercado_livre', '45 deve ser Mercado Livre');
 
   // Test 4: Identify Avulso
   const avulsoA = identifyPackage('LM123456789');
@@ -57,10 +106,9 @@ export const identificationTests = () => {
   const avulsoB = identifyPackage('14987654321');
   console.assert(avulsoB.type === 'avulso', '14 deve ser Avulso');
 
-  // Regression test: código avulso que contém sequência de "45" ou "46" internamente
+  // Regression test: código avulso que contém sequência de "46" internamente
   // anteriormente a normalização poderia extrair o segmento errado e classificá-lo
-  // como Mercado Livre. Garantimos agora ankering em normalizeCode.
-  const trickyRaw = 'LM459876123';
+  // como Mercado Livre. Garantimos agora ankering em normalizeCode.  const trickyRaw = 'LM459876123';
   const trickyNorm = normalizeCode(trickyRaw);
   console.assert(
     trickyNorm.startsWith('LM'),
@@ -163,6 +211,12 @@ export const controllerTests = async () => {
   // Test 1: Initial state
   console.assert(controller.getState() === ScannerState.ACTIVE, 'Estado inicial deve ser ACTIVE');
   console.assert(controller.isLimitReached() === false, 'Não deve ter atingido limite');
+
+  // Test 1.1: JSON payload scan should extract ID
+  const jsonScan = await controller.processScan('{"id":"46900000000"}');
+  console.assert(jsonScan.success === true, 'JSON scan deve ter sucesso');
+  console.assert(jsonScan.type === 'mercado_livre', 'Tipo deve ser Mercado Livre');
+  console.assert(jsonScan.code === '46900000000', 'Código retornado deve ser valor do id');
 
   // Test 2: Valid scan
   const result1 = await controller.processScan('BR123456');

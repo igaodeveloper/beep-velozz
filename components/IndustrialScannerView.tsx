@@ -150,10 +150,29 @@ export default function IndustrialScannerView({
 
   // Handlers
   const handleBarcode = async (event: any) => {
-    if (barcodeLocked || scanner.state === ScannerState.LIMIT_REACHED) return;
+    console.debug(`[IndustrialScannerView] Barcode scanned: "${event?.data}"`);
+    if (barcodeLocked || scanner.state === ScannerState.LIMIT_REACHED) {
+      console.debug(`[IndustrialScannerView] Ignored: locked=${barcodeLocked}, limitReached=${scanner.state === ScannerState.LIMIT_REACHED}`);
+      return;
+    }
+
+    // attempt to extract id field if payload is JSON
+    let scanned = event?.data || '';
+    if (scanned.startsWith('{') && scanned.endsWith('}')) {
+      try {
+        const obj = JSON.parse(scanned);
+        if (obj && typeof obj.id === 'string') {
+          console.debug(`[IndustrialScannerView] extracted id from JSON payload: ${obj.id}`);
+          scanned = obj.id;
+        }
+      } catch {
+        // ignore
+      }
+    }
 
     setBarcodeLocked(true);
-    const result = await scanner.processScan(event?.data || '');
+    const result = await scanner.processScan(scanned);
+    console.debug(`[IndustrialScannerView] Process result: success=${result.success}, reason=${result.reason}, type=${result.type}`);
 
     if (result.success) {
       onScanned?.(result.code, result.type || 'unknown');

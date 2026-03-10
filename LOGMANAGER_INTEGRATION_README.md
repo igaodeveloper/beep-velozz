@@ -121,7 +121,10 @@ O `ScannerParser` identifica automaticamente o tipo de código escaneado:
 ### Padrões Reconhecidos
 
 - **Shopee**: `SPXBR12345678` → `SHOPEE`
-- **Mercado Livre**: `MLB123456789` → `MERCADO_LIVRE`
+- **Mercado Livre**: 
+  - prefixo tradicional `MLB123456789`
+  - códigos numéricos iniciando com `20000...` ou `46...` (ex.: `20000987654321`, `46987654321`)
+  → `MERCADO_LIVRE`
 - **LogManager**: `BR1234567890` → `LOGMANAGER`
 - **Avulsos**: Códigos alfanuméricos genéricos → `AVULSO`
 

@@ -189,8 +189,6 @@ function MyScanner() {
 ## 🧪 Testes
 
 ```typescript
-import { runAllTests } from '@/SCANNER_INDUSTRIAL_TESTS';
-await runAllTests(); // ✅ Tudo passa
 ```
 
 ---

@@ -172,7 +172,6 @@ Diagramas ASCII com:
 6. Monitoramento em tempo real
 7. Migração do sistema antigo
 
-#### 5. **SCANNER_INDUSTRIAL_TESTS.ts** ✅
 Testes unitários completos:
 - Testes de identificação
 - Testes de limite
@@ -354,8 +353,6 @@ const result = await controller.processScan('BR123456');
 
 Execute para validar:
 ```typescript
-import { runAllTests } from '@/SCANNER_INDUSTRIAL_TESTS';
-await runAllTests(); // ✅ Todos passam
 ```
 
 ---
@@ -401,7 +398,6 @@ await runAllTests(); // ✅ Todos passam
 - **Documentação**: Veja [SCANNER_INDUSTRIAL_GUIDE.md](SCANNER_INDUSTRIAL_GUIDE.md)
 - **Exemplos**: Veja [SCANNER_INDUSTRIAL_EXAMPLES.ts](SCANNER_INDUSTRIAL_EXAMPLES.ts)
 - **Arquitetura**: Veja [SCANNER_INDUSTRIAL_ARCHITECTURE.md](SCANNER_INDUSTRIAL_ARCHITECTURE.md)
-- **Testes**: Execute [SCANNER_INDUSTRIAL_TESTS.ts](SCANNER_INDUSTRIAL_TESTS.ts)
 
 ---
 

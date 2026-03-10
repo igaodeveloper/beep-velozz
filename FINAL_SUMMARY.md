@@ -112,7 +112,6 @@
 ✅ SCANNER_INDUSTRIAL_EXAMPLES.ts
    └─ 7 exemplos práticos de uso
 
-✅ SCANNER_INDUSTRIAL_TESTS.ts
    └─ Testes unitários completos
 
 ✅ SCANNER_CHEATSHEET.md
@@ -325,7 +324,6 @@ SUMMARY:             ✅ Resumo visual
 | SCANNER_INDUSTRIAL_GUIDE.md | Documentação completa | Desenvolvedor |
 | SCANNER_INDUSTRIAL_ARCHITECTURE.md | Diagramas e fluxos | Arquiteto |
 | SCANNER_INDUSTRIAL_EXAMPLES.ts | Código de exemplo | Desenvolvedor |
-| SCANNER_INDUSTRIAL_TESTS.ts | Testes unitários | QA |
 | SCANNER_CHEATSHEET.md | Referência rápida | Desenvolvedor |
 | INTEGRATION_CHECKLIST.md | Integração passo a passo | DevOps |
 | INTEGRATION_EXAMPLE.tsx | Integração prática | Desenvolvedor |

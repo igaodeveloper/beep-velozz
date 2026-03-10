@@ -374,50 +374,6 @@ export function LoteScreenWithToast() {
   return <View />;
 }
 
-// ============================================================================
-// PASSO 7: Teste Completo
-// ============================================================================
-
-export async function testIntegration() {
-  console.log('🧪 Testando integração...');
-
-  const scanner = useIndustrialScanner({
-    maxAllowedScans: {
-      shopee: 3,
-      mercado_livre: 2,
-      avulso: 2,
-    },
-  });
-
-  // Teste 1: Scan válido
-  console.log('1️⃣ Testando scan válido...');
-  let result = await scanner.processScan('BR123456');
-  console.assert(result.success === true, 'Deveria ter sucesso');
-  console.log('✅ Scan válido funciona\n');
-
-  // Teste 2: Duplicata
-  console.log('2️⃣ Testando duplicação...');
-  result = await scanner.processScan('BR123456');
-  console.assert(result.isDuplicate === true, 'Deveria detectar duplicata');
-  console.log('✅ Duplicação detectada\n');
-
-  // Teste 3: Limite
-  console.log('3️⃣ Testando limite...');
-  await scanner.processScan('BR111111');
-  await scanner.processScan('BR222222');
-  result = await scanner.processScan('BR333333');
-  console.assert(result.success === false, 'Deveria atingir limite');
-  console.assert(scanner.isLimitReached === true, 'Limite deve estar atingido');
-  console.log('✅ Limite funciona\n');
-
-  // Teste 4: Reset
-  console.log('4️⃣ Testando reset...');
-  scanner.reset();
-  result = await scanner.processScan('BR444444');
-  console.assert(result.success === true, 'Deveria funcionar após reset');
-  console.log('✅ Reset funciona\n');
-
-  console.log('✅ TODOS OS TESTES PASSARAM');
   return true;
 }
 

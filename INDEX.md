@@ -89,14 +89,6 @@
 - Passo 7: Teste completo
 - **Linguagem: TSX (React)**
 
-### 3. [SCANNER_INDUSTRIAL_TESTS.ts](SCANNER_INDUSTRIAL_TESTS.ts) 🧪
-**Testes unitários completos**
-- Testes de identificação
-- Testes de limite
-- Testes de controller
-- Testes de áudio
-- Benchmarks (1000 scans)
-- **Linguagem: TypeScript**
 
 ---
 
@@ -240,7 +232,6 @@ Total: ~80 minutos
 ```
 1. SCANNER_INDUSTRIAL_GUIDE.md - Prevenção de Erros (10 min)
 2. INTEGRATION_CHECKLIST.md (30 min)
-3. SCANNER_INDUSTRIAL_TESTS.ts (20 min)
 4. Rodar testes localmente (15 min)
 Total: ~75 minutos
 ```
@@ -270,7 +261,6 @@ beep-velozz/
 ├── 📄 SCANNER_INDUSTRIAL_ARCHITECTURE.md    # Arquitetura
 ├── 📄 SCANNER_CHEATSHEET.md                 # Referência rápida
 ├── 📄 SCANNER_INDUSTRIAL_EXAMPLES.ts        # Exemplos
-├── 📄 SCANNER_INDUSTRIAL_TESTS.ts           # Testes
 ├── 📄 INTEGRATION_CHECKLIST.md              # Checklist
 ├── 📄 INTEGRATION_EXAMPLE.tsx               # Integração prática
 ├── 📄 IMPLEMENTATION_SUMMARY.md             # Sumário de implementação
@@ -299,7 +289,6 @@ beep-velozz/
 → [SCANNER_INDUSTRIAL_EXAMPLES.ts](SCANNER_INDUSTRIAL_EXAMPLES.ts)
 
 **Preciso testar**
-→ [SCANNER_INDUSTRIAL_TESTS.ts](SCANNER_INDUSTRIAL_TESTS.ts)
 
 **Preciso documentar**
 → [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
@@ -344,7 +333,6 @@ beep-velozz/
 | Como funciona? | [SCANNER_INDUSTRIAL_GUIDE.md](SCANNER_INDUSTRIAL_GUIDE.md) |
 | Qual a arquitetura? | [SCANNER_INDUSTRIAL_ARCHITECTURE.md](SCANNER_INDUSTRIAL_ARCHITECTURE.md) |
 | Exemplos? | [SCANNER_INDUSTRIAL_EXAMPLES.ts](SCANNER_INDUSTRIAL_EXAMPLES.ts) |
-| Testes? | [SCANNER_INDUSTRIAL_TESTS.ts](SCANNER_INDUSTRIAL_TESTS.ts) |
 | Erro? | [SCANNER_INDUSTRIAL_GUIDE.md](SCANNER_INDUSTRIAL_GUIDE.md#-troubleshooting) |
 | Implementação? | [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) |
 

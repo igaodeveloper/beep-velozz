@@ -239,7 +239,6 @@
 - **Público**: Desenvolvedores
 - **Como usar**: Copy & paste exemplos
 
-### SCANNER_INDUSTRIAL_TESTS.ts
 - **Descrição**: Testes unitários e benchmarks
 - **Testes**:
   - Testes de identificação (7 testes)

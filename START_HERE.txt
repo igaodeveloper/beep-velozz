@@ -44,7 +44,6 @@
  ✓ SCANNER_INDUSTRIAL_GUIDE.md           - Guia completo
  ✓ SCANNER_INDUSTRIAL_ARCHITECTURE.md    - Diagramas ASCII
  ✓ SCANNER_INDUSTRIAL_EXAMPLES.ts        - 7 exemplos práticos
- ✓ SCANNER_INDUSTRIAL_TESTS.ts           - Testes unitários
  ✓ SCANNER_CHEATSHEET.md                 - Referência rápida
  ✓ INTEGRATION_CHECKLIST.md              - Checklist passo a passo
  ✓ INTEGRATION_EXAMPLE.tsx               - Integração real

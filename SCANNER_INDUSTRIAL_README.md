@@ -56,7 +56,6 @@ project/
 ├── SCANNER_INDUSTRIAL_GUIDE.md              # Documentação completa
 ├── SCANNER_INDUSTRIAL_ARCHITECTURE.md       # Diagramas e fluxos
 ├── SCANNER_INDUSTRIAL_EXAMPLES.ts           # Exemplos de uso
-└── SCANNER_INDUSTRIAL_TESTS.ts              # Testes unitários
 
 ```
 
@@ -239,7 +238,6 @@ if (hasLimitReached(type)) {
 - **[SCANNER_INDUSTRIAL_GUIDE.md](SCANNER_INDUSTRIAL_GUIDE.md)** - Guia completo de uso
 - **[SCANNER_INDUSTRIAL_ARCHITECTURE.md](SCANNER_INDUSTRIAL_ARCHITECTURE.md)** - Diagramas e arquitetura
 - **[SCANNER_INDUSTRIAL_EXAMPLES.ts](SCANNER_INDUSTRIAL_EXAMPLES.ts)** - Exemplos de código
-- **[SCANNER_INDUSTRIAL_TESTS.ts](SCANNER_INDUSTRIAL_TESTS.ts)** - Testes unitários
 
 ---
 

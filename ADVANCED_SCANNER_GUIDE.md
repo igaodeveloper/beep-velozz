@@ -119,6 +119,11 @@ export default function MyScanner() {
 > **Nota**: a validação de checksum EAN-13 foi removida para Mercado Livre para evitar
 > rejeições de códigos válidos que possam ter checksum incorreto. O foco é no prefixo.
 
+> **QR/URL**: o motor de normalização agora detecta e extrai automaticamente o
+> trecho numérico de links e QR codes (por exemplo `https://.../20000987654321`)
+> para que os pacotes ML sejam lidos corretamente mesmo quando o scanner retorna
+> uma URL inteira.
+
 ### Funções Auxiliares
 - `normalizeMercadoLivreCode(raw)` – normaliza e assegura o prefixo exigido.
 - `analyzeMercadoLivreCode(raw)` – análise avançada com checksum e flags;

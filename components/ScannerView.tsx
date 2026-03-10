@@ -179,8 +179,11 @@ export default function ScannerView({
   }, [permission, requestPermission]);
 
   const handleManualSubmit = () => {
+    console.log(`[ScannerView] 🎯 MANUAL SUBMIT TRIGGERED`);
     setManualError(null);
+    console.log(`[ScannerView] 📝 MANUAL INPUT: "${manualCode}"`);
     const code = normalizeScannerCode(manualCode);
+    console.log(`[ScannerView] 🔄 MANUAL NORMALIZADO: "${code}"`);
     if (!code) {
       setManualError('Código inválido');
       return;
@@ -198,6 +201,7 @@ export default function ScannerView({
     }
 
     const pkgInfo = identifyPackage(code);
+    console.log(`[ScannerView] 🎯 MANUAL IDENTIFICADO: type="${pkgInfo.type}", matched=${pkgInfo.matched}, confidence=${pkgInfo.confidence}`);
     const type = pkgInfo.type;
 
     // check limit
@@ -218,14 +222,19 @@ export default function ScannerView({
       value: getPackageValue(type),
       scannedAt: new Date().toISOString(),
     };
+    console.log(`[ScannerView] 📦 MANUAL PACOTE CRIADO: ${JSON.stringify(pkg)}`);
     const accepted = onScan(pkg);
+    console.log(`[ScannerView] ✅ MANUAL ACEITO: ${accepted}`);
     if (accepted) {
       lastAcceptedRef.current = { code, at: Date.now() };
-      audioService.playAudio(getAudioTypeForPackage(type));
+      const audioType = getAudioTypeForPackage(type);
+      console.log(`[ScannerView] 🔊 MANUAL ÁUDIO: type="${type}" -> audioType="${audioType}"`);
+      audioService.playAudio(audioType);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       }
     } else {
+      console.log(`[ScannerView] ❌ MANUAL REJEITADO: onScan retornou false`);
       audioService.playAudio(ScannerAudioType.BEEP_ERROR);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});

@@ -131,13 +131,21 @@ const ADVANCED_PATTERNS: CodePattern[] = [
     priority: 80,
   },
 
-  // MERCADO LIVRE - Múltiplos prefixos (sem validação de checksum para evitar rejeições)
+  // MERCADO LIVRE - Múltiplos prefixos
+  {
+    name: 'Mercado Livre MLB',
+    regex: /^MLB[0-9A-Z]{2,}$/,
+    minLength: 5,
+    maxLength: 20,
+    marketplace: 'Mercado Livre',
+    type: 'mercado_livre',
+    priority: 87,
+  },
   {
     name: 'Mercado Livre 20000',
     regex: /^20000[0-9]{6,}$/,
     minLength: 11,
     maxLength: 20,
-    // checksumValidator removido para aceitar códigos mesmo com checksum inválido
     marketplace: 'Mercado Livre',
     type: 'mercado_livre',
     priority: 85,
@@ -147,30 +155,6 @@ const ADVANCED_PATTERNS: CodePattern[] = [
     regex: /^46[0-9]{8,}$/,
     minLength: 10,
     maxLength: 20,
-    // checksumValidator removido
-    marketplace: 'Mercado Livre',
-    type: 'mercado_livre',
-    priority: 85,
-  },
-  // Nota: Mercado Livre agora aceita **apenas** códigos que começam com
-  // 20000 ou 46. A lógica anterior de EAN‑13 genérico foi removida para evitar
-  // reconhecimento acidental de outros códigos numéricos.
-  {
-    name: 'Mercado Livre 20000',
-    regex: /^20000[0-9]{6,}$/,
-    minLength: 11,
-    maxLength: 20,
-    checksumValidator: code => ChecksumValidators.validateEAN13(code),
-    marketplace: 'Mercado Livre',
-    type: 'mercado_livre',
-    priority: 85,
-  },
-  {
-    name: 'Mercado Livre 46',
-    regex: /^46[0-9]{8,}$/,
-    minLength: 10,
-    maxLength: 20,
-    checksumValidator: code => ChecksumValidators.validateEAN13(code),
     marketplace: 'Mercado Livre',
     type: 'mercado_livre',
     priority: 85,
@@ -213,8 +197,26 @@ export function advancedNormalizeCode(rawCode: string): string {
   if (trimmed.length === 0) return '';
 
   // Remove espaços extras e caracteres de controle
-  const cleaned = trimmed.replace(/[\\s\\0\\t\\r\\n]/g, '');
+  let cleaned = trimmed.replace(/[\s\0\t\r\n]/g, '');
   console.debug(`[advancedNormalizeCode] Cleaned: "${cleaned}"`);
+
+  // if the cleaned string doesn't start with a ML prefix, try to pull the
+  // first matching fragment out of the middle (useful for QR URLs or other
+  // payloads where the code is embedded).
+  if (!/^(20000|46|MLB)/.test(cleaned)) {
+    const mlMatch = cleaned.match(/(ID)?(20000|46|MLB)[0-9A-Z]+/);
+    if (mlMatch) {
+      const before = cleaned;
+      cleaned = mlMatch[0];
+      console.debug(`[advancedNormalizeCode] Extracted ML fragment from "${before}" → "${cleaned}"`);
+
+      if (/^ID./.test(cleaned)) {
+        const beforeStrip = cleaned;
+        cleaned = cleaned.slice(2);
+        console.debug(`[advancedNormalizeCode] Stripped ID prefix after extraction: "${beforeStrip}" → "${cleaned}"`);
+      }
+    }
+  }
 
   // Tenta extrair padrões conhecidos em ordem de prioridade
   for (const pattern of ADVANCED_PATTERNS) {
@@ -240,7 +242,7 @@ export function normalizeMercadoLivreCode(rawCode: string): string {
   console.debug(`[normalizeMercadoLivreCode] Input: "${rawCode}"`);
   const normalized = advancedNormalizeCode(rawCode);
   console.debug(`[normalizeMercadoLivreCode] Advanced normalized: "${normalized}"`);
-  if (/^(20000|46)/.test(normalized)) {
+  if (/^(20000|46|MLB)/.test(normalized)) {
     console.debug(`[normalizeMercadoLivreCode] Accepted prefix: "${normalized}"`);
     return normalized;
   }

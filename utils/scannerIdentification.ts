@@ -142,10 +142,33 @@ export function normalizeCode(rawCode: string): string {
   // Many scanners prepend an "ID" before numeric ML prefixes (e.g. "ID46...").
   // If the code begins with ID followed by a digit, strip the ID so our
   // prefix patterns work correctly. This does not affect codes like "IDLM..."
-  if (/^ID[0-9]/.test(normalized)) {
+  if (/^ID[A-Z0-9]/.test(normalized)) {
     const beforeStrip = normalized;
     normalized = normalized.slice(2);
     console.debug(`[normalizeCode] STEP2: Removed ID prefix: "${beforeStrip}" → "${normalized}"`);
+  }
+
+  // Some QR codes / URLs include the numeric label inside an address or
+  // payload (e.g. "https://....20000987654321?..." or
+  // "tracking?code=46987654321"). After removing non-alphanumerics we may
+  // still have a long string that doesn't start with the ML prefix. In that
+  // case attempt to extract the first valid Mercado Livre fragment so that
+  // the scanner can cope with links and noisy QR payloads.
+  if (!/^(20000|46|MLB)/.test(normalized)) {
+    const match = normalized.match(/(ID)?(20000|46|MLB)[0-9A-Z]+/);
+    if (match) {
+      const before = normalized;
+      normalized = match[0];
+      console.debug(`[normalizeCode] STEP3: Extracted ML fragment from "${before}" → "${normalized}"`);
+
+      // after extraction we might still have a leading "ID"; strip it as
+      // we did earlier so that downstream logic sees the raw numeric prefix.
+      if (/^ID./.test(normalized)) {
+        const beforeStrip = normalized;
+        normalized = normalized.slice(2);
+        console.debug(`[normalizeCode] STEP3b: Stripped ID prefix: "${beforeStrip}" → "${normalized}"`);
+      }
+    }
   }
 
   console.debug(`[normalizeCode] ✅ FINAL: "${normalized}"`);

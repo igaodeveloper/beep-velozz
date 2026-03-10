@@ -54,7 +54,20 @@ export class ScannerParser {
     }
 
     // Remover espaços e caracteres especiais
-    const cleanCode = input.trim().replace(/[^A-Z0-9]/gi, '');
+    let cleanCode = input.trim().replace(/[^A-Z0-9]/gi, '');
+
+    // Se o código não começa com ML mas contém um fragmento válido (pode
+    // ocorrer em QR codes que retornam um URL ou payload maior), extraímos
+    // o primeiro trecho que iniciam com 20000 ou 46. Isso permite capturar o
+    // valor real mesmo quando o scanner lê uma URL completa.
+    if (!/^(20000|46)/.test(cleanCode)) {
+      const frag = cleanCode.match(/(ID)?(20000|46)[0-9]+/);
+      if (frag) {
+        const before = cleanCode;
+        cleanCode = frag[0];
+        console.debug(`[ScannerParser] extracted ML fragment from "${before}" → "${cleanCode}"`);
+      }
+    }
 
     // Alguns pacotes Mercado Livre podem vir com apenas o prefixo numérico
     // e comprimento reduzido; por isso a validação de tamanho mínimo é

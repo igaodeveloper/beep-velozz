@@ -182,6 +182,7 @@ export default function IndustrialScannerView({
   };
 
   const handleManualSubmit = async () => {
+    console.log(`[IndustrialScannerView] 🎯 MANUAL SUBMIT TRIGGERED: "${manualCode}"`);
     setManualError(null);
 
     if (!manualCode.trim()) {
@@ -194,7 +195,9 @@ export default function IndustrialScannerView({
       return;
     }
 
+    console.log(`[IndustrialScannerView] 📤 PROCESSING MANUAL SCAN: "${manualCode}"`);
     const result = await scanner.processScan(manualCode);
+    console.log(`[IndustrialScannerView] 📥 MANUAL RESULT: success=${result.success}, type=${result.type}, reason=${result.reason}`);
 
     if (result.success) {
       onScanned?.(result.code, result.type || 'unknown');

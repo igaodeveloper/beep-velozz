@@ -164,32 +164,9 @@ export class IndustrialScannerController {
       // 5. Identifica tipo com confiança
       const identification = identifyPackage(normalizedCode);
 
-      // additional verification for Mercado Livre codes using advanced engine
-      if (identification.type === 'mercado_livre') {
-        console.debug(`[processScan] Processing Mercado Livre: ${normalizedCode}`);
-        const adv = analyzeMercadoLivreCode(normalizedCode);
-        console.debug(`[processScan] Advanced analysis: confidence=${adv.confidence}, anomaly_flags=${adv.anomaly_flags.join(',')}`);
-        // if advanced analysis rejects it, treat as invalid
-        if (adv.confidence === 'rejected') {
-          console.debug(
-            `[processScan] advancedMercadoLivreCode rejected ${normalizedCode}`
-          );
-          await this._playErrorAudio();
-          this._logAudit(rawCode, normalizedCode, {
-            success: false,
-            code: normalizedCode,
-            reason: 'invalid_prefix_ml',
-            timestamp: startTime,
-          }, 0);
-          return {
-            success: false,
-            code: normalizedCode,
-            reason: 'invalid',
-            timestamp: startTime,
-          };
-        }
-        console.debug(`[processScan] Mercado Livre accepted: ${normalizedCode}`);
-      }
+      // Para Mercado Livre, confia na identificação básica (prefixos 20000, 46, MLB)
+      // Remove verificação avançada que pode rejeitar códigos válidos
+      console.debug(`[processScan] Identified: ${normalizedCode} -> ${identification.type} (confidence: ${identification.confidence})`);
 
       // 5b. Se um conjunto de códigos válidos foi definido, rejeita
       // aquilo que não pertence ao motorista atual.

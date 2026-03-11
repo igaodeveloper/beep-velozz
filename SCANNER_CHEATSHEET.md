@@ -48,7 +48,7 @@ controller.reset();
 | Marketplace | Prefixos | Áudio |
 |-------------|----------|-------|
 | Shopee | BR | beep_a |
-| Mercado Livre | 20000, 46, 45 | beep_b |
+| Mercado Livre | 20000 | beep_b |
 | Avulso | LM, 14 | beep_c |
 
 > *normalizeCode usa regex ancoradas para evitar capturar prefixos dentro do código.*

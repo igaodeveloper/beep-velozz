@@ -80,7 +80,7 @@ function ControllerExample() {
 
   // Processar múltiplos códigos
   const processMultipleCodes = async () => {
-    const codes = ['BR123456', '46987654', 'LM99887766'];
+    const codes = ['BR123456', '20000987654', 'LM99887766'];
 
     for (const code of codes) {
       const result = await scanner.processScan(code);
@@ -108,7 +108,6 @@ function IdentificationExample() {
   const testCodes = [
     'BR123456789',       // Shopee
     '20000987654321',    // Mercado Livre
-    '46555777888',       // Mercado Livre
     'LM-ABC-123',        // Avulso
     '14555777888',       // Avulso
     'UNKNOWN12345',      // Desconhecido
@@ -287,7 +286,7 @@ const checkLimit = (type: 'shopee' | 'mercado_livre' | 'avulso') => {
 
 const forceTypeByPrefix = (code: string) => {
   if (code.startsWith('BR')) return 'shopee';
-  if (code.startsWith('20000') || code.startsWith('46')) return 'mercado_livre';
+  if (code.startsWith('20000')) return 'mercado_livre';
   if (code.startsWith('LM')) return 'avulso';
   return null;
 };

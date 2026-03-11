@@ -67,7 +67,7 @@ Retorna ScanResult
 PREFIX: "BR" → type: 'shopee' → beep_a
 
 // Mercado Livre
-PREFIXES: "20000", "46", "45" → type: 'mercado_livre' → beep_b
+PREFIX: "20000" → type: 'mercado_livre' → beep_b
 
 // Avulso
 PREFIXES: "LM", "14" → type: 'avulso' → beep_c

@@ -131,29 +131,11 @@ const ADVANCED_PATTERNS: CodePattern[] = [
     priority: 80,
   },
 
-  // MERCADO LIVRE - Múltiplos prefixos
-  {
-    name: 'Mercado Livre MLB',
-    regex: /^MLB[0-9A-Z]{2,}$/,
-    minLength: 5,
-    maxLength: 20,
-    marketplace: 'Mercado Livre',
-    type: 'mercado_livre',
-    priority: 87,
-  },
+  // MERCADO LIVRE - Apenas prefixo 20000
   {
     name: 'Mercado Livre 20000',
-    regex: /^20000[0-9]{6,}$/,
-    minLength: 11,
-    maxLength: 20,
-    marketplace: 'Mercado Livre',
-    type: 'mercado_livre',
-    priority: 85,
-  },
-  {
-    name: 'Mercado Livre 46',
-    regex: /^46[0-9]{8,}$/,
-    minLength: 10,
+    regex: /^20000[0-9]*$/,
+    minLength: 5,
     maxLength: 20,
     marketplace: 'Mercado Livre',
     type: 'mercado_livre',
@@ -203,8 +185,8 @@ export function advancedNormalizeCode(rawCode: string): string {
   // if the cleaned string doesn't start with a ML prefix, try to pull the
   // first matching fragment out of the middle (useful for QR URLs or other
   // payloads where the code is embedded).
-  if (!/^(20000|46|MLB)/.test(cleaned)) {
-    const mlMatch = cleaned.match(/(ID)?(20000|46|MLB)[0-9A-Z]+/);
+  if (!/^20000/.test(cleaned)) {
+    const mlMatch = cleaned.match(/(ID)?20000[0-9A-Z]+/);
     if (mlMatch) {
       const before = cleaned;
       cleaned = mlMatch[0];
@@ -233,7 +215,7 @@ export function advancedNormalizeCode(rawCode: string): string {
 
 /**
  * Functions specialized for Mercado Livre packages. The requirement is strict
- * – only codes that start with 20000 or 46 are considered valid. This
+ * – only codes that start with 20000 are considered valid. This
  * isolates Mercado Livre scanning from the more general engine and prevents
  * accidental acceptance of arbitrary EAN‑13 numbers.
  */
@@ -242,7 +224,7 @@ export function normalizeMercadoLivreCode(rawCode: string): string {
   console.debug(`[normalizeMercadoLivreCode] Input: "${rawCode}"`);
   const normalized = advancedNormalizeCode(rawCode);
   console.debug(`[normalizeMercadoLivreCode] Advanced normalized: "${normalized}"`);
-  if (/^(20000|46|MLB)/.test(normalized)) {
+  if (/^20000/.test(normalized)) {
     console.debug(`[normalizeMercadoLivreCode] Accepted prefix: "${normalized}"`);
     return normalized;
   }

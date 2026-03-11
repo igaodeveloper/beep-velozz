@@ -59,11 +59,7 @@ export class IndustrialScannerController {
   private auditLog: AuditLog[] = [];
   private scanHistory: Map<string, { type: PackageType; timestamps: number[] }> = new Map();
 
-  // when a driver is selected we can optionally provide the list of
-  // package codes that should be accepted. any scan outside this set
-  // will be rejected with a `wrong_driver` result so the user can
-  // avoid accidentally scanning a package belonging to another motoboy.
-  private allowedCodes?: Set<string>;
+
 
   constructor(config: ScannerConfig) {
     this.config = config;
@@ -101,14 +97,6 @@ export class IndustrialScannerController {
    * - Detecção de duplicação temporal
    * - Auditoria completa
    */
-  /**
-   * set the list of package codes that are valid for the current
-   * "session" (typically the motoboy who is being checked). call this
-   * whenever the driver/route changes.
-   */
-  public setAllowedCodes(codes: string[]) {
-    this.allowedCodes = new Set(codes.map(c => normalizeCode(c)));
-  }
 
   async processScan(rawCode: string): Promise<ScanResult> {
     const startTime = Date.now();
@@ -164,27 +152,10 @@ export class IndustrialScannerController {
       // 5. Identifica tipo com confiança
       const identification = identifyPackage(normalizedCode);
 
-      // Para Mercado Livre, confia na identificação básica (prefixos 20000, 46, MLB)
+      // Para Mercado Livre, confia na identificação básica (prefixo 20000)
       // Remove verificação avançada que pode rejeitar códigos válidos
       console.debug(`[processScan] Identified: ${normalizedCode} -> ${identification.type} (confidence: ${identification.confidence})`);
 
-      // 5b. Se um conjunto de códigos válidos foi definido, rejeita
-      // aquilo que não pertence ao motorista atual.
-      if (this.allowedCodes && !this.allowedCodes.has(normalizedCode)) {
-        await this._playErrorAudio();
-        this._logAudit(rawCode, normalizedCode, {
-          success: false,
-          code: normalizedCode,
-          reason: 'wrong_driver',
-          timestamp: startTime,
-        }, getConfidenceScore(normalizedCode, identification.type));
-        return {
-          success: false,
-          code: normalizedCode,
-          reason: 'wrong_driver',
-          timestamp: startTime,
-        };
-      }
       const type: PackageType = identification.type;
       // base confidence based on prefix identification
       let confidence = getConfidenceScore(normalizedCode, type);

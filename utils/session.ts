@@ -17,7 +17,7 @@ export function classifyPackage(code: string): PackageType {
   const cleaned = normalized.replace(/[^0-9a-zA-Z]/g, '');
   let upper = cleaned.toUpperCase();
 
-  // Alguns leitores inserem prefixo "ID" antes do número (ex. "ID46…").
+  // Alguns leitores inserem prefixo "ID" antes do número (ex. "ID20000…").
   // Para evitar classificação errada como avulso, removemos o "ID" quando
   // é seguido por dígito, espelhando a normalização usada em
   // scannerIdentification.normalizeCode.
@@ -29,7 +29,7 @@ export function classifyPackage(code: string): PackageType {
     return 'shopee';
   }
 
-  if (upper.startsWith('20000') || upper.startsWith('46') || upper.startsWith('45')) {
+  if (upper.startsWith('20000')) {
     return 'mercado_livre';
   }
 

@@ -3,17 +3,15 @@
  * Responsável por classificar códigos com precisão absoluta
  * 
  * REGRAS DE IDENTIFICAÇÃO (ordem rigorosa):
- * 1. MLB → MERCADO LIVRE
+ * 1. 20000 → MERCADO LIVRE (qualquer comprimento)
  * 2. LM + 2+ caracteres → AVULSO
  * 3. 14 + 2+ caracteres → AVULSO
  * 4. BR + 6+ caracteres → SHOPEE
- * 5. 20000 → MERCADO LIVRE (qualquer comprimento)
- * 6. ID46 ou 46 → MERCADO LIVRE (qualquer comprimento)
- * 7. Qualquer outro com 4+ caracteres → AVULSO (fallback)
- * 8. Menos de 4 caracteres → INVÁLIDO
+ * 5. Qualquer outro com 4+ caracteres → AVULSO (fallback)
+ * 6. Menos de 4 caracteres → INVÁLIDO
  *
- * Observação: a partir desta versão só aceitamos prefixos 20000 ou 46 para
- * Mercado Livre; qualquer outro número iniciando por 4x, incluindo "45", não
+ * Observação: a partir desta versão só aceitamos prefixos 20000 para
+ * Mercado Livre; qualquer outro prefixo (MLB, 46, ID46, 45) não
  * será tratado como Mercado Livre e cairá no fallback.
  */
 
@@ -28,13 +26,13 @@ import {
  * ORDEM IMPORTA! Mais específicos primeiro
  */
 const PREFIX_PATTERNS = [
-  // Mercado Livre - Prefixo MLB (LogManager)
+  // Mercado Livre - Prefixo 20000 (único aceito)
   {
-    prefix: 'MLB',
-    minLength: 5, // MLB + 2+ caracteres
+    prefix: '20000',
+    minLength: 5, // apenas 20000, qualquer comprimento extra é aceito
     type: 'mercado_livre' as PackageType,
     audioKey: 'beep_b',
-    description: 'Mercado Livre (prefixo MLB)',
+    description: 'Mercado Livre (prefixo 20000)',
   },
   // Avulso - Prefixo LM
   {
@@ -60,31 +58,7 @@ const PREFIX_PATTERNS = [
     audioKey: 'beep_a',
     description: 'Shopee (prefixo BR)',
   },
-  // Mercado Livre - Prefixo 20000
-  {
-    prefix: '20000',
-    minLength: 5, // apenas 20000, qualquer comprimento extra é aceito
-    type: 'mercado_livre' as PackageType,
-    audioKey: 'beep_b',
-    description: 'Mercado Livre (prefixo 20000)',
-  },
-  // Mercado Livre - Prefixo ID46 (alguns códigos vêm com ID na frente)
-  {
-    prefix: 'ID46',
-    minLength: 4, // pouco: ID46 + qualquer coisa
-    type: 'mercado_livre' as PackageType,
-    audioKey: 'beep_b',
-    description: 'Mercado Livre (prefixo ID46)',
-  },
-  // Mercado Livre - Prefixo 46
-  {
-    prefix: '46',
-    minLength: 2, // apenas 46, qualquer extensão
-    type: 'mercado_livre' as PackageType,
-    audioKey: 'beep_b',
-    description: 'Mercado Livre (prefixo 46)',
-  },
-  // [REMOVIDO] O prefixo 45 foi excluído por não ser mais suportado.
+  // [REMOVIDO] MLB, ID46, 46 não são mais aceitos para Mercado Livre
 ];
 
 /**
@@ -139,7 +113,7 @@ export function normalizeCode(rawCode: string): string {
   let normalized = trimmed.replace(/[^0-9A-Z]/g, '');
   console.debug(`[normalizeCode] STEP1: "${rawCode}" → "${trimmed}" → "${normalized}"`);
 
-  // Many scanners prepend an "ID" before numeric ML prefixes (e.g. "ID46...").
+  // Many scanners prepend an "ID" before numeric ML prefixes (e.g. "ID20000...").
   // If the code begins with ID followed by a digit, strip the ID so our
   // prefix patterns work correctly. This does not affect codes like "IDLM..."
   if (/^ID[A-Z0-9]/.test(normalized)) {
@@ -150,12 +124,12 @@ export function normalizeCode(rawCode: string): string {
 
   // Some QR codes / URLs include the numeric label inside an address or
   // payload (e.g. "https://....20000987654321?..." or
-  // "tracking?code=46987654321"). After removing non-alphanumerics we may
+  // "tracking?code=20000987654321"). After removing non-alphanumerics we may
   // still have a long string that doesn't start with the ML prefix. In that
   // case attempt to extract the first valid Mercado Livre fragment so that
   // the scanner can cope with links and noisy QR payloads.
-  if (!/^(20000|46|MLB)/.test(normalized)) {
-    const match = normalized.match(/(ID)?(20000|46|MLB)[0-9A-Z]+/);
+  if (!/^20000/.test(normalized)) {
+    const match = normalized.match(/(ID)?20000[0-9A-Z]+/);
     if (match) {
       const before = normalized;
       normalized = match[0];
@@ -267,8 +241,8 @@ export function identifyPackage(normalizedCode: string): PackageIdentification {
       // Começa com dígito mas não foi capturado por nenhum prefixo.
       // Pode ocorrer se o código numérico tiver prefixo válido mas o tamanho
       // era menor que o mínimo antigo. Para evitar falhas, tratamos qualquer
-      // sequência 20000/46 como Mercado Livre aqui.
-      if (/^(20000|46)/.test(normalizedCode)) {
+      // sequência 20000 como Mercado Livre aqui.
+      if (/^20000/.test(normalizedCode)) {
         result = {
           type: 'mercado_livre',
           matched: true,

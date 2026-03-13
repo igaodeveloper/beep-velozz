@@ -3,7 +3,7 @@
     "name": "Beep Velozz",
     "slug": "beep-velozz",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "beepvelozz",
     "userInterfaceStyle": "automatic",
@@ -12,7 +12,18 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.igaonamikaze.beepvelozz",
       "infoPlist": {
-        "NSCameraUsageDescription": "Precisamos de acesso à câmera para ler QR Codes e códigos de barras."
+        "NSCameraUsageDescription": "Precisamos de acesso à câmera para ler QR Codes e códigos de barras.",
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ],
+        "UISupportedInterfaceOrientations~ipad": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationPortraitUpsideDown",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ]
       }
     },
     "android": {
@@ -23,7 +34,8 @@
       "permissions": [
         "CAMERA"
       ],
-      "package": "com.igaonamikaze.beepvelozz"
+      "package": "com.igaonamikaze.beepvelozz",
+      "screenOrientation": "user"
     },
     "web": {
       "bundler": "metro",
@@ -37,7 +49,31 @@
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "cover",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#ffffff",
+          "splash": {
+            "imageWidth": 200,
+            "imageHeight": 200,
+            "resizeMode": "contain",
+            "backgroundColor": "#ffffff"
+          },
+          "platform": {
+            "ios": {
+              "splashImage": "./assets/images/splash-icon.png",
+              "backgroundColor": "#ffffff",
+              "imageWidth": 200,
+              "imageHeight": 200,
+              "resizeMode": "contain"
+            },
+            "android": {
+              "splash": {
+                "image": "./assets/images/splash-icon.png",
+                "backgroundColor": "#ffffff",
+                "resizeMode": "contain",
+                "imageWidth": 200,
+                "imageHeight": 200
+              }
+            }
+          }
         }
       ],
       "expo-font",

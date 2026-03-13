@@ -19,7 +19,7 @@ import MainLayout from '@/components/MainLayout';
 import PackagePhotoCapture from '@/components/PackagePhotoCapture';
 import { savePackagePhoto } from '@/utils/photoStorage';
 
-type AppScreen = 'scanning' | 'report' | 'history';
+type AppScreen = 'scanning' | 'report' | 'history' | 'welcome';
 
 export default function HomeScreen() {
   const { colors } = useAppTheme();
@@ -62,6 +62,7 @@ export default function HomeScreen() {
       packages: [],
       startedAt: new Date().toISOString(),
       hasDivergence: false,
+      notes: undefined
     };
     setCurrentSession(session);
     setShowInitModal(false);
@@ -185,7 +186,7 @@ export default function HomeScreen() {
       <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
       <SafeAreaView style={{ flex: 1 }}>
         {/* Header - sempre visível */}
-        {screen !== 'history' && screen !== 'report' && (
+        {screen !== 'history' && screen !== 'report' && screen !== 'scanning' && (
           <AppHeader currentSession={currentSession} />
         )}
 
@@ -205,30 +206,17 @@ export default function HomeScreen() {
               onNewSession={handleNewSession}
             />
           ) : /* Active Session Screen */ currentSession ? (
-            <View style={{ flex: 1 }}>
-              {/* Metrics Dashboard */}
-              <MetricsDashboard
-                metrics={metrics}
-                declaredCount={currentSession.declaredCount}
-              />
-
-              {/* Scanner */}
-              <View style={{ flex: 1 }}>
-                <IndustrialScannerView
-                  maxScans={currentSession.declaredCounts}
-                  onScanned={handleScanned}
-                  onLimitReached={handleLimitReached}
-                  onEndSession={handleEndSession}
-                />
-              </View>
-
-              {/* Package list panel */}
-              <PackageList
-                packages={currentSession.packages}
-                expanded={packageListExpanded}
-                onToggle={() => setPackageListExpanded(v => !v)}
-              />
-            </View>
+            <IndustrialScannerView
+              maxScans={{
+                shopee: currentSession.declaredCounts.shopee,
+                mercado_livre: currentSession.declaredCounts.mercadoLivre,
+                avulso: currentSession.declaredCounts.avulso
+              }}
+              onScanned={handleScanned}
+              onLimitReached={handleLimitReached}
+              onEndSession={handleEndSession}
+              onBack={() => setScreen('welcome')}
+            />
           ) : /* Welcome State */ (
             <EmptyStateWelcome
               onStartSession={() => setShowInitModal(true)}

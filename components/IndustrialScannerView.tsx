@@ -16,6 +16,7 @@ import {
   Modal,
   ActivityIndicator,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
@@ -36,6 +37,7 @@ interface IndustrialScannerViewProps {
   onScanned?: (code: string, type: string) => void;
   onLimitReached?: (limitedTypes: string[]) => void;
   onEndSession: () => void;
+  onBack?: () => void;
 }
 
 /**
@@ -47,10 +49,24 @@ export default function IndustrialScannerView({
   onScanned,
   onLimitReached,
   onEndSession,
+  onBack,
 }: IndustrialScannerViewProps) {
   const { colors } = useAppTheme();
-  const { width: windowWidth } = useWindowDimensions();
-
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+  
+  // Detectar tipo de tela
+  const isTablet = useMemo(() => {
+    const aspectRatio = Math.max(windowWidth, windowHeight) / Math.min(windowWidth, windowHeight);
+    const isLargeScreen = Math.max(windowWidth, windowHeight) >= 768;
+    return isLargeScreen || aspectRatio < 1.3;
+  }, [windowWidth, windowHeight]);
+  
+  const isUltraWide = useMemo(() => {
+    const aspectRatio = windowWidth / windowHeight;
+    return aspectRatio > 2.0;
+  }, [windowWidth, windowHeight]);
+  
   // Estado local UI
   const [manualCode, setManualCode] = useState('');
   const [manualError, setManualError] = useState<string | null>(null);
@@ -62,6 +78,9 @@ export default function IndustrialScannerView({
   // Animações
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const scanLineAnim = useRef(new Animated.Value(0)).current;
+  const cornerPulseAnim = useRef(new Animated.Value(1)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
+  const radarAnim = useRef(new Animated.Value(0)).current;
 
   // Modal de limite
   const [limitModalVisible, setLimitModalVisible] = useState(false);
@@ -95,26 +114,82 @@ export default function IndustrialScannerView({
     };
   }, []);
 
-  // Animação de pulse
+  // Animações avançadas
   useEffect(() => {
+    // Pulse animation principal
     const pulse = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.04,
-          duration: 900,
+          toValue: 1.02,
+          duration: 1200,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 900,
+          duration: 1200,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
       ])
     );
     pulse.start();
-    return () => pulse.stop();
+
+    // Corner pulse animation
+    const cornerPulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(cornerPulseAnim, {
+          toValue: 1.1,
+          duration: 800,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(cornerPulseAnim, {
+          toValue: 1,
+          duration: 800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    cornerPulse.start();
+
+    // Glow animation
+    const glow = Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    glow.start();
+
+    // Radar animation
+    const radar = Animated.loop(
+      Animated.timing(radarAnim, {
+        toValue: 1,
+        duration: 3000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    radar.start();
+
+    return () => {
+      pulse.stop();
+      cornerPulse.stop();
+      glow.stop();
+      radar.stop();
+    };
   }, []);
 
   // Animação de linha de scan
@@ -220,8 +295,29 @@ export default function IndustrialScannerView({
     setManualCode('');
   };
 
-  const reticleWidth = Math.max(200, Math.min(windowWidth - 64, 320));
-  const reticleHeight = Math.max(120, Math.min(reticleWidth * 0.62, 220));
+  // Dimensões responsivas do reticle (minimalista e elegante)
+  const reticleDimensions = useMemo(() => {
+    const baseWidth = Math.min(windowWidth, windowHeight);
+    
+    if (isTablet) {
+      // Tablets: reticle elegante e proporcional
+      const width = Math.max(280, Math.min(baseWidth * 0.45, 380));
+      const height = Math.max(200, Math.min(width * 0.65, 280));
+      return { width, height };
+    } else if (isUltraWide) {
+      // Telas ultra largas: reticle balanceado
+      const width = Math.max(250, Math.min(baseWidth * 0.4, 320));
+      const height = Math.max(180, Math.min(width * 0.75, 260));
+      return { width, height };
+    } else {
+      // Celulares normais: reticle minimalista
+      const width = Math.max(220, Math.min(baseWidth * 0.55, 300));
+      const height = Math.max(160, Math.min(width * 0.7, 240));
+      return { width, height };
+    }
+  }, [windowWidth, windowHeight, isTablet, isUltraWide]);
+  
+  const { width: reticleWidth, height: reticleHeight } = reticleDimensions;
 
   // Status color baseado no estado do scanner
   const statusColor =
@@ -230,80 +326,109 @@ export default function IndustrialScannerView({
     colors.success;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg, position: 'relative' }}>
-      {/* Câmera */}
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: colors.surface2,
-          justifyContent: 'center',
-          alignItems: 'center',
-          position: 'relative',
-        }}
-      >
-        {Platform.OS !== 'web' && permission?.granted && (
-          <CameraView
-            style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
-            facing="back"
-            enableTorch={torchEnabled}
-            barcodeScannerSettings={{
-              barcodeTypes: [
-                'qr',
-                'code128',
-                'code39',
-                'ean13',
-                'ean8',
-                'upc_a',
-                'upc_e',
-                'pdf417',
-                'aztec',
-                'datamatrix',
-              ],
-            }}
-            onBarcodeScanned={handleBarcode}
-          />
-        )}
+    <View style={{ flex: 1, backgroundColor: '#000', position: 'relative' }}>
+      {/* Câmera em tela cheia absoluta */}
+      {Platform.OS !== 'web' && permission?.granted && (
+        <CameraView
+          style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
+          facing="back"
+          enableTorch={torchEnabled}
+          barcodeScannerSettings={{
+            barcodeTypes: [
+              'qr',
+              'code128',
+              'code39',
+              'ean13',
+              'ean8',
+              'upc_a',
+              'upc_e',
+              'pdf417',
+              'aztec',
+              'datamatrix',
+            ],
+          }}
+          onBarcodeScanned={handleBarcode}
+        />
+      )}
 
-        {/* Flash toggle */}
-        {Platform.OS !== 'web' && permission?.granted && (
+      {/* Botão de Voltar */}
+      {onBack && (
+        <TouchableOpacity
+          onPress={onBack}
+          activeOpacity={0.8}
+          style={{
+            position: 'absolute',
+            top: isTablet ? 20 : 16,
+            left: isTablet ? 20 : 16,
+            zIndex: 10,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            borderRadius: isTablet ? 12 : 10,
+            paddingHorizontal: isTablet ? 12 : 10,
+            paddingVertical: isTablet ? 8 : 6,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.2)',
+          }}
+        >
+          <Text style={{ 
+            color: '#fff', 
+            fontSize: isTablet ? 16 : 14, 
+            fontWeight: '600',
+          }}>
+            ←
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Flash toggle minimalista sobre a câmera */}
+      {Platform.OS !== 'web' && permission?.granted && (
           <View
             style={{
               position: 'absolute',
-              top: 16,
-              right: 16,
+              top: isTablet ? 20 : 16,
+              right: isTablet ? 20 : 16,
               zIndex: 10,
             }}
           >
             <TouchableOpacity
               onPress={() => setTorchEnabled(v => !v)}
-              activeOpacity={0.85}
+              activeOpacity={0.8}
               style={{
-                backgroundColor: torchEnabled ? colors.primary : 'rgba(15,23,42,0.85)',
-                borderRadius: 12,
-                paddingHorizontal: 14,
-                paddingVertical: 10,
+                backgroundColor: torchEnabled ? statusColor : 'rgba(0,0,0,0.3)',
+                borderRadius: isTablet ? 12 : 10,
+                paddingHorizontal: isTablet ? 12 : 10,
+                paddingVertical: isTablet ? 8 : 6,
                 borderWidth: 1,
-                borderColor: torchEnabled ? colors.primary : colors.border2,
+                borderColor: torchEnabled ? statusColor : 'rgba(255,255,255,0.2)',
               }}
             >
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }}>
-                {torchEnabled ? '💡 ON' : '🔦 OFF'}
+              <Text style={{ 
+                color: '#fff', 
+                fontSize: isTablet ? 11 : 9, 
+                fontWeight: '600',
+                letterSpacing: 0.3,
+              }}>
+                {torchEnabled ? '💡' : '🔦'}
               </Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {/* Reticle */}
+        {/* Máscara de Scanner Minimalista */}
         <Animated.View
           style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            marginTop: -(reticleHeight / 2),
+            marginLeft: -(reticleWidth / 2),
             width: reticleWidth,
             height: reticleHeight,
             transform: [{ scale: pulseAnim }],
-            position: 'relative',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
+          {/* Border principal minimalista */}
           <View
             style={{
               position: 'absolute',
@@ -311,19 +436,159 @@ export default function IndustrialScannerView({
               left: 0,
               right: 0,
               bottom: 0,
-              borderWidth: 2,
+              borderWidth: isTablet ? 2 : 1.5,
               borderColor: statusColor,
-              borderRadius: 16,
+              borderRadius: isTablet ? 16 : 12,
               opacity: 0.8,
             }}
           />
+
+          {/* Cantos minimalistas */}
+          {/* Superior esquerdo */}
+          <View
+            style={{
+              position: 'absolute',
+              top: -4,
+              left: -4,
+              width: isTablet ? 24 : 20,
+              height: isTablet ? 24 : 20,
+            }}
+          >
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: 2,
+                backgroundColor: statusColor,
+                borderTopLeftRadius: 2,
+              }}
+            />
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 2,
+                height: '100%',
+                backgroundColor: statusColor,
+                borderTopLeftRadius: 2,
+              }}
+            />
+          </View>
+
+          {/* Superior direito */}
+          <View
+            style={{
+              position: 'absolute',
+              top: -4,
+              right: -4,
+              width: isTablet ? 24 : 20,
+              height: isTablet ? 24 : 20,
+            }}
+          >
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '100%',
+                height: 2,
+                backgroundColor: statusColor,
+                borderTopRightRadius: 2,
+              }}
+            />
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: 2,
+                height: '100%',
+                backgroundColor: statusColor,
+                borderTopRightRadius: 2,
+              }}
+            />
+          </View>
+
+          {/* Inferior esquerdo */}
+          <View
+            style={{
+              position: 'absolute',
+              bottom: -4,
+              left: -4,
+              width: isTablet ? 24 : 20,
+              height: isTablet ? 24 : 20,
+            }}
+          >
+            <View
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                width: '100%',
+                height: 2,
+                backgroundColor: statusColor,
+                borderBottomLeftRadius: 2,
+              }}
+            />
+            <View
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                width: 2,
+                height: '100%',
+                backgroundColor: statusColor,
+                borderBottomLeftRadius: 2,
+              }}
+            />
+          </View>
+
+          {/* Inferior direito */}
+          <View
+            style={{
+              position: 'absolute',
+              bottom: -4,
+              right: -4,
+              width: isTablet ? 24 : 20,
+              height: isTablet ? 24 : 20,
+            }}
+          >
+            <View
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: '100%',
+                height: 2,
+                backgroundColor: statusColor,
+                borderBottomRightRadius: 2,
+              }}
+            />
+            <View
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: 2,
+                height: '100%',
+                backgroundColor: statusColor,
+                borderBottomRightRadius: 2,
+              }}
+            />
+          </View>
+
+          {/* Linha de scan minimalista */}
           <Animated.View
             style={{
               position: 'absolute',
-              left: 8,
-              right: 8,
-              height: 2,
+              left: isTablet ? 12 : 8,
+              right: isTablet ? 12 : 8,
+              height: 1.5,
               backgroundColor: statusColor,
+              borderRadius: 1,
               transform: [{
                 translateY: scanLineAnim.interpolate({
                   inputRange: [0, 1],
@@ -332,194 +597,109 @@ export default function IndustrialScannerView({
               }],
             }}
           />
+
+          {/* Centro minimalista */}
           <View style={{
-            width: 6,
-            height: 6,
-            borderRadius: 3,
+            width: isTablet ? 6 : 5,
+            height: isTablet ? 6 : 5,
+            borderRadius: isTablet ? 3 : 2.5,
             backgroundColor: statusColor,
+            opacity: 0.8,
           }} />
         </Animated.View>
 
-        {/* Status text */}
-        <Text style={{
-          color: statusColor,
-          fontSize: 12,
-          marginTop: 20,
-          fontWeight: '600',
-          letterSpacing: 0.3,
+        {/* Contadores minimalistas */}
+        <View style={{
+          position: 'absolute',
+          bottom: isTablet ? 30 : 20,
+          left: isTablet ? 30 : 20,
+          right: isTablet ? 30 : 20,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          borderRadius: isTablet ? 16 : 12,
+          padding: isTablet ? 20 : 16,
+          maxWidth: isTablet ? 500 : '100%',
+          alignSelf: 'center',
         }}>
-          {scanner.state === ScannerState.LIMIT_REACHED ? '🛑 LIMITE ATINGIDO' :
-           scanner.state === ScannerState.PAUSED ? '⏸ PAUSA' :
-           '📷 ESCANEANDO'}
-        </Text>
-
-        {/* Progresso */}
-        <View style={{ marginTop: 12, width: '80%', alignItems: 'center' }}>
-          {Object.entries(scanner.counts).map(([type, count], idx) => (
-            <View key={type}>
-              {idx > 0 && <View style={{ height: 8 }} />}
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
-                <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '600' }}>
-                  {getPackageTypeLabel(type as any)}
-                </Text>
-                <Text style={{ color: colors.text, fontSize: 11, fontWeight: '700' }}>
-                  {count}/{maxScans[type as keyof typeof maxScans]}
-                </Text>
-              </View>
-              <View
-                style={{
-                  height: 8,
-                  width: '100%',
-                  backgroundColor: colors.surface2,
-                  borderRadius: 8,
-                  marginTop: 4,
-                  overflow: 'hidden',
-                }}
-              >
-                <View
-                  style={{
-                    width: `${Math.min(100, (count / maxScans[type as keyof typeof maxScans]) * 100)}%`,
-                    height: '100%',
-                    backgroundColor: statusColor,
-                  }}
-                />
-              </View>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      {/* Manual input */}
-      <View
-        style={{
-          backgroundColor: colors.surface,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => setManualInputExpanded(!manualInputExpanded)}
-          activeOpacity={0.7}
-          style={{
-            paddingHorizontal: 16,
-            paddingVertical: 12,
+          {/* Status minimalista */}
+          <View style={{
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
-          }}
-        >
-          <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: '600' }}>
-            ⌨️ ENTRADA MANUAL
-          </Text>
-          <Text style={{ color: colors.primary, fontSize: 16, fontWeight: '700' }}>
-            {manualInputExpanded ? '−' : '+'}
-          </Text>
-        </TouchableOpacity>
-
-        {manualInputExpanded && (
-          <View
-            style={{
-              padding: 16,
-              paddingTop: 8,
-              flexDirection: 'row',
-              gap: 10,
-              alignItems: 'center',
-              borderTopWidth: 1,
-              borderTopColor: colors.border2,
-            }}
-          >
-            <TextInput
-              value={manualCode}
-              onChangeText={setManualCode}
-              placeholder="Código..."
-              placeholderTextColor={colors.textMuted}
-              returnKeyType="done"
-              onSubmitEditing={handleManualSubmit}
-              autoCapitalize="characters"
-              editable={scanner.state !== ScannerState.LIMIT_REACHED}
-              style={{
-                flex: 1,
-                backgroundColor: colors.surface2,
-                borderWidth: 1,
-                borderColor: colors.textMuted,
-                borderRadius: 10,
-                padding: 12,
-                color: colors.text,
-                fontSize: 15,
-              }}
-            />
-            <TouchableOpacity
-              onPress={handleManualSubmit}
-              activeOpacity={0.85}
-              disabled={scanner.state === ScannerState.LIMIT_REACHED}
-              style={{
-                backgroundColor: colors.primary,
-                borderRadius: 10,
-                padding: 13,
-                justifyContent: 'center',
-                alignItems: 'center',
-                opacity: scanner.state === ScannerState.LIMIT_REACHED ? 0.5 : 1,
-              }}
-            >
-              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '800' }}>+</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {manualError && (
-          <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
-            <Text style={{ color: colors.danger, fontSize: 13, fontWeight: '700' }}>
-              {manualError}
+            marginBottom: isTablet ? 12 : 10,
+          }}>
+            <Text style={{
+              color: statusColor,
+              fontSize: isTablet ? 8 : 7,
+              fontWeight: '500',
+              letterSpacing: 0.8,
+              textTransform: 'uppercase',
+              opacity: 0.7,
+            }}>
+              {scanner.state === ScannerState.LIMIT_REACHED ? 'Limite' :
+               scanner.state === ScannerState.PAUSED ? 'Pausado' :
+               'Escaneando'}
             </Text>
+            
+            {/* Indicador minimalista */}
+            <View style={{
+              width: isTablet ? 6 : 5,
+              height: isTablet ? 6 : 5,
+              borderRadius: isTablet ? 3 : 2.5,
+              backgroundColor: statusColor,
+              opacity: scanner.state === ScannerState.LIMIT_REACHED ? 0.3 : 0.6,
+            }} />
           </View>
-        )}
-      </View>
 
-      {/* End session */}
-      <View
-        style={{
-          backgroundColor: colors.surface,
-          paddingHorizontal: 16,
-          paddingBottom: 16,
-          paddingTop: 4,
-          flexDirection: 'row',
-          gap: 8,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => scanner.reset()}
-          activeOpacity={0.85}
-          style={{
-            flex: 1,
-            backgroundColor: colors.surface2,
-            borderRadius: 10,
-            padding: 13,
-            alignItems: 'center',
-            borderWidth: 1,
-            borderColor: colors.textMuted,
-          }}
-        >
-          <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700' }}>
-            🔄 RESET
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={onEndSession}
-          activeOpacity={0.85}
-          style={{
-            flex: 1,
-            backgroundColor: colors.danger,
-            borderRadius: 10,
-            padding: 13,
-            alignItems: 'center',
-          }}
-        >
-          <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700' }}>
-            ⏹ ENCERRAR
-          </Text>
-        </TouchableOpacity>
-      </View>
+          {/* Progresso minimalista */}
+          <View style={{ 
+            flexDirection: 'row', 
+            justifyContent: 'space-between', 
+            gap: isTablet ? 16 : 10,
+          }}>
+            {Object.entries(scanner.counts).map(([type, count]) => (
+              <View key={type} style={{ 
+                flex: 1, 
+                alignItems: 'center',
+              }}>
+                <Text style={{ 
+                  color: 'rgba(255,255,255,0.5)', 
+                  fontSize: isTablet ? 9 : 8, 
+                  fontWeight: '400',
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.4,
+                  marginBottom: 2,
+                }}>
+                  {getPackageTypeLabel(type as any)}
+                </Text>
+                <Text style={{ 
+                  color: '#ffffff', 
+                  fontSize: isTablet ? 13 : 11, 
+                  fontWeight: '600',
+                }}>
+                  {count}/{maxScans[type as keyof typeof maxScans]}
+                </Text>
+                <View
+                  style={{
+                    height: isTablet ? 3 : 2,
+                    width: '100%',
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    borderRadius: isTablet ? 2 : 1,
+                    marginTop: isTablet ? 4 : 3,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <View
+                    style={{
+                      width: `${Math.min(100, (count / maxScans[type as keyof typeof maxScans]) * 100)}%`,
+                      height: '100%',
+                      backgroundColor: statusColor,
+                    }}
+                  />
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
 
       {/* Limit reached modal */}
       <Modal visible={limitModalVisible} transparent animationType="fade">

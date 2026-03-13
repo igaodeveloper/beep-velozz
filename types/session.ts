@@ -4,6 +4,7 @@ export interface ScannedPackage {
   id: string;
   code: string;
   type: PackageType;
+  value?: number; // Optional value property for backwards compatibility
   scannedAt: string; // ISO timestamp
 }
 

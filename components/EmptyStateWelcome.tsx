@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useAppTheme } from '@/utils/useAppTheme';
+import { useResponsive } from '@/utils/useResponsive';
 
 interface EmptyStateWelcomeProps {
   onStartSession: () => void;
@@ -12,6 +13,7 @@ export default function EmptyStateWelcome({
   onViewHistory,
 }: EmptyStateWelcomeProps) {
   const { colors } = useAppTheme();
+  const responsive = useResponsive();
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -20,18 +22,18 @@ export default function EmptyStateWelcome({
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          paddingHorizontal: 24,
-          paddingVertical: 48,
-          gap: 32,
+          paddingHorizontal: responsive.isTablet ? responsive.padding.xl : responsive.padding.lg,
+          paddingVertical: responsive.padding.xxl,
+          gap: responsive.spacing.xxl,
         }}
       >
         {/* Illustration area */}
-        <View style={{ alignItems: 'center', gap: 16 }}>
+        <View style={{ alignItems: 'center', gap: responsive.padding.md }}>
           <View
             style={{
-              width: 100,
-              height: 100,
-              borderRadius: 50,
+              width: responsive.isTablet ? 120 : 100,
+              height: responsive.isTablet ? 120 : 100,
+              borderRadius: responsive.isTablet ? 60 : 50,
               backgroundColor: colors.surface,
               alignItems: 'center',
               justifyContent: 'center',
@@ -39,14 +41,14 @@ export default function EmptyStateWelcome({
               borderColor: colors.primary,
             }}
           >
-            <Text style={{ fontSize: 48 }}>📦</Text>
+            <Text style={{ fontSize: responsive.fontSize.xxxxl }}>📦</Text>
           </View>
 
           <View style={{ alignItems: 'center', gap: 8 }}>
             <Text
               style={{
                 color: colors.text,
-                fontSize: 24,
+                fontSize: responsive.fontSize.xxxl,
                 fontWeight: '700',
                 letterSpacing: 0.3,
               }}
@@ -56,10 +58,10 @@ export default function EmptyStateWelcome({
             <Text
               style={{
                 color: colors.textMuted,
-                fontSize: 14,
+                fontSize: responsive.fontSize.md,
                 fontWeight: '400',
                 textAlign: 'center',
-                lineHeight: 20,
+                lineHeight: responsive.fontSize.lg,
               }}
             >
               Comece uma nova sessão de verificação de pacotes
@@ -71,17 +73,17 @@ export default function EmptyStateWelcome({
         <View
           style={{
             width: '100%',
-            paddingHorizontal: 16,
-            paddingVertical: 16,
-            borderRadius: 12,
+            paddingHorizontal: responsive.padding.md,
+            paddingVertical: responsive.padding.md,
+            borderRadius: responsive.borderRadius.lg,
             backgroundColor: colors.surface,
-            gap: 12,
+            gap: responsive.padding.md,
           }}
         >
           <Text
             style={{
               color: colors.textMuted,
-              fontSize: 12,
+              fontSize: responsive.fontSize.sm,
               fontWeight: '600',
               textTransform: 'uppercase',
               letterSpacing: 0.5,
@@ -89,44 +91,44 @@ export default function EmptyStateWelcome({
           >
             Dicas
           </Text>
-          <View style={{ gap: 8 }}>
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <Text style={{ fontSize: 16, color: colors.primary }}>✓</Text>
+          <View style={{ gap: responsive.spacing.sm }}>
+            <View style={{ flexDirection: 'row', gap: responsive.spacing.sm }}>
+              <Text style={{ fontSize: responsive.fontSize.md, color: colors.primary }}>✓</Text>
               <Text
                 style={{
                   flex: 1,
                   color: colors.text,
-                  fontSize: 13,
+                  fontSize: responsive.fontSize.sm,
                   fontWeight: '500',
-                  lineHeight: 18,
+                  lineHeight: responsive.fontSize.md,
                 }}
               >
                 Escaneie pacotes de forma rápida e precisa
               </Text>
             </View>
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <Text style={{ fontSize: 16, color: colors.primary }}>✓</Text>
+            <View style={{ flexDirection: 'row', gap: responsive.spacing.sm }}>
+              <Text style={{ fontSize: responsive.fontSize.md, color: colors.primary }}>✓</Text>
               <Text
                 style={{
                   flex: 1,
                   color: colors.text,
-                  fontSize: 13,
+                  fontSize: responsive.fontSize.sm,
                   fontWeight: '500',
-                  lineHeight: 18,
+                  lineHeight: responsive.fontSize.md,
                 }}
               >
                 Rastreie métricas em tempo real
               </Text>
             </View>
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <Text style={{ fontSize: 16, color: colors.primary }}>✓</Text>
+            <View style={{ flexDirection: 'row', gap: responsive.spacing.sm }}>
+              <Text style={{ fontSize: responsive.fontSize.md, color: colors.primary }}>✓</Text>
               <Text
                 style={{
                   flex: 1,
                   color: colors.text,
-                  fontSize: 13,
+                  fontSize: responsive.fontSize.sm,
                   fontWeight: '500',
-                  lineHeight: 18,
+                  lineHeight: responsive.fontSize.md,
                 }}
               >
                 Gere relatórios detalhados de cada sessão
@@ -136,14 +138,14 @@ export default function EmptyStateWelcome({
         </View>
 
         {/* Action buttons */}
-        <View style={{ width: '100%', gap: 12 }}>
+        <View style={{ width: '100%', gap: responsive.padding.md }}>
           <TouchableOpacity
             onPress={onStartSession}
             style={{
               width: '100%',
-              paddingVertical: 14,
-              paddingHorizontal: 20,
-              borderRadius: 10,
+              paddingVertical: responsive.padding.md,
+              paddingHorizontal: responsive.padding.lg,
+              borderRadius: responsive.borderRadius.md,
               backgroundColor: colors.primary,
               alignItems: 'center',
               justifyContent: 'center',
@@ -158,7 +160,7 @@ export default function EmptyStateWelcome({
             <Text
               style={{
                 color: '#ffffff',
-                fontSize: 15,
+                fontSize: responsive.fontSize.md,
                 fontWeight: '700',
                 letterSpacing: 0.3,
               }}
@@ -171,9 +173,9 @@ export default function EmptyStateWelcome({
             onPress={onViewHistory}
             style={{
               width: '100%',
-              paddingVertical: 12,
-              paddingHorizontal: 20,
-              borderRadius: 10,
+              paddingVertical: responsive.padding.md,
+              paddingHorizontal: responsive.padding.lg,
+              borderRadius: responsive.borderRadius.md,
               borderWidth: 1.5,
               borderColor: colors.border,
               alignItems: 'center',
@@ -184,7 +186,7 @@ export default function EmptyStateWelcome({
             <Text
               style={{
                 color: colors.text,
-                fontSize: 15,
+                fontSize: responsive.fontSize.md,
                 fontWeight: '600',
                 letterSpacing: 0.3,
               }}

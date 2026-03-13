@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, useWindowDimensions } from 'react-native';
 import { useAppTheme } from '@/utils/useAppTheme';
+import { useResponsive } from '@/utils/useResponsive';
 import { Session } from '@/types/session';
 
 interface AppHeaderProps {
@@ -9,26 +10,26 @@ interface AppHeaderProps {
 
 export default function AppHeader({ currentSession }: AppHeaderProps) {
   const { colors } = useAppTheme();
-  const { width } = useWindowDimensions();
+  const responsive = useResponsive();
   
   return (
     <View
       style={{
-        paddingHorizontal: 20,
-        paddingVertical: 12,
+        paddingHorizontal: responsive.padding.md,
+        paddingVertical: responsive.padding.sm,
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
         backgroundColor: colors.bg,
       }}
     >
-      <View style={{ gap: 8 }}>
+      <View style={{ gap: responsive.spacing.sm }}>
         {/* Logo + Title */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: responsive.spacing.md }}>
           <View
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: 10,
+              width: responsive.isTablet ? 48 : 40,
+              height: responsive.isTablet ? 48 : 40,
+              borderRadius: responsive.borderRadius.lg,
               backgroundColor: colors.primary,
               alignItems: 'center',
               justifyContent: 'center',
@@ -39,13 +40,13 @@ export default function AppHeader({ currentSession }: AppHeaderProps) {
               elevation: 3,
             }}
           >
-            <Text style={{ fontSize: 20 }}>📦</Text>
+            <Text style={{ fontSize: responsive.fontSize.xxl }}>📦</Text>
           </View>
           <View style={{ flex: 1 }}>
             <Text
               style={{
                 color: colors.text,
-                fontSize: 18,
+                fontSize: responsive.fontSize.xl,
                 fontWeight: '700',
                 letterSpacing: 0.3,
               }}
@@ -55,7 +56,7 @@ export default function AppHeader({ currentSession }: AppHeaderProps) {
             <Text
               style={{
                 color: colors.textMuted,
-                fontSize: 12,
+                fontSize: responsive.fontSize.sm,
                 fontWeight: '400',
                 marginTop: 2,
               }}
@@ -66,9 +67,9 @@ export default function AppHeader({ currentSession }: AppHeaderProps) {
           {/* Status indicator */}
           <View
             style={{
-              width: 12,
-              height: 12,
-              borderRadius: 6,
+              width: responsive.isTablet ? 16 : 12,
+              height: responsive.isTablet ? 16 : 12,
+              borderRadius: responsive.isTablet ? 8 : 6,
               backgroundColor: currentSession ? colors.primary : colors.border2,
               shadowColor: currentSession ? colors.primary : 'transparent',
               shadowOffset: { width: 0, height: 0 },
@@ -83,9 +84,9 @@ export default function AppHeader({ currentSession }: AppHeaderProps) {
         {currentSession && (
           <View
             style={{
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              borderRadius: 8,
+              paddingHorizontal: responsive.padding.sm,
+              paddingVertical: responsive.spacing.xs,
+              borderRadius: responsive.borderRadius.md,
               backgroundColor: colors.surface,
               flexDirection: 'row',
               justifyContent: 'space-between',
@@ -93,13 +94,13 @@ export default function AppHeader({ currentSession }: AppHeaderProps) {
             }}
           >
             <View>
-              <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '500' }}>
+              <Text style={{ color: colors.textMuted, fontSize: responsive.fontSize.xs, fontWeight: '500' }}>
                 Sessão Atual
               </Text>
               <Text
                 style={{
                   color: colors.text,
-                  fontSize: 13,
+                  fontSize: responsive.fontSize.sm,
                   fontWeight: '600',
                   marginTop: 2,
                 }}
@@ -109,16 +110,16 @@ export default function AppHeader({ currentSession }: AppHeaderProps) {
             </View>
             <View
               style={{
-                paddingHorizontal: 8,
-                paddingVertical: 4,
-                borderRadius: 6,
+                paddingHorizontal: responsive.spacing.sm,
+                paddingVertical: responsive.spacing.xs,
+                borderRadius: responsive.borderRadius.sm,
                 backgroundColor: colors.primary,
               }}
             >
               <Text
                 style={{
                   color: '#ffffff',
-                  fontSize: 11,
+                  fontSize: responsive.fontSize.xs,
                   fontWeight: '600',
               }}
               >

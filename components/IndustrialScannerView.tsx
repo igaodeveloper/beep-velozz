@@ -325,6 +325,28 @@ export default function IndustrialScannerView({
     scanner.state === ScannerState.PAUSED ? colors.warning :
     colors.success;
 
+  // Verifica se todos os limites foram atingidos
+  const allLimitsReached = useMemo(() => {
+    return Object.entries(maxScans).every(([type, max]) => 
+      scanner.counts[type as keyof typeof maxScans] >= max
+    );
+  }, [scanner.counts, maxScans]);
+
+  // Verifica se algum progresso foi feito (para mostrar botão apenas se houver atividade)
+  const hasSomeProgress = useMemo(() => {
+    return Object.values(scanner.counts).some(count => count > 0);
+  }, [scanner.counts]);
+
+  // Toca feedback quando todos os limites são atingidos
+  useEffect(() => {
+    if (allLimitsReached && hasSomeProgress) {
+      // Feedback tátil de sucesso
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      }
+    }
+  }, [allLimitsReached, hasSomeProgress]);
+
   return (
     <View style={{ flex: 1, backgroundColor: '#000', position: 'relative' }}>
       {/* Câmera em tela cheia absoluta */}
@@ -635,7 +657,8 @@ export default function IndustrialScannerView({
               textTransform: 'uppercase',
               opacity: 0.7,
             }}>
-              {scanner.state === ScannerState.LIMIT_REACHED ? 'Limite' :
+              {allLimitsReached ? 'Concluído' :
+               scanner.state === ScannerState.LIMIT_REACHED ? 'Limite' :
                scanner.state === ScannerState.PAUSED ? 'Pausado' :
                'Escaneando'}
             </Text>
@@ -699,6 +722,47 @@ export default function IndustrialScannerView({
               </View>
             ))}
           </View>
+
+          {/* Botão de Finalizar (aparece quando todos os limites são atingidos) */}
+          {allLimitsReached && hasSomeProgress && (
+            <TouchableOpacity
+              onPress={onEndSession}
+              activeOpacity={0.8}
+              style={{
+                backgroundColor: '#10b981',
+                borderRadius: isTablet ? 12 : 10,
+                paddingVertical: isTablet ? 16 : 14,
+                paddingHorizontal: isTablet ? 24 : 20,
+                alignItems: 'center',
+                marginTop: isTablet ? 16 : 12,
+                borderWidth: 2,
+                borderColor: '#059669',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 4,
+                elevation: 5,
+              }}
+            >
+              <Text style={{
+                color: '#ffffff',
+                fontSize: isTablet ? 16 : 14,
+                fontWeight: '700',
+                letterSpacing: 0.5,
+                textTransform: 'uppercase',
+              }}>
+                Finalizar Sessão
+              </Text>
+              <Text style={{
+                color: 'rgba(255,255,255,0.8)',
+                fontSize: isTablet ? 11 : 9,
+                fontWeight: '500',
+                marginTop: 4,
+              }}>
+                Todos os pacotes escaneados
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
       {/* Limit reached modal */}

@@ -10,13 +10,17 @@ import {
   useWindowDimensions,
   Modal,
   ActivityIndicator,
+  StatusBar,
+  SafeAreaView,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { ScannedPackage } from '@/types/session';
+import { PackageType } from '@/types/scanner';
 import { packageTypeLabel, packageTypeBadgeColors, generateId, getPackageValue, getSessionMetrics } from '@/utils/session';
 import { normalizeCode as normalizeScannerCode, identifyPackage } from '@/utils/scannerIdentification';
 import { useAppTheme } from '@/utils/useAppTheme';
+import { useResponsive, responsiveSize, responsiveValue } from '@/utils/useResponsive';
 import { preloadSounds, unloadSounds } from '@/utils/sound';
 import { ScannerAudioService, ScannerAudioType } from '@/utils/scannerAudio';
 
@@ -42,6 +46,7 @@ export default function ScannerView({
 }: ScannerViewProps) {
   const { colors } = useAppTheme();
   const { width: windowWidth } = useWindowDimensions();
+  const responsive = useResponsive();
   const [manualCode, setManualCode] = useState('');
   const [manualError, setManualError] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -61,7 +66,7 @@ export default function ScannerView({
   const packageSet = useMemo(() => new Set(packages.map(p => p.code)), [packages]);
 
   // Helper para mapear tipo de pacote para áudio
-  const getAudioTypeForPackage = (type: 'shopee' | 'mercado_livre' | 'avulso'): ScannerAudioType => {
+  const getAudioTypeForPackage = (type: PackageType): ScannerAudioType => {
     switch (type) {
       case 'shopee':
         return ScannerAudioType.BEEP_A;
@@ -69,6 +74,7 @@ export default function ScannerView({
         return ScannerAudioType.BEEP_B;
       case 'avulso':
         return ScannerAudioType.BEEP_C;
+      case 'unknown':
       default:
         return ScannerAudioType.BEEP_ERROR;
     }
@@ -78,7 +84,10 @@ export default function ScannerView({
   const [limitLabel, setLimitLabel] = useState('');
   const [limitValue, setLimitValue] = useState(0);
 
-  const checkLimit = (type: 'shopee' | 'mercado_livre' | 'avulso') => {
+  const checkLimit = (type: PackageType) => {
+    // Se for unknown, não verifica limite
+    if (type === 'unknown') return true;
+    
     let currentCount = 0;
     let limit = 0;
     let label = '';
@@ -204,16 +213,16 @@ export default function ScannerView({
     console.log(`[ScannerView] 🎯 MANUAL IDENTIFICADO: type="${pkgInfo.type}", matched=${pkgInfo.matched}, confidence=${pkgInfo.confidence}`);
     const type = pkgInfo.type;
 
-    // check limit
-    if (!checkLimit(type)) {
-      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
-      if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-      }
-      setManualCode('');
-      setManualError('Limite atingido para este tipo');
-      return;
+  // check limit
+  if (type === 'unknown' || !checkLimit(type)) {
+    audioService.playAudio(ScannerAudioType.BEEP_ERROR);
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
     }
+    setManualCode('');
+    setManualError(type === 'unknown' ? 'Tipo de pacote não identificado' : 'Limite atingido para este tipo');
+    return;
+  }
 
     const pkg: ScannedPackage = {
       id: generateId(),
@@ -319,13 +328,41 @@ export default function ScannerView({
 
   const lastBadge = lastScanned ? packageTypeBadgeColors(lastScanned.type) : null;
 
-  const reticleWidth = Math.max(200, Math.min(windowWidth - 64, 320));
-  const reticleHeight = Math.max(120, Math.min(reticleWidth * 0.62, 220));
-  const overlayExtraX = Math.min(260, Math.max(180, Math.round(reticleWidth * 1.15)));
-  const overlayExtraY = Math.min(220, Math.max(160, Math.round(reticleHeight * 1.3)));
+  // Dimensões responsivas do reticle baseadas no tipo de dispositivo
+  const reticleWidth = useMemo(() => {
+    if (responsive.isTablet) return responsiveSize(responsive, 280, 400, 450, 250);
+    if (responsive.isUltraWide) return responsiveSize(responsive, 320, 450, 500, 280);
+    return Math.max(200, Math.min(windowWidth - 64, 320));
+  }, [responsive, windowWidth]);
+
+  const reticleHeight = useMemo(() => {
+    if (responsive.isTablet) return reticleWidth * 0.65;
+    if (responsive.isUltraWide) return reticleWidth * 0.6;
+    return Math.max(120, Math.min(reticleWidth * 0.62, 220));
+  }, [reticleWidth, responsive]);
+
+  const overlayExtraX = useMemo(() => {
+    if (responsive.isTablet) return Math.round(reticleWidth * 1.2);
+    if (responsive.isUltraWide) return Math.round(reticleWidth * 1.15);
+    return Math.min(260, Math.max(180, Math.round(reticleWidth * 1.15)));
+  }, [reticleWidth, responsive]);
+
+  const overlayExtraY = useMemo(() => {
+    if (responsive.isTablet) return Math.round(reticleHeight * 1.4);
+    if (responsive.isUltraWide) return Math.round(reticleHeight * 1.3);
+    return Math.min(220, Math.max(160, Math.round(reticleHeight * 1.3)));
+  }, [reticleHeight, responsive]);
+
+  // Gerenciar fullscreen automático
+  useEffect(() => {
+    if (Platform.OS !== 'web') {
+      StatusBar.setHidden(true, 'fade');
+    }
+  }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, position: 'relative' }}>
+      <View style={{ flex: 1, backgroundColor: colors.bg, position: 'relative' }}>
       {/* Camera area (mock/placeholder for web compat) */}
       <View style={{
         flex: 1,
@@ -360,18 +397,19 @@ export default function ScannerView({
         {Platform.OS !== 'web' && permission?.granted && (
           <View style={{
             position: 'absolute',
-            top: 16,
-            right: 16,
+            top: Platform.OS === 'ios' ? responsive.padding.xxl : responsive.padding.lg,
+            right: responsive.padding.md,
             zIndex: 10,
+            gap: responsive.spacing.sm,
           }}>
             <TouchableOpacity
               onPress={() => setTorchEnabled(v => !v)}
               activeOpacity={0.85}
               style={{
                 backgroundColor: torchEnabled ? colors.primary : 'rgba(15,23,42,0.85)',
-                borderRadius: 12,
-                paddingHorizontal: 14,
-                paddingVertical: 10,
+                borderRadius: responsive.borderRadius.lg,
+                paddingHorizontal: responsive.padding.md,
+                paddingVertical: responsive.padding.md,
                 borderWidth: 1,
                 borderColor: torchEnabled ? colors.primary : colors.border2,
                 shadowColor: '#000',
@@ -379,10 +417,52 @@ export default function ScannerView({
                 shadowOpacity: 0.3,
                 shadowRadius: 4,
                 elevation: 3,
+                minWidth: responsive.fontSize.xl * 2,
+                minHeight: responsive.fontSize.xl * 2,
+                justifyContent: 'center',
+                alignItems: 'center',
               }}
             >
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800', letterSpacing: 0.5 }}>
-                {torchEnabled ? '💡 FLASH ON' : '🔦 FLASH OFF'}
+              <Text style={{ 
+                color: '#fff', 
+                fontSize: responsive.fontSize.md, 
+                fontWeight: '800', 
+                letterSpacing: 0.5,
+                lineHeight: responsive.fontSize.lg,
+              }}>
+                {torchEnabled ? '💡' : '🔦'}
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              onPress={onEndSession}
+              activeOpacity={0.85}
+              style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.9)',
+                borderRadius: responsive.borderRadius.lg,
+                paddingHorizontal: responsive.padding.md,
+                paddingVertical: responsive.padding.md,
+                borderWidth: 1,
+                borderColor: '#ef4444',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                elevation: 3,
+                minWidth: responsive.fontSize.xl * 2,
+                minHeight: responsive.fontSize.xl * 2,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ 
+                color: '#fff', 
+                fontSize: responsive.fontSize.md, 
+                fontWeight: '800', 
+                letterSpacing: 0.5,
+                lineHeight: responsive.fontSize.lg,
+              }}>
+                ⏹
               </Text>
             </TouchableOpacity>
           </View>
@@ -543,13 +623,23 @@ export default function ScannerView({
         </Animated.View>
 
         <Text style={{
-          color: colors.text, fontSize: 12, marginTop: 20,
-          fontWeight: '600', letterSpacing: 0.3,
+          color: colors.text, 
+          fontSize: responsive.fontSize.sm, 
+          marginTop: responsive.spacing.lg,
+          fontWeight: '600', 
+          letterSpacing: 0.3,
+          textAlign: 'center',
+          paddingHorizontal: responsive.padding.md,
         }}>
           Posicione o QR Code ou código de barras dentro da área
         </Text>
         {/* counts vs declared with compact progress */}
-        <View style={{ marginTop: 8, width: '86%', alignItems: 'center' }}>
+        <View style={{ 
+          marginTop: responsive.spacing.sm, 
+          width: responsive.isTablet ? '70%' : responsive.isUltraWide ? '60%' : '86%', 
+          alignItems: 'center',
+          maxWidth: responsive.maxWidth.md,
+        }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
             <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '600' }}>Shopee</Text>
             <Text style={{ color: colors.text, fontSize: 11, fontWeight: '700' }}>{metrics.shopee}/{declaredCounts.shopee}</Text>
@@ -611,8 +701,8 @@ export default function ScannerView({
               </Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
-              <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '800' }}>
-                R$ {lastScanned.value.toFixed(2)}
+              <Text style={{ color: colors.primary, fontSize: responsive.fontSize.sm, fontWeight: '800' }}>
+                R$ {(lastScanned.value || 0).toFixed(2)}
               </Text>
             </View>
             {onRequestPhoto && (
@@ -711,8 +801,8 @@ export default function ScannerView({
                   {packageTypeLabel(lastScanned.type)}
                 </Text>
               </View>
-              <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '800', marginTop: 8 }}>
-                R$ {lastScanned.value.toFixed(2)}
+              <Text style={{ color: colors.primary, fontSize: responsive.fontSize.lg, fontWeight: '800', marginTop: 8 }}>
+                R$ {(lastScanned.value || 0).toFixed(2)}
               </Text>
             </View>
           </Animated.View>
@@ -724,23 +814,24 @@ export default function ScannerView({
         backgroundColor: colors.surface,
         borderTopWidth: 1,
         borderTopColor: colors.border,
+        display: 'none', // Sempre oculto em modo fullscreen automático
       }}>
         {/* Toggle Header */}
         <TouchableOpacity
           onPress={() => setManualInputExpanded(!manualInputExpanded)}
           activeOpacity={0.7}
           style={{
-            paddingHorizontal: 16,
-            paddingVertical: 12,
+            paddingHorizontal: responsive.padding.md,
+            paddingVertical: responsive.padding.md,
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
           }}
         >
-          <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: '600', letterSpacing: 0.5 }}>
+          <Text style={{ color: colors.textMuted, fontSize: responsive.fontSize.xs, fontWeight: '600', letterSpacing: 0.5 }}>
             ⌨️ ENTRADA MANUAL
           </Text>
-          <Text style={{ color: colors.primary, fontSize: 16, fontWeight: '700' }}>
+          <Text style={{ color: colors.primary, fontSize: responsive.fontSize.md, fontWeight: '700' }}>
             {manualInputExpanded ? '−' : '+'}
           </Text>
         </TouchableOpacity>
@@ -748,10 +839,10 @@ export default function ScannerView({
         {/* Expanded Content */}
         {manualInputExpanded && (
           <View style={{
-            padding: 16,
-            paddingTop: 8,
+            padding: responsive.padding.md,
+            paddingTop: responsive.padding.sm,
             flexDirection: 'row',
-            gap: 10,
+            gap: responsive.spacing.sm,
             alignItems: 'center',
             flexWrap: 'wrap',
             borderTopWidth: 1,
@@ -770,11 +861,12 @@ export default function ScannerView({
                 backgroundColor: colors.surface2,
                 borderWidth: 1,
                 borderColor: colors.textMuted,
-                borderRadius: 10,
-                padding: 12,
+                borderRadius: responsive.borderRadius.md,
+                padding: responsive.padding.md,
                 color: colors.text,
-                fontSize: 15,
+                fontSize: responsive.fontSize.md,
                 fontFamily: 'SpaceMono-Regular',
+                minHeight: responsive.fontSize.lg * 2,
               }}
             />
             <TouchableOpacity
@@ -782,13 +874,15 @@ export default function ScannerView({
               activeOpacity={0.85}
               style={{
                 backgroundColor: colors.primary,
-                borderRadius: 10,
-                padding: 13,
+                borderRadius: responsive.borderRadius.md,
+                padding: responsive.padding.md,
                 justifyContent: 'center',
                 alignItems: 'center',
+                minWidth: responsive.fontSize.lg * 2,
+                minHeight: responsive.fontSize.lg * 2,
               }}
             >
-              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '800' }}>+</Text>
+              <Text style={{ color: '#fff', fontSize: responsive.fontSize.md, fontWeight: '800' }}>+</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -803,23 +897,24 @@ export default function ScannerView({
       {/* End Session Button */}
       <View style={{
         backgroundColor: colors.surface,
-        paddingHorizontal: 16,
-        paddingBottom: 16,
-        paddingTop: 4,
+        paddingHorizontal: responsive.padding.md,
+        paddingBottom: responsive.padding.md,
+        paddingTop: responsive.padding.xs,
+        display: 'none', // Sempre oculto em modo fullscreen automático
       }}>
         <TouchableOpacity
           onPress={onEndSession}
           activeOpacity={0.85}
           style={{
             backgroundColor: colors.surface2,
-            borderRadius: 10,
-            padding: 13,
+            borderRadius: responsive.borderRadius.md,
+            padding: responsive.padding.md,
             alignItems: 'center',
             borderWidth: 1,
             borderColor: colors.textMuted,
           }}
         >
-          <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700', letterSpacing: 0.5 }}>
+          <Text style={{ color: colors.primary, fontSize: responsive.fontSize.sm, fontWeight: '700', letterSpacing: 0.5 }}>
             ⏹ ENCERRAR SESSÃO
           </Text>
         </TouchableOpacity>
@@ -888,6 +983,7 @@ export default function ScannerView({
           </View>
         </Modal>
       )}
+      </View>
     </View>
   );
 }

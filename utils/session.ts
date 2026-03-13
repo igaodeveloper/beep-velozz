@@ -6,6 +6,7 @@ const PACKAGE_VALUES: Record<PackageType, number> = {
   'shopee': 6,
   'mercado_livre': 8,
   'avulso': 8,
+  'unknown': 0,
 };
 
 export function getPackageValue(type: PackageType): number {
@@ -67,6 +68,8 @@ export function packageTypeLabel(type: PackageType): string {
     case 'shopee': return 'Shopee';
     case 'mercado_livre': return 'Mercado Livre';
     case 'avulso': return 'Avulso';
+    case 'unknown': return 'Desconhecido';
+    default: return 'Desconhecido';
   }
 }
 
@@ -75,6 +78,8 @@ export function packageTypeBadgeColors(type: PackageType): { bg: string; text: s
     case 'shopee': return { bg: '#ff5722', text: '#fff' };
     case 'mercado_livre': return { bg: '#ffe600', text: '#333' };
     case 'avulso': return { bg: '#64748b', text: '#fff' };
+    case 'unknown': return { bg: '#94a3b8', text: '#fff' };
+    default: return { bg: '#94a3b8', text: '#fff' };
   }
 }
 
@@ -133,7 +138,6 @@ export function formatWhatsAppMessage(session: Session): string {
 
 *RESUMO EXECUTIVO*
 ● Total: ${metrics.total} pacotes | R$ ${metrics.valueTotal.toFixed(2).replace('.', ',')}
-● Ticket Médio: R$ ${(metrics.valueTotal / Math.max(metrics.total, 1)).toFixed(2).replace('.', ',')}
 ${divergenceInfo}`;
 }
 

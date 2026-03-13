@@ -168,8 +168,11 @@ export class IndustrialScannerController {
       }
 
       // 6. Verifica duplicação inteligente
+      console.debug(`[ScannerController] Verificando duplicação para: ${normalizedCode}, tipo: ${type}`);
       const duplicateCheckResult = this._checkDuplicateAdvanced(normalizedCode, type);
+      console.debug(`[ScannerController] Resultado duplicação: isDuplicate=${duplicateCheckResult.isDuplicate}, reason=${duplicateCheckResult.reason}`);
       if (duplicateCheckResult.isDuplicate) {
+        console.debug(`[ScannerController] ❌ DUPLICATA DETECTADA - Código rejeitado`);
         this.internalState.stats.duplicates++;
         await this._playErrorAudio();
         this._logAudit(rawCode, normalizedCode, {
@@ -210,8 +213,11 @@ export class IndustrialScannerController {
       }
 
       // 8. Tenta incrementar limite do tipo
+      console.debug(`[ScannerController] Tentando incrementar tipo: ${type}, count atual: ${this.limitController.getCount(type)}, limite: ${this.limitController.getLimit(type)}`);
       const canIncrement = this.limitController.tryIncrement(type);
+      console.debug(`[ScannerController] tryIncrement resultado: ${canIncrement}, novo count: ${this.limitController.getCount(type)}`);
       if (!canIncrement) {
+        console.debug(`[ScannerController] ❌ LIMITE ATINGIDO - Código rejeitado`);
         // Verifica se todos os tipos atingiram limite
         if (this._allLimitsReached()) {
           this.internalState.state = ScannerState.LIMIT_REACHED;
@@ -238,6 +244,7 @@ export class IndustrialScannerController {
       // 9. Leitura bem-sucedida - atualiza estado
       this.internalState.stats.validScans++;
       this.internalState.scanCounts[type]++;
+      console.debug(`[ScannerController] ✅ SCAN BEM-SUCEDIDO: type=${type}, internalState.counts[${type}]=${this.internalState.scanCounts[type]}, limitController.count=${this.limitController.getCount(type)}`);
 
       this.internalState.lastValidScan = {
         code: normalizedCode,
@@ -289,13 +296,18 @@ export class IndustrialScannerController {
    */
   private _checkDuplicateAdvanced(normalizedCode: string, type: PackageType): { isDuplicate: boolean; reason?: string } {
     const lastScan = this.internalState.lastValidScan;
-    if (!lastScan) return { isDuplicate: false };
+    if (!lastScan) {
+      console.debug(`[_checkDuplicateAdvanced] Sem lastScan, não é duplicata`);
+      return { isDuplicate: false };
+    }
 
     const now = Date.now();
     const timeSinceLastScan = now - lastScan.timestamp;
+    console.debug(`[_checkDuplicateAdvanced] lastScan: ${lastScan.code}, timeSinceLastScan: ${timeSinceLastScan}ms`);
 
     // Considera duplicata se mesmo código nos últimos 2 segundos
     if (lastScan.code === normalizedCode && timeSinceLastScan < 2000) {
+      console.debug(`[_checkDuplicateAdvanced] ❌ Duplicata detectada: mesmo código em ${timeSinceLastScan}ms`);
       return { isDuplicate: true, reason: 'same_code_quick_scan' };
     }
 
@@ -303,11 +315,14 @@ export class IndustrialScannerController {
     const history = this.scanHistory.get(normalizedCode);
     if (history && history.type === type) {
       const recentScans = history.timestamps.filter(ts => now - ts < 3000);
+      console.debug(`[_checkDuplicateAdvanced] History: ${recentScans.length} scans recentes para ${normalizedCode}`);
       if (recentScans.length >= 1) {
+        console.debug(`[_checkDuplicateAdvanced] ❌ Duplicata detectada: ${recentScans.length} scans no histórico`);
         return { isDuplicate: true, reason: 'repeated_scan_window' };
       }
     }
 
+    console.debug(`[_checkDuplicateAdvanced] ✅ Não é duplicata`);
     return { isDuplicate: false };
   }
 
@@ -439,12 +454,14 @@ export class IndustrialScannerController {
    * Retorna contagem atual por tipo
    */
   getCounts(): Record<PackageType, number> {
-    return {
+    const counts = {
       shopee: this.limitController.getCount('shopee'),
       mercado_livre: this.limitController.getCount('mercado_livre'),
       avulso: this.limitController.getCount('avulso'),
       unknown: this.internalState.scanCounts.unknown,
     };
+    console.debug(`[ScannerController] getCounts() retornando:`, counts);
+    return counts;
   }
 
   /**

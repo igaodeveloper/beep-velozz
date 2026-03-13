@@ -34,6 +34,14 @@ const PREFIX_PATTERNS = [
     audioKey: 'beep_b',
     description: 'Mercado Livre (prefixo 20000)',
   },
+  // Mercado Livre - Códigos numéricos longos (envios)
+  {
+    prefix: '466',
+    minLength: 11, // 466 + 8 dígitos
+    type: 'mercado_livre' as PackageType,
+    audioKey: 'beep_b',
+    description: 'Mercado Livre (código de envio 466)',
+  },
   // Avulso - Prefixo LM
   {
     prefix: 'LM',

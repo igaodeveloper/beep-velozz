@@ -12,6 +12,9 @@ import {
   updateDoc,
   serverTimestamp,
   DocumentReference,
+  enableNetwork,
+  disableNetwork,
+  onSnapshot,
 } from 'firebase/firestore';
 import {
   getAuth,
@@ -77,6 +80,80 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
+// --- Network Status Management ---
+let isOnline = true;
+let networkErrorCount = 0;
+const MAX_NETWORK_ERRORS = 3;
+
+// Monitor network status and handle offline mode
+export async function checkNetworkStatus(): Promise<boolean> {
+  try {
+    // Try a simple read operation to check connectivity
+    const testDoc = doc(db, '_health', 'ping');
+    await getDoc(testDoc);
+    isOnline = true;
+    networkErrorCount = 0;
+    return true;
+  } catch (error: any) {
+    networkErrorCount++;
+    isOnline = false;
+    console.warn(`[Firestore] Network check failed (${networkErrorCount}/${MAX_NETWORK_ERRORS}):`, error.message);
+    
+    // If we've had multiple failures, disable network to reduce errors
+    if (networkErrorCount >= MAX_NETWORK_ERRORS) {
+      try {
+        await disableNetwork(db);
+        console.log('[Firestore] Network disabled due to repeated failures');
+      } catch (disableError) {
+        console.warn('[Firestore] Failed to disable network:', disableError);
+      }
+    }
+    return false;
+  }
+}
+
+// Try to re-enable network when coming back online
+export async function tryReconnect(): Promise<boolean> {
+  if (!isOnline) {
+    try {
+      await enableNetwork(db);
+      const success = await checkNetworkStatus();
+      if (success) {
+        console.log('[Firestore] Successfully reconnected');
+        return true;
+      }
+    } catch (error) {
+      console.warn('[Firestore] Failed to reconnect:', error);
+    }
+  }
+  return false;
+}
+
+// Wrapper for Firestore operations with retry logic
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 2
+): Promise<T> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      console.warn(`[Firestore] Operation failed (attempt ${attempt + 1}/${maxRetries + 1}):`, error.message);
+      
+      // If it's a network error and we have retries left, wait and try again
+      if (error.code === 'unavailable' || error.code === 'timeout' && attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+        continue;
+      }
+      
+      // If it's the last attempt or not a network error, throw
+      throw error;
+    }
+  }
+  
+  throw new Error('Operation failed after all retries');
+}
+
 // --- helpers for our domain -------------------------------------------------
 
 export interface Driver {
@@ -104,9 +181,11 @@ export interface PackageRecord {
 
 // low-level fetch
 export async function fetchDrivers(): Promise<Driver[]> {
-  const col = collection(db, 'drivers');
-  const snap = await getDocs(query(col, where('active', '==', true)));
-  return snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+  return withRetry(async () => {
+    const col = collection(db, 'drivers');
+    const snap = await getDocs(query(col, where('active', '==', true)));
+    return snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+  });
 }
 
 // caching helpers (used for offline / fast startup)
@@ -130,30 +209,53 @@ export async function getCachedDrivers(): Promise<Driver[]> {
 // high-level that returns cached data immediately and refreshes in background
 export async function fetchDriversWithCache(): Promise<Driver[]> {
   const cached = await getCachedDrivers();
+  
+  // Try to refresh in background, but don't fail if offline
   fetchDrivers()
-    .then(d => cacheDrivers(d))
-    .catch(() => {});
+    .then(d => {
+      cacheDrivers(d);
+      // If we were offline and now got data, try to reconnect
+      if (!isOnline && d.length > 0) {
+        tryReconnect();
+      }
+    })
+    .catch(error => {
+      console.warn('[Firestore] Background refresh failed, using cache:', error.message);
+      checkNetworkStatus(); // Update network status
+    });
+    
   if (cached.length) {
     return cached;
   }
-  const fresh = await fetchDrivers();
-  await cacheDrivers(fresh);
-  return fresh;
+  
+  // If no cache, try fresh with retry
+  try {
+    const fresh = await fetchDrivers();
+    await cacheDrivers(fresh);
+    return fresh;
+  } catch (error) {
+    console.error('[Firestore] No cache and fresh fetch failed:', error);
+    throw error;
+  }
 }
 
 // fetch operators (similar)
 export async function fetchOperators(): Promise<Operator[]> {
-  const col = collection(db, 'operators');
-  const snap = await getDocs(query(col, where('active', '==', true)));
-  return snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+  return withRetry(async () => {
+    const col = collection(db, 'operators');
+    const snap = await getDocs(query(col, where('active', '==', true)));
+    return snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+  });
 }
 
 // fetch packages that belong to a driver
 export async function fetchPackagesForDriver(driverId: string): Promise<PackageRecord[]> {
-  const col = collection(db, 'packages');
-  const q = query(col, where('assignedDriverId', '==', driverId));
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+  return withRetry(async () => {
+    const col = collection(db, 'packages');
+    const q = query(col, where('assignedDriverId', '==', driverId));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+  });
 }
 
 // cache for packages per driver
@@ -196,16 +298,18 @@ export async function fetchPackagesForDriverWithCache(
 
 // mark a package as scanned (with optional extra data)
 export async function markPackageScanned(packageCode: string, driverId: string) {
-  const col = collection(db, 'packages');
-  const q = query(col, where('code', '==', packageCode));
-  const snap = await getDocs(q);
-  if (snap.empty) {
-    throw new Error('package-not-found');
-  }
-  const docRef = snap.docs[0].ref;
-  await updateDoc(docRef, {
-    status: 'scanned',
-    scannedAt: serverTimestamp(),
+  return withRetry(async () => {
+    const col = collection(db, 'packages');
+    const q = query(col, where('code', '==', packageCode));
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      throw new Error('package-not-found');
+    }
+    const docRef = snap.docs[0].ref;
+    await updateDoc(docRef, {
+      status: 'scanned',
+      scannedAt: serverTimestamp(),
+    });
   });
 }
 
@@ -250,5 +354,13 @@ export async function loginOperator(
 export async function logout(): Promise<void> {
   await signOut(auth);
 }
+
+// --- Network Status Utilities ---
+export { isOnline };
+
+// Initialize network monitoring
+checkNetworkStatus().catch(() => {
+  console.log('[Firestore] Initial network check failed, starting in offline mode');
+});
 
 // ...add more helpers as needed (sessions, counts, etc.)

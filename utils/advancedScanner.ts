@@ -131,7 +131,7 @@ const ADVANCED_PATTERNS: CodePattern[] = [
     priority: 80,
   },
 
-  // MERCADO LIVRE - Apenas prefixo 20000
+  // MERCADO LIVRE - Prefixo 20000
   {
     name: 'Mercado Livre 20000',
     regex: /^20000[0-9]*$/,
@@ -140,6 +140,16 @@ const ADVANCED_PATTERNS: CodePattern[] = [
     marketplace: 'Mercado Livre',
     type: 'mercado_livre',
     priority: 85,
+  },
+  // MERCADO LIVRE - Códigos de envio 466
+  {
+    name: 'Mercado Livre Envio 466',
+    regex: /^466[0-9]{8,}$/,
+    minLength: 11,
+    maxLength: 20,
+    marketplace: 'Mercado Livre',
+    type: 'mercado_livre',
+    priority: 80,
   },
 
   // Fallback genérico (mantém para outros usos, mas não será aplicado como ML)
@@ -214,17 +224,17 @@ export function advancedNormalizeCode(rawCode: string): string {
 }
 
 /**
- * Functions specialized for Mercado Livre packages. The requirement is strict
- * – only codes that start with 20000 are considered valid. This
- * isolates Mercado Livre scanning from the more general engine and prevents
- * accidental acceptance of arbitrary EAN‑13 numbers.
+ * Functions specialized for Mercado Livre packages. Accepts codes that start with
+ * 20000 (Pack IDs) or 466 followed by 8+ digits (shipping codes). This isolates
+ * Mercado Livre scanning from the more general engine and prevents accidental
+ * acceptance of arbitrary EAN‑13 numbers.
  */
 
 export function normalizeMercadoLivreCode(rawCode: string): string {
   console.debug(`[normalizeMercadoLivreCode] Input: "${rawCode}"`);
   const normalized = advancedNormalizeCode(rawCode);
   console.debug(`[normalizeMercadoLivreCode] Advanced normalized: "${normalized}"`);
-  if (/^20000/.test(normalized)) {
+  if (/^20000/.test(normalized) || /^466\d{8,}$/.test(normalized)) {
     console.debug(`[normalizeMercadoLivreCode] Accepted prefix: "${normalized}"`);
     return normalized;
   }

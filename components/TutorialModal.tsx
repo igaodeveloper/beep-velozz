@@ -171,7 +171,10 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            style={{ maxHeight: 340 }}
+            style={{ maxHeight: 360 }}
+            contentContainerStyle={{
+              alignItems: 'center',
+            }}
           >
             {slides.map((slide) => (
               <View

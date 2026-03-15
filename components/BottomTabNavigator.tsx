@@ -7,7 +7,7 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { 
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react-native';
 import { advancedHaptics } from '@/utils/advancedHaptics';
 import { useTabAnimation, useBasicAnimation } from '@/utils/animationUtils';
+import { PanGestureHandler, State } from 'react-native-gesture-handler';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -77,6 +78,7 @@ export default function BottomTabNavigator({
   showScannerTab = true 
 }: BottomTabNavigatorProps) {
   const { colors, isDark } = useAppTheme();
+  const translateX = useSharedValue(0);
   
   // Initialize animations for each tab - hooks must be called at component level
   const tabAnimations = tabs.reduce((acc, tab) => {
@@ -131,6 +133,39 @@ export default function BottomTabNavigator({
 
   const filteredTabs = showScannerTab ? tabs : tabs.filter(tab => tab.id !== 'scanner');
 
+  const handleSwipeChangeTab = (direction: 'left' | 'right') => {
+    const currentIndex = filteredTabs.findIndex((t) => t.id === activeTab);
+    if (currentIndex === -1) return;
+    let nextIndex = currentIndex;
+    if (direction === 'left' && currentIndex < filteredTabs.length - 1) {
+      nextIndex = currentIndex + 1;
+    } else if (direction === 'right' && currentIndex > 0) {
+      nextIndex = currentIndex - 1;
+    }
+    const nextTab = filteredTabs[nextIndex];
+    if (nextTab && nextTab.id !== activeTab) {
+      handleTabPress(nextTab.id);
+    }
+  };
+
+  const onGestureEvent = (event: any) => {
+    translateX.value = event.translationX;
+  };
+
+  const onHandlerStateChange = (event: any) => {
+    if (event.nativeEvent.state === State.END) {
+      const swipeX = event.nativeEvent.translationX;
+      if (Math.abs(swipeX) > 40) {
+        if (swipeX < 0) {
+          handleSwipeChangeTab('left');
+        } else {
+          handleSwipeChangeTab('right');
+        }
+      }
+      translateX.value = withTiming(0, { duration: 150 });
+    }
+  };
+
   return (
     <SafeAreaView 
       style={[
@@ -142,41 +177,46 @@ export default function BottomTabNavigator({
       ]}
       edges={['bottom']}
     >
-      <View style={styles.navContainer}>
-        {filteredTabs.map((tab) => {
-          const Icon = tab.icon;
-          const tabAnimation = tabAnimations[tab.id];
-          
-          return (
-            <TouchableOpacity
-              key={tab.id}
-              style={[styles.tab, getTabStyle(tab.id)]}
-              onPress={() => handleTabPress(tab.id)}
-              activeOpacity={0.7}
-            >
-              <Animated.View style={tabAnimation.animatedStyle}>
-                <Icon
-                  size={24}
-                  color={getIconColor(tab.id)}
-                  strokeWidth={activeTab === tab.id ? 2.5 : 2}
-                />
-              </Animated.View>
-              
-              <Animated.Text
-                style={[
-                  styles.label,
-                  {
-                    color: getTextColor(tab.id),
-                  },
-                  tabAnimation.animatedStyle,
-                ]}
+      <PanGestureHandler
+        onGestureEvent={onGestureEvent}
+        onHandlerStateChange={onHandlerStateChange}
+      >
+        <Animated.View style={styles.navContainer}>
+          {filteredTabs.map((tab) => {
+            const Icon = tab.icon;
+            const tabAnimation = tabAnimations[tab.id];
+            
+            return (
+              <TouchableOpacity
+                key={tab.id}
+                style={[styles.tab, getTabStyle(tab.id)]}
+                onPress={() => handleTabPress(tab.id)}
+                activeOpacity={0.7}
               >
-                {tab.label}
-              </Animated.Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+                <Animated.View style={tabAnimation.animatedStyle}>
+                  <Icon
+                    size={24}
+                    color={getIconColor(tab.id)}
+                    strokeWidth={activeTab === tab.id ? 2.5 : 2}
+                  />
+                </Animated.View>
+                
+                <Animated.Text
+                  style={[
+                    styles.label,
+                    {
+                      color: getTextColor(tab.id),
+                    },
+                    tabAnimation.animatedStyle,
+                  ]}
+                >
+                  {tab.label}
+                </Animated.Text>
+              </TouchableOpacity>
+            );
+          })}
+        </Animated.View>
+      </PanGestureHandler>
     </SafeAreaView>
   );
 }

@@ -9,6 +9,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { Dimensions } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import "../global.css";
 import { ThemeProvider as CustomThemeProvider, useTheme } from "../utils/themeContext";
@@ -83,8 +84,10 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   return (
-    <CustomThemeProvider>
-      <RootLayoutContent />
-    </CustomThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <CustomThemeProvider>
+        <RootLayoutContent />
+      </CustomThemeProvider>
+    </GestureHandlerRootView>
   );
 }

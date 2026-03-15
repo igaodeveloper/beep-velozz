@@ -22,6 +22,7 @@ import HomeScreen from '@/components/HomeScreen';
 import SettingsScreen from '@/components/SettingsScreen';
 import AdvancedAnalytics from '@/components/AdvancedAnalytics';
 import { savePackagePhoto } from '@/utils/photoStorage';
+import SessionInitModal from '@/components/SessionInitModal';
 import BottomTabNavigator, { TabType } from '@/components/BottomTabNavigator';
 
 type AppScreen = 'scanning' | 'report' | 'history' | 'welcome' | 'settings' | 'analytics';
@@ -50,23 +51,10 @@ export default function App() {
   // History
   const [sessions, setSessions] = useState<Session[]>([]);
 
-  // Handle session data from new-session screen
-  useEffect(() => {
-    if (params.sessionData) {
-      try {
-        const sessionData = JSON.parse(params.sessionData as string);
-        handleStartSession(
-          sessionData.operatorName,
-          sessionData.driverName,
-          sessionData.declaredCounts
-        );
-        // Clear the params
-        router.replace('/');
-      } catch (error) {
-        console.error('Error parsing session data:', error);
-      }
-    }
-  }, [params.sessionData]);
+  // Modal de inicialização de sessão (INICIAR CONFERÊNCIA)
+  const [sessionModalVisible, setSessionModalVisible] = useState(false);
+
+  // Fluxo antigo via rota /new-session desativado – agora usamos apenas o modal SessionInitModal.
 
   // Photo capture state (optional)
   const [photoModalVisible, setPhotoModalVisible] = useState(false);
@@ -86,7 +74,8 @@ export default function App() {
         break;
       case 'scanner':
         if (!currentSession) {
-          router.push('/new-session');
+          // Abre modal de INICIAR CONFERÊNCIA em vez de navegar para outra tela
+          setSessionModalVisible(true);
         } else {
           setScreen('scanning');
         }
@@ -238,7 +227,9 @@ export default function App() {
 
   const handleStartScanner = () => {
     if (!currentSession) {
-      router.push('/new-session');
+      // Quando não existe sessão, abrimos o modal de INICIAR CONFERÊNCIA
+      setActiveTab('scanner');
+      setSessionModalVisible(true);
     } else {
       setScreen('scanning');
       setActiveTab('scanner');
@@ -261,7 +252,10 @@ export default function App() {
           {/* Home Screen */}
           {screen === 'welcome' && !currentSession && (
             <HomeScreen
-              onStartSession={() => router.push('/new-session')}
+              onStartSession={() => {
+                setActiveTab('scanner');
+                setSessionModalVisible(true);
+              }}
               onViewHistory={handleViewHistory}
               onViewAnalytics={handleViewAnalytics}
               onStartScanner={handleStartScanner}
@@ -336,6 +330,14 @@ export default function App() {
               }}
             />
           )}
+          {/* Modal de inicialização de sessão (INICIAR CONFERÊNCIA) */}
+          <SessionInitModal
+            visible={sessionModalVisible}
+            onStart={(operatorName, driverName, declaredCounts) => {
+              handleStartSession(operatorName, driverName, declaredCounts);
+              setSessionModalVisible(false);
+            }}
+          />
         </View>
     </TabLayout>
   );

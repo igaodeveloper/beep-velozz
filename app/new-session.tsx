@@ -64,17 +64,26 @@ export default function NewSessionScreen() {
       avulso: Number(avulsoCount) || 0,
     };
     
-    // Pass session data back to main screen
-    router.push({
+    // Pass session data back to main screen via URL params
+    // Volta para a tela principal já com os dados da sessão
+    router.replace({
       pathname: '/',
       params: {
+        // JSON payload (mantido para compatibilidade)
         sessionData: JSON.stringify({
           operatorName: operatorName.trim(),
           driverName,
           declaredCounts,
-          driverId: driverId || undefined
-        })
-      }
+          driverId: driverId || undefined,
+        }),
+        // Campos individuais (fallback caso o JSON não chegue corretamente)
+        operatorName: operatorName.trim(),
+        driverName,
+        shopee: String(declaredCounts.shopee),
+        mercadoLivre: String(declaredCounts.mercadoLivre),
+        avulso: String(declaredCounts.avulso),
+        driverId: driverId || '',
+      },
     });
   };
 

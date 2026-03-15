@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   TouchableOpacity,
   Text,
   StyleSheet,
-  Animated,
   Dimensions,
   Platform,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { 
@@ -18,7 +18,8 @@ import {
   Home,
   Camera
 } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
+import { advancedHaptics } from '@/utils/advancedHaptics';
+import { useTabAnimation, useBasicAnimation } from '@/utils/animationUtils';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -76,39 +77,41 @@ export default function BottomTabNavigator({
   showScannerTab = true 
 }: BottomTabNavigatorProps) {
   const { colors, isDark } = useAppTheme();
-  const [animatedValues] = useState(() => 
-    tabs.reduce((acc, tab) => {
-      acc[tab.id] = new Animated.Value(activeTab === tab.id ? 1 : 0);
-      return acc;
-    }, {} as Record<TabType, Animated.Value>)
-  );
+  
+  // Initialize animations for each tab - hooks must be called at component level
+  const tabAnimations = tabs.reduce((acc, tab) => {
+    acc[tab.id] = useTabAnimation(false); // Initialize all as inactive
+    return acc;
+  }, {} as Record<TabType, ReturnType<typeof useTabAnimation>>);
+
+  // Set initial active state and update when activeTab changes
+  useEffect(() => {
+    tabs.forEach(tab => {
+      if (activeTab === tab.id) {
+        tabAnimations[tab.id].activate();
+      } else {
+        tabAnimations[tab.id].deactivate();
+      }
+    });
+  }, [activeTab]);
 
   const handleTabPress = (tabId: TabType) => {
     if (tabId === activeTab) return;
 
-    // Haptic feedback
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    // Haptic feedback avançado
+    advancedHaptics.onTabPress();
 
-    // Animate the previous tab to inactive
-    Animated.timing(animatedValues[activeTab], {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
+    // Animação de saída da tab atual
+    tabAnimations[activeTab].deactivate();
 
-    // Animate the new tab to active
-    Animated.timing(animatedValues[tabId], {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
+    // Animação de entrada da nova tab
+    tabAnimations[tabId].activate();
 
     onTabChange(tabId);
   };
 
   const getTabStyle = (tabId: TabType) => {
     const isActive = activeTab === tabId;
-    const animatedValue = animatedValues[tabId];
 
     return {
       backgroundColor: isActive ? colors.primary + '15' : 'transparent',
@@ -142,7 +145,7 @@ export default function BottomTabNavigator({
       <View style={styles.navContainer}>
         {filteredTabs.map((tab) => {
           const Icon = tab.icon;
-          const animatedValue = animatedValues[tab.id];
+          const tabAnimation = tabAnimations[tab.id];
           
           return (
             <TouchableOpacity
@@ -151,39 +154,12 @@ export default function BottomTabNavigator({
               onPress={() => handleTabPress(tab.id)}
               activeOpacity={0.7}
             >
-              <Animated.View
-                style={[
-                  styles.iconContainer,
-                  {
-                    transform: [
-                      {
-                        scale: animatedValue.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [1, 1.1],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-              >
-                <Animated.View
-                  style={{
-                    transform: [
-                      {
-                        scale: animatedValue.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0.83, 1],
-                        }),
-                      },
-                    ],
-                  }}
-                >
-                  <Icon
-                    size={24}
-                    color={getIconColor(tab.id)}
-                    strokeWidth={activeTab === tab.id ? 2.5 : 2}
-                  />
-                </Animated.View>
+              <Animated.View style={tabAnimation.animatedStyle}>
+                <Icon
+                  size={24}
+                  color={getIconColor(tab.id)}
+                  strokeWidth={activeTab === tab.id ? 2.5 : 2}
+                />
               </Animated.View>
               
               <Animated.Text
@@ -191,15 +167,8 @@ export default function BottomTabNavigator({
                   styles.label,
                   {
                     color: getTextColor(tab.id),
-                    fontSize: animatedValue.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [11, 12],
-                    }),
-                    fontWeight: animatedValue.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['400', '600'],
-                    }) as any,
                   },
+                  tabAnimation.animatedStyle,
                 ]}
               >
                 {tab.label}
@@ -238,11 +207,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 2,
     minHeight: 60,
     position: 'relative',
-  },
-  iconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
   },
   label: {
     fontSize: 11,

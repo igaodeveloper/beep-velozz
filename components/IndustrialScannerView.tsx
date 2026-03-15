@@ -9,7 +9,7 @@ import {
   Text,
   TouchableOpacity,
   TextInput,
-  Animated,
+  Animated as RNAnimated,
   Easing,
   Platform,
   useWindowDimensions,
@@ -20,6 +20,16 @@ import {
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  withRepeat,
+  withSequence,
+  interpolate,
+  Easing as ReEasing,
+} from 'react-native-reanimated';
 import { useIndustrialScanner } from '@/utils/useIndustrialScanner';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { preloadSounds, unloadSounds } from '@/utils/sound';
@@ -76,11 +86,11 @@ export default function IndustrialScannerView({
   const [permission, requestPermission] = useCameraPermissions();
 
   // Animações
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const scanLineAnim = useRef(new Animated.Value(0)).current;
-  const cornerPulseAnim = useRef(new Animated.Value(1)).current;
-  const glowAnim = useRef(new Animated.Value(0)).current;
-  const radarAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useSharedValue(1);
+  const scanLineAnim = useSharedValue(0);
+  const cornerPulseAnim = useSharedValue(1);
+  const glowAnim = useSharedValue(0);
+  const radarAnim = useSharedValue(0);
 
   // Modal de limite
   const [limitModalVisible, setLimitModalVisible] = useState(false);
@@ -117,101 +127,53 @@ export default function IndustrialScannerView({
   // Animações avançadas
   useEffect(() => {
     // Pulse animation principal
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.02,
-          duration: 1200,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1200,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
+    pulseAnim.value = withRepeat(
+      withSequence(
+        withTiming(1.02, { duration: 1200, easing: ReEasing.inOut(ReEasing.ease) }),
+        withTiming(1, { duration: 1200, easing: ReEasing.inOut(ReEasing.ease) })
+      ),
+      -1,
+      true
     );
-    pulse.start();
 
     // Corner pulse animation
-    const cornerPulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(cornerPulseAnim, {
-          toValue: 1.1,
-          duration: 800,
-          easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(cornerPulseAnim, {
-          toValue: 1,
-          duration: 800,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
+    cornerPulseAnim.value = withRepeat(
+      withSequence(
+        withTiming(1.1, { duration: 800, easing: ReEasing.out(ReEasing.ease) }),
+        withTiming(1, { duration: 800, easing: ReEasing.inOut(ReEasing.ease) })
+      ),
+      -1,
+      true
     );
-    cornerPulse.start();
 
     // Glow animation
-    const glow = Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowAnim, {
-          toValue: 1,
-          duration: 2000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(glowAnim, {
-          toValue: 0,
-          duration: 2000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
+    glowAnim.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 2000, easing: ReEasing.inOut(ReEasing.ease) }),
+        withTiming(0, { duration: 2000, easing: ReEasing.inOut(ReEasing.ease) })
+      ),
+      -1,
+      true
     );
-    glow.start();
 
     // Radar animation
-    const radar = Animated.loop(
-      Animated.timing(radarAnim, {
-        toValue: 1,
-        duration: 3000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
+    radarAnim.value = withRepeat(
+      withTiming(1, { duration: 3000, easing: ReEasing.linear }),
+      -1,
+      false
     );
-    radar.start();
-
-    return () => {
-      pulse.stop();
-      cornerPulse.stop();
-      glow.stop();
-      radar.stop();
-    };
   }, []);
 
   // Animação de linha de scan
   useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(scanLineAnim, {
-          toValue: 1,
-          duration: 1100,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(scanLineAnim, {
-          toValue: 0,
-          duration: 1100,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
+    scanLineAnim.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 1100, easing: ReEasing.inOut(ReEasing.ease) }),
+        withTiming(0, { duration: 1100, easing: ReEasing.inOut(ReEasing.ease) })
+      ),
+      -1,
+      true
     );
-    loop.start();
-    return () => loop.stop();
   }, []);
 
   // Requisição de permissão
@@ -346,6 +308,17 @@ export default function IndustrialScannerView({
       }
     }
   }, [allLimitsReached, hasSomeProgress]);
+
+  // Animated styles
+  const scanLineStyle = useAnimatedStyle(() => ({
+    transform: [{
+      translateY: interpolate(
+        scanLineAnim.value,
+        [0, 1],
+        [-(reticleHeight * 0.35), reticleHeight * 0.35]
+      )
+    }],
+  }));
 
   return (
     <View style={{ flex: 1, backgroundColor: '#000', position: 'relative', paddingBottom: 80 }}>
@@ -604,20 +577,17 @@ export default function IndustrialScannerView({
 
           {/* Linha de scan minimalista */}
           <Animated.View
-            style={{
-              position: 'absolute',
-              left: isTablet ? 12 : 8,
-              right: isTablet ? 12 : 8,
-              height: 1.5,
-              backgroundColor: statusColor,
-              borderRadius: 1,
-              transform: [{
-                translateY: scanLineAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [-(reticleHeight * 0.35), reticleHeight * 0.35],
-                }),
-              }],
-            }}
+            style={[
+              {
+                position: 'absolute',
+                left: isTablet ? 12 : 8,
+                right: isTablet ? 12 : 8,
+                height: 1.5,
+                backgroundColor: statusColor,
+                borderRadius: 1,
+              },
+              scanLineStyle
+            ]}
           />
 
           {/* Centro minimalista */}

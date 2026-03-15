@@ -7,8 +7,8 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-  Animated,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/utils/useAppTheme';
 import {

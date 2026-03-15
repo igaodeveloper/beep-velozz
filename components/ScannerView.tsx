@@ -4,7 +4,7 @@ import {
   Text,
   TouchableOpacity,
   TextInput,
-  Animated,
+  Animated as RNAnimated,
   Easing,
   Platform,
   useWindowDimensions,
@@ -13,6 +13,16 @@ import {
   StatusBar,
   SafeAreaView,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  withRepeat,
+  withSequence,
+  interpolate,
+  Easing as ReEasing,
+} from 'react-native-reanimated';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { ScannedPackage } from '@/types/session';
@@ -51,9 +61,9 @@ export default function ScannerView({
   const [manualError, setManualError] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [manualInputExpanded, setManualInputExpanded] = useState(false);
-  const feedbackAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const scanLineAnim = useRef(new Animated.Value(0)).current;
+  const feedbackAnim = useSharedValue(0);
+  const pulseAnim = useSharedValue(1);
+  const scanLineAnim = useSharedValue(0);
   const [permission, requestPermission] = useCameraPermissions();
   const [barcodeLocked, setBarcodeLocked] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
@@ -120,62 +130,35 @@ export default function ScannerView({
 
   // Pulse animation for reticle
   useEffect(() => {
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.04,
-          duration: 900,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 900,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
+    pulseAnim.value = withRepeat(
+      withSequence(
+        withTiming(1.04, { duration: 900, easing: ReEasing.inOut(ReEasing.ease) }),
+        withTiming(1, { duration: 900, easing: ReEasing.inOut(ReEasing.ease) })
+      ),
+      -1,
+      true
     );
-    pulse.start();
-    return () => pulse.stop();
   }, []);
 
   useEffect(() => {
-    preloadSounds();
-    return () => {
-      unloadSounds();
-    };
-  }, []);
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(scanLineAnim, {
-          toValue: 1,
-          duration: 1100,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(scanLineAnim, {
-          toValue: 0,
-          duration: 1100,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
+    scanLineAnim.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 1100, easing: ReEasing.inOut(ReEasing.ease) }),
+        withTiming(0, { duration: 1100, easing: ReEasing.inOut(ReEasing.ease) })
+      ),
+      -1,
+      true
     );
-    loop.start();
-    return () => loop.stop();
   }, []);
 
-  // Feedback flash when scanned
   useEffect(() => {
     if (lastScanned) {
       setShowFeedback(true);
-      Animated.sequence([
-        Animated.timing(feedbackAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
-        Animated.timing(feedbackAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
-      ]).start(() => setShowFeedback(false));
+      feedbackAnim.value = withSequence(
+        withTiming(1, { duration: 150 }),
+        withTiming(0, { duration: 600 })
+      );
+      setTimeout(() => setShowFeedback(false), 750);
     }
   }, [lastScanned]);
 
@@ -353,6 +336,25 @@ export default function ScannerView({
     return Math.min(220, Math.max(160, Math.round(reticleHeight * 1.3)));
   }, [reticleHeight, responsive]);
 
+  // Animated styles
+  const pulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulseAnim.value }],
+  }));
+
+  const scanLineStyle = useAnimatedStyle(() => ({
+    transform: [{
+      translateY: interpolate(
+        scanLineAnim.value,
+        [0, 1],
+        [-(reticleHeight * 0.35), reticleHeight * 0.35]
+      )
+    }],
+  }));
+
+  const feedbackStyle = useAnimatedStyle(() => ({
+    opacity: feedbackAnim.value,
+  }));
+
   // Gerenciar fullscreen automático
   useEffect(() => {
     if (Platform.OS !== 'web') {
@@ -494,14 +496,16 @@ export default function ScannerView({
         </View>
 
         {/* Scanner Reticle */}
-        <Animated.View style={{
-          width: reticleWidth,
-          height: reticleHeight,
-          transform: [{ scale: pulseAnim }],
-          position: 'relative',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
+        <Animated.View style={[
+          {
+            width: reticleWidth,
+            height: reticleHeight,
+            position: 'relative',
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+          pulseStyle
+        ]}>
           {/* Overlay escuro */}
           <View style={{
             position: 'absolute',
@@ -587,25 +591,22 @@ export default function ScannerView({
           />
 
           {/* Scan line animada */}
-          <Animated.View style={{
-            position: 'absolute',
-            left: 8,
-            right: 8,
-            height: 2,
-            backgroundColor: colors.primary,
-            opacity: 0.7,
-            shadowColor: colors.primary,
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.6,
-            shadowRadius: 8,
-            elevation: 5,
-            transform: [{
-              translateY: scanLineAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [-(reticleHeight * 0.35), reticleHeight * 0.35],
-              }),
-            }],
-          }} />
+          <Animated.View style={[
+            {
+              position: 'absolute',
+              left: 8,
+              right: 8,
+              height: 2,
+              backgroundColor: colors.primary,
+              opacity: 0.7,
+              shadowColor: colors.primary,
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.6,
+              shadowRadius: 8,
+              elevation: 5,
+            },
+            scanLineStyle
+          ]} />
 
           {/* Center dot */}
           <View style={{
@@ -773,14 +774,16 @@ export default function ScannerView({
 
         {/* Last scanned feedback overlay */}
         {showFeedback && lastScanned && lastBadge && (
-          <Animated.View style={{
-            position: 'absolute',
-            top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(16,185,129,0.08)',
-            justifyContent: 'center',
-            alignItems: 'center',
-            opacity: feedbackAnim,
-          }}>
+          <Animated.View style={[
+            {
+              position: 'absolute',
+              top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(16,185,129,0.08)',
+              justifyContent: 'center',
+              alignItems: 'center',
+            },
+            feedbackStyle
+          ]}>
             <View style={{
               backgroundColor: colors.surface2,
               borderRadius: 12,

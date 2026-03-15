@@ -5,6 +5,7 @@ import { getSessionMetrics, formatWhatsAppMessage, formatDate, formatTimestamp, 
 import { useAppTheme } from '@/utils/useAppTheme';
 import PackagePhotoGallery from '@/components/PackagePhotoGallery';
 import { exportSessionWithPhotosToPDF } from '@/utils/pdfExport';
+import MainLayout from '@/components/MainLayout';
 
 interface ReportViewProps {
   session: Session;
@@ -46,7 +47,8 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+    <MainLayout>
+      <View style={{ flex: 1 }}>
       {/* Header */}
       <View style={{
         flexDirection: 'row', alignItems: 'center',
@@ -80,7 +82,7 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
         )}
       </View>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
         {/* Session Info */}
         <View style={{
           backgroundColor: colors.surface, borderRadius: 14,
@@ -263,7 +265,8 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
         onClose={() => setShowPhotoGallery(false)}
         onExportWithPhotos={handleExportWithPhotos}
       />
-    </View>
+      </View>
+    </MainLayout>
   );
 }
 

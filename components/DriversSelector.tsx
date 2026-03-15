@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -40,6 +40,7 @@ export default function DriversSelector({
   const [showNewDriver, setShowNewDriver] = useState(false);
   const [expandedDrivers, setExpandedDrivers] = useState(false);
   const [deletingDriverId, setDeletingDriverId] = useState<string | null>(null);
+  const [driverSearch, setDriverSearch] = useState('');
 
   const handleAddDriver = async () => {
     if (!newDriverName.trim()) return;
@@ -79,7 +80,23 @@ export default function DriversSelector({
     );
   };
 
-  const selectedDriver = drivers.find(d => d.id === selectedDriverId);
+  const sortedDrivers = useMemo(
+    () =>
+      [...drivers].sort((a, b) =>
+        a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
+      ),
+    [drivers]
+  );
+
+  const filteredDrivers = useMemo(
+    () =>
+      sortedDrivers.filter((d) =>
+        d.name.toLowerCase().includes(driverSearch.trim().toLowerCase())
+      ),
+    [sortedDrivers, driverSearch]
+  );
+
+  const selectedDriver = sortedDrivers.find(d => d.id === selectedDriverId);
 
   return (
     <View style={{ marginBottom: 20 }}>
@@ -175,15 +192,44 @@ export default function DriversSelector({
                 maxHeight: width > 480 ? 300 : 250,
               }}
             >
-              <ScrollView
-                style={{ maxHeight: width > 480 ? 300 : 250 }}
-                nestedScrollEnabled={true}
-                scrollEnabled={true}
-                showsVerticalScrollIndicator={true}
-                bounces={false}
-              >
-                {drivers.length > 0 ? (
-                  drivers.map((driver, index) => {
+              <>
+                {/* Search input inside list */}
+                <View
+                  style={{
+                    paddingHorizontal: 12,
+                    paddingTop: 10,
+                    paddingBottom: 4,
+                    borderBottomWidth: 1,
+                    borderBottomColor: colors.border,
+                  }}
+                >
+                  <TextInput
+                    value={driverSearch}
+                    onChangeText={setDriverSearch}
+                    placeholder="Buscar motorista pelo nome..."
+                    placeholderTextColor={colors.textSubtle}
+                    style={{
+                      backgroundColor: colors.surface2,
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: colors.border2,
+                      paddingHorizontal: 10,
+                      paddingVertical: 8,
+                      color: colors.text,
+                      fontSize: 13,
+                    }}
+                  />
+                </View>
+
+                <ScrollView
+                  style={{ maxHeight: width > 480 ? 300 : 250 }}
+                  nestedScrollEnabled={true}
+                  scrollEnabled={true}
+                  showsVerticalScrollIndicator={true}
+                  bounces={false}
+                >
+                  {filteredDrivers.length > 0 ? (
+                  filteredDrivers.map((driver, index) => {
                     const isSelected = driver.id === selectedDriverId;
                     return (
                       <Animated.View key={driver.id} entering={SlideInLeft.delay(index * 30)}>
@@ -255,14 +301,17 @@ export default function DriversSelector({
                       </Animated.View>
                     );
                   })
-                ) : (
-                  <View style={{ padding: 20, alignItems: 'center' }}>
-                    <Text style={{ color: colors.textMuted, fontSize: 13 }}>
-                      Nenhum motorista cadastrado
-                    </Text>
-                  </View>
-                )}
-              </ScrollView>
+                  ) : (
+                    <View style={{ padding: 20, alignItems: 'center' }}>
+                      <Text style={{ color: colors.textMuted, fontSize: 13 }}>
+                        {drivers.length === 0
+                          ? 'Nenhum motorista cadastrado'
+                          : 'Nenhum motorista encontrado para essa busca'}
+                      </Text>
+                    </View>
+                  )}
+                </ScrollView>
+              </>
             </Animated.View>
           )}
 

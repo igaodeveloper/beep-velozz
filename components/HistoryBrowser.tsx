@@ -5,6 +5,7 @@ import {
 import { Session } from '@/types/session';
 import { formatDate, formatTimestamp, getSessionMetrics, packageTypeBadgeColors, packageTypeLabel } from '@/utils/session';
 import { useAppTheme } from '@/utils/useAppTheme';
+import MainLayout from '@/components/MainLayout';
 
 interface HistoryBrowserProps {
   sessions: Session[];
@@ -25,15 +26,18 @@ export default function HistoryBrowser({ sessions, onBack, onNewSession }: Histo
 
   if (selectedSession) {
     return (
-      <SessionDetailView
-        session={selectedSession}
-        onBack={() => setSelectedSession(null)}
-      />
+      <MainLayout>
+        <SessionDetailView
+          session={selectedSession}
+          onBack={() => setSelectedSession(null)}
+        />
+      </MainLayout>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+    <MainLayout>
+      <View style={{ flex: 1 }}>
       {/* Header */}
       <View style={{
         flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap',
@@ -162,7 +166,8 @@ export default function HistoryBrowser({ sessions, onBack, onNewSession }: Histo
           <Text style={{ color: '#fff', fontSize: 16, fontWeight: '800' }}>+ NOVA SESSÃO</Text>
         </TouchableOpacity>
       </View>
-    </View>
+      </View>
+    </MainLayout>
   );
 }
 

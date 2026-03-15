@@ -9,6 +9,7 @@ import {
   generateInsights,
   generatePerformanceReport,
 } from '@/utils/analytics';
+import MainLayout from '@/components/MainLayout';
 
 interface AdvancedAnalyticsProps {
   sessions: Session[];
@@ -23,7 +24,8 @@ export default function AdvancedAnalytics({ sessions, onClose }: AdvancedAnalyti
   const report = useMemo(() => generatePerformanceReport(sessions), [sessions]);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }}>
+    <MainLayout>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
       {/* Header */}
       <View
         style={{
@@ -244,7 +246,8 @@ export default function AdvancedAnalytics({ sessions, onClose }: AdvancedAnalyti
           </View>
         )}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </MainLayout>
   );
 }
 

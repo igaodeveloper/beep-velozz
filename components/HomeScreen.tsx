@@ -8,6 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useAppTheme } from '@/utils/useAppTheme';
+import MainLayout from '@/components/MainLayout';
 import { Session } from '@/types/session';
 import { loadSessions } from '@/utils/storage';
 import { getSessionMetrics } from '@/utils/session';
@@ -145,13 +146,15 @@ export default function HomeScreen({
   );
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.bg }]}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
-      }
-    >
-      <View style={styles.header}>
+    <MainLayout>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 32 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+        }
+      >
+        <View style={styles.header}>
         <Text style={[styles.greeting, { color: colors.text }]}>
           Bem-vindo ao Beep Velozz
         </Text>
@@ -267,8 +270,9 @@ export default function HomeScreen({
               : 'A taxa de divergência de hoje está acima do ideal. Priorize sessões com maiores volumes para investigação.'}
           </Text>
         </View>
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </MainLayout>
   );
 }
 

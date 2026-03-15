@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { useTheme } from '@/utils/themeContext';
+import MainLayout from '@/components/MainLayout';
 import {
   Moon,
   Sun,
@@ -66,24 +67,41 @@ export default function SettingsScreen() {
   };
 
   if (activeSection === 'notifications') {
-    return <NotificationSettingsScreen onBack={() => setActiveSection('root')} />;
+    return (
+      <MainLayout>
+        <NotificationSettingsScreen onBack={() => setActiveSection('root')} />
+      </MainLayout>
+    );
   }
 
   if (activeSection === 'privacy') {
-    return <PrivacySecuritySettingsScreen onBack={() => setActiveSection('root')} />;
+    return (
+      <MainLayout>
+        <PrivacySecuritySettingsScreen onBack={() => setActiveSection('root')} />
+      </MainLayout>
+    );
   }
 
   if (activeSection === 'storage') {
-    return <StorageSettingsScreen onBack={() => setActiveSection('root')} />;
+    return (
+      <MainLayout>
+        <StorageSettingsScreen onBack={() => setActiveSection('root')} />
+      </MainLayout>
+    );
   }
 
   if (activeSection === 'support') {
-    return <HelpSupportSettingsScreen onBack={() => setActiveSection('root')} />;
+    return (
+      <MainLayout>
+        <HelpSupportSettingsScreen onBack={() => setActiveSection('root')} />
+      </MainLayout>
+    );
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.bg }]}>
-      <View style={styles.header}>
+    <MainLayout>
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
+        <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Configurações</Text>
         <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>
           Personalize sua experiência
@@ -175,8 +193,9 @@ export default function SettingsScreen() {
         <Text style={[styles.footerText, { color: colors.textFaint }]}>
           © 2024 - Todos os direitos reservados
         </Text>
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </MainLayout>
   );
 }
 

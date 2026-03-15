@@ -24,6 +24,7 @@ import AdvancedAnalytics from '@/components/AdvancedAnalytics';
 import { savePackagePhoto } from '@/utils/photoStorage';
 import SessionInitModal from '@/components/SessionInitModal';
 import BottomTabNavigator, { TabType } from '@/components/BottomTabNavigator';
+import TutorialModal from '@/components/TutorialModal';
 
 type AppScreen = 'scanning' | 'report' | 'history' | 'welcome' | 'settings' | 'analytics';
 
@@ -59,6 +60,7 @@ export default function App() {
   // Photo capture state (optional)
   const [photoModalVisible, setPhotoModalVisible] = useState(false);
   const [photoPackageCode, setPhotoPackageCode] = useState<string | null>(null);
+  const [tutorialVisible, setTutorialVisible] = useState(false);
 
   useEffect(() => {
     loadSessions().then(setSessions);
@@ -249,6 +251,7 @@ export default function App() {
       <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
         {/* Main Content Area */}
         <View style={{ flex: 1 }}>
+          <AppHeader currentSession={currentSession} onOpenTutorial={() => setTutorialVisible(true)} />
           {/* Home Screen - permanece ativa mesmo com sessão em andamento */}
           {screen === 'welcome' && (
             <HomeScreen
@@ -337,6 +340,10 @@ export default function App() {
               handleStartSession(operatorName, driverName, declaredCounts);
               setSessionModalVisible(false);
             }}
+          />
+          <TutorialModal
+            visible={tutorialVisible}
+            onClose={() => setTutorialVisible(false)}
           />
         </View>
     </TabLayout>

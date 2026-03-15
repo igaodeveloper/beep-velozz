@@ -41,7 +41,7 @@ export default function PackagePhotoCapture({
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
       const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.8,
+        quality: 1,
         base64: false,
         exif: false,
       });

@@ -43,6 +43,8 @@ export default function HomeScreen({
     totalSessions: 0,
     totalPackages: 0,
     totalValue: 0,
+    avgPerSession: 0,
+    divergenceRate: 0,
   });
 
   useEffect(() => {
@@ -64,8 +66,9 @@ export default function HomeScreen({
         return sessionDate.getTime() === today.getTime();
       });
 
-      const totalPackages = todaySessions.reduce((sum, session) => 
-        sum + session.packages.length, 0
+      const totalPackages = todaySessions.reduce(
+        (sum, session) => sum + session.packages.length,
+        0
       );
 
       const totalValue = todaySessions.reduce((sum, session) => {
@@ -73,10 +76,25 @@ export default function HomeScreen({
         return sum + metrics.valueTotal;
       }, 0);
 
+      const avgPerSession =
+        todaySessions.length > 0
+          ? Math.round(totalPackages / todaySessions.length)
+          : 0;
+
+      const divergencesToday = todaySessions.filter(
+        (session) => session.hasDivergence
+      ).length;
+      const divergenceRate =
+        todaySessions.length > 0
+          ? Math.round((divergencesToday / todaySessions.length) * 100)
+          : 0;
+
       setTodayStats({
         totalSessions: todaySessions.length,
         totalPackages,
         totalValue,
+        avgPerSession,
+        divergenceRate,
       });
     } catch (error) {
       console.error('Error loading data:', error);
@@ -163,6 +181,26 @@ export default function HomeScreen({
             value={todayStats.totalSessions.toString()}
             subtitle="Concluídas"
           />
+          <StatCard
+            icon={TrendingUp}
+            title="Média por sessão"
+            value={todayStats.avgPerSession.toString()}
+            subtitle="Pacotes por sessão"
+          />
+          <StatCard
+            icon={Clock}
+            title="Risco de divergência"
+            value={`${todayStats.divergenceRate}%`}
+            subtitle={
+              todayStats.divergenceRate === 0
+                ? 'Operação estável'
+                : todayStats.divergenceRate < 20
+                ? 'Risco baixo'
+                : todayStats.divergenceRate < 40
+                ? 'Risco moderado'
+                : 'Risco elevado'
+            }
+          />
         </View>
       </View>
 
@@ -212,6 +250,24 @@ export default function HomeScreen({
           </View>
         </View>
       )}
+
+      <View style={styles.insightSection}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Insight do dia</Text>
+        <View style={[styles.insightCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.insightLabel, { color: colors.textMuted }]}>
+            Operação em tempo real
+          </Text>
+          <Text style={[styles.insightText, { color: colors.text }]}>
+            {todayStats.totalSessions === 0
+              ? 'Comece uma nova conferência para gerar suas primeiras métricas do dia.'
+              : todayStats.divergenceRate === 0
+              ? 'Nenhuma divergência registrada hoje. Mantenha esse nível de precisão na conferência.'
+              : todayStats.divergenceRate < 20
+              ? 'Sua taxa de divergência está controlada. Continue acompanhando de perto os volumes mais altos.'
+              : 'A taxa de divergência de hoje está acima do ideal. Priorize sessões com maiores volumes para investigação.'}
+          </Text>
+        </View>
+      </View>
     </ScrollView>
   );
 }
@@ -329,5 +385,27 @@ const styles = StyleSheet.create({
   recentSubtitle: {
     fontSize: 14,
     marginLeft: 32,
+  },
+  insightSection: {
+    marginBottom: 40,
+  },
+  insightCard: {
+    marginTop: 12,
+    marginHorizontal: 24,
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 16,
+  },
+  insightLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  insightText: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
   },
 });

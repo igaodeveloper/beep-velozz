@@ -23,19 +23,21 @@ export const lightTheme = {
 
 export const darkTheme = {
   colors: {
-    bg: '#0f172a',
-    surface: '#1e293b',
-    surface2: '#0f172a',
-    border: '#334155',
-    border2: '#475569',
+    // Fundo estilo OLED (preto real com superfícies bem escuras)
+    bg: '#000000',
+    surface: '#020617',
+    surface2: '#020617',
+    border: '#1e293b',
+    border2: '#334155',
     text: '#f8fafc',
     textMuted: '#cbd5e1',
     textSubtle: '#94a3b8',
     textFaint: '#64748b',
-    primary: '#f97316',
-    primary2: '#fb923c',
-    primaryLight: '#fed7aa',
-    primaryDark: '#ea580c',
+    // Laranja vivo em tom neon
+    primary: '#ff7a1f',
+    primary2: '#ff9140',
+    primaryLight: '#ffd1a1',
+    primaryDark: '#cc5f14',
     secondary: '#1e293b',
     secondaryText: '#f8fafc',
     success: '#10b981',

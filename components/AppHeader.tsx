@@ -1,14 +1,15 @@
 import React from 'react';
-import { View, Text, useWindowDimensions } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { useResponsive } from '@/utils/useResponsive';
 import { Session } from '@/types/session';
 
 interface AppHeaderProps {
   currentSession?: Session | null;
+  onOpenTutorial?: () => void;
 }
 
-export default function AppHeader({ currentSession }: AppHeaderProps) {
+export default function AppHeader({ currentSession, onOpenTutorial }: AppHeaderProps) {
   const { colors } = useAppTheme();
   const responsive = useResponsive();
   
@@ -23,7 +24,7 @@ export default function AppHeader({ currentSession }: AppHeaderProps) {
       }}
     >
       <View style={{ gap: responsive.spacing.sm }}>
-        {/* Logo + Title */}
+        {/* Logo + Title + Tutorial */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: responsive.spacing.md }}>
           <View
             style={{
@@ -64,6 +65,30 @@ export default function AppHeader({ currentSession }: AppHeaderProps) {
               Gerenciador de Logística
             </Text>
           </View>
+          {/* Tutorial button */}
+          {onOpenTutorial && (
+            <TouchableOpacity
+              onPress={onOpenTutorial}
+              style={{
+                paddingHorizontal: responsive.spacing.sm,
+                paddingVertical: responsive.spacing.xs,
+                borderRadius: responsive.borderRadius.sm,
+                backgroundColor: colors.surface,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.primary,
+                  fontSize: responsive.fontSize.xs,
+                  fontWeight: '700',
+                }}
+              >
+                ? Tutorial
+              </Text>
+            </TouchableOpacity>
+          )}
           {/* Status indicator */}
           <View
             style={{

@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Modal,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -14,25 +13,20 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
+import { useRouter } from 'expo-router';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { useResponsive } from '@/utils/useResponsive';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Driver } from '@/services/firestore';
 import DriversSelector from '@/components/DriversSelector';
+import BottomTabNavigator, { TabType } from '@/components/BottomTabNavigator';
+import TabLayout from '@/components/TabLayout';
 
-interface SessionInitModalProps {
-  visible: boolean;
-  onStart: (
-    operatorName: string,
-    driverName: string,
-    declaredCounts: { shopee: number; mercadoLivre: number; avulso: number },
-    driverId?: string
-  ) => void;
-}
-
-export default function SessionInitModal({ visible, onStart }: SessionInitModalProps) {
+export default function NewSessionScreen() {
+  const router = useRouter();
   const { colors } = useAppTheme();
   const responsive = useResponsive();
+  const [activeTab, setActiveTab] = useState<TabType>('home');
 
   const [operatorName, setOperatorName] = useState('');
   const [driverId, setDriverId] = useState<string | null>(null);
@@ -69,13 +63,36 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
       mercadoLivre: Number(mercadoLivreCount) || 0,
       avulso: Number(avulsoCount) || 0,
     };
-    onStart(operatorName.trim(), driverName, declaredCounts, driverId || undefined);
-    setOperatorName('');
-    setDriverId(null);
-    setShopeeCount('');
-    setMercadoLivreCount('');
-    setAvulsoCount('');
-    setErrors({});
+    
+    // Pass session data back to main screen
+    router.push({
+      pathname: '/',
+      params: {
+        sessionData: JSON.stringify({
+          operatorName: operatorName.trim(),
+          driverName,
+          declaredCounts,
+          driverId: driverId || undefined
+        })
+      }
+    });
+  };
+
+  const handleBack = () => {
+    router.back();
+  };
+
+  const handleTabChange = (tab: TabType) => {
+    // Navigate to other screens if needed
+    if (tab === 'scanner') {
+      router.push('/');
+    } else if (tab === 'analytics') {
+      router.push('/');
+    } else if (tab === 'history') {
+      router.push('/');
+    } else if (tab === 'settings') {
+      router.push('/');
+    }
   };
 
   useEffect(() => {
@@ -118,29 +135,43 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
     }
   };
 
-
   return (
-    <Modal visible={visible} transparent animationType="fade">
-      <SafeAreaView style={{ 
-        flex: 1, 
-        backgroundColor: 'rgba(0,0,0,0.85)', 
-        justifyContent: 'center', 
-        alignItems: 'center',
-        paddingBottom: 80 // Espaço para o navbar
-      }}>
+    <TabLayout
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
+      showScannerTab={false}
+    >
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+        {/* Header */}
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: 16,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        }}>
+          <TouchableOpacity onPress={handleBack} style={{ marginRight: 16 }}>
+            <MaterialIcons name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={{
+            color: colors.text,
+            fontSize: 18,
+            fontWeight: '600',
+          }}>
+            Nova Sessão
+          </Text>
+        </View>
+
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{
-            width: '100%',
-            paddingHorizontal: responsive.isTablet ? responsive.padding.xl : responsive.padding.md,
-            maxWidth: responsive.maxWidth.xxl,
-            alignSelf: 'center',
-          }}
+          style={{ flex: 1 }}
         >
-          <ScrollView keyboardShouldPersistTaps="handled">
+          <ScrollView 
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ padding: 20 }}
+          >
             {/* Header */}
-            <View style={{ alignItems: 'center', marginBottom: responsive.spacing.xxl, marginTop: responsive.padding.lg }}>
-              {/* larger square container with no solid background and rounded corners */}
+            <View style={{ alignItems: 'center', marginBottom: 32 }}>
               <View style={{
                 width: responsive.isTablet ? 140 : 120, 
                 height: responsive.isTablet ? 140 : 120, 
@@ -149,7 +180,7 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                 alignItems: 'center', 
                 justifyContent: 'center', 
                 marginBottom: responsive.padding.md,
-                overflow: 'hidden' // ensure image respects corners
+                overflow: 'hidden'
               }}>
                 <Image
                   source={require('../assets/images/session.png')}
@@ -176,7 +207,6 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
             {/* Form Card */}
             <Animated.View
               entering={FadeInDown.duration(320)}
-              exiting={FadeOutDown.duration(220)}
               style={{
                 backgroundColor: colors.surface, 
                 borderRadius: responsive.borderRadius.xl,
@@ -405,6 +435,6 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </Modal>
+    </TabLayout>
   );
 }

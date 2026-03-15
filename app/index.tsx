@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, SafeAreaView, StatusBar } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Session, ScannedPackage } from '@/types/session';
 import { getSessionMetrics, generateId, getPackageValue } from '@/utils/session';
 import { addSession, loadSessions } from '@/utils/storage';
 import { useAppTheme } from '@/utils/useAppTheme';
 
-import SessionInitModal from '@/components/SessionInitModal';
 import IndustrialScannerView from '@/components/IndustrialScannerView';
 import MetricsDashboard from '@/components/MetricsDashboard';
 import PackageList from '@/components/PackageList';
@@ -17,14 +17,21 @@ import AppHeader from '@/components/AppHeader';
 import EmptyStateWelcome from '@/components/EmptyStateWelcome';
 import MainLayout from '@/components/MainLayout';
 import PackagePhotoCapture from '@/components/PackagePhotoCapture';
+import TabLayout from '@/components/TabLayout';
+import HomeScreen from '@/components/HomeScreen';
+import SettingsScreen from '@/components/SettingsScreen';
+import AdvancedAnalytics from '@/components/AdvancedAnalytics';
 import { savePackagePhoto } from '@/utils/photoStorage';
+import BottomTabNavigator, { TabType } from '@/components/BottomTabNavigator';
 
-type AppScreen = 'scanning' | 'report' | 'history' | 'welcome';
+type AppScreen = 'scanning' | 'report' | 'history' | 'welcome' | 'settings' | 'analytics';
 
-export default function HomeScreen() {
+export default function App() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
   const { colors } = useAppTheme();
-  const [screen, setScreen] = useState<AppScreen>('scanning');
-  const [showInitModal, setShowInitModal] = useState(false);
+  const [screen, setScreen] = useState<AppScreen>('welcome');
+  const [activeTab, setActiveTab] = useState<TabType>('home');
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [packageListExpanded, setPackageListExpanded] = useState(false);
   const [lastScanned, setLastScanned] = useState<ScannedPackage | null>(null);
@@ -43,6 +50,24 @@ export default function HomeScreen() {
   // History
   const [sessions, setSessions] = useState<Session[]>([]);
 
+  // Handle session data from new-session screen
+  useEffect(() => {
+    if (params.sessionData) {
+      try {
+        const sessionData = JSON.parse(params.sessionData as string);
+        handleStartSession(
+          sessionData.operatorName,
+          sessionData.driverName,
+          sessionData.declaredCounts
+        );
+        // Clear the params
+        router.replace('/');
+      } catch (error) {
+        console.error('Error parsing session data:', error);
+      }
+    }
+  }, [params.sessionData]);
+
   // Photo capture state (optional)
   const [photoModalVisible, setPhotoModalVisible] = useState(false);
   const [photoPackageCode, setPhotoPackageCode] = useState<string | null>(null);
@@ -50,6 +75,33 @@ export default function HomeScreen() {
   useEffect(() => {
     loadSessions().then(setSessions);
   }, []);
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    
+    // Map tabs to screens
+    switch (tab) {
+      case 'home':
+        setScreen('welcome');
+        break;
+      case 'scanner':
+        if (!currentSession) {
+          router.push('/new-session');
+        } else {
+          setScreen('scanning');
+        }
+        break;
+      case 'analytics':
+        setScreen('analytics');
+        break;
+      case 'history':
+        setScreen('history');
+        break;
+      case 'settings':
+        setScreen('settings');
+        break;
+    }
+  };
 
   const handleStartSession = (operatorName: string, driverName: string, declaredCounts: { shopee: number; mercadoLivre: number; avulso: number }) => {
     const totalDeclared = declaredCounts.shopee + declaredCounts.mercadoLivre + declaredCounts.avulso;
@@ -65,8 +117,8 @@ export default function HomeScreen() {
       notes: undefined
     };
     setCurrentSession(session);
-    setShowInitModal(false);
     setScreen('scanning');
+    setActiveTab('scanner');
     setLastScanned(null);
     setPackageListExpanded(false);
   };
@@ -159,6 +211,7 @@ export default function HomeScreen() {
     setSessions(updated);
     setDivergenceVisible(false);
     setScreen('report');
+    setActiveTab('home');
   };
 
   const handleDivergenceCancel = () => {
@@ -169,12 +222,27 @@ export default function HomeScreen() {
     setCurrentSession(null);
     setCompletedSession(null);
     setLastScanned(null);
-    setShowInitModal(false);
-    setScreen('scanning');
+    setScreen('welcome');
+    setActiveTab('home');
   };
 
   const handleViewHistory = () => {
     setScreen('history');
+    setActiveTab('history');
+  };
+
+  const handleViewAnalytics = () => {
+    setScreen('analytics');
+    setActiveTab('analytics');
+  };
+
+  const handleStartScanner = () => {
+    if (!currentSession) {
+      router.push('/new-session');
+    } else {
+      setScreen('scanning');
+      setActiveTab('scanner');
+    }
   };
 
   const metrics = currentSession
@@ -182,18 +250,39 @@ export default function HomeScreen() {
     : { shopee: 0, mercadoLivre: 0, avulsos: 0, total: 0, valueShopee: 0, valueMercadoLivre: 0, valueAvulsos: 0, valueTotal: 0 };
 
   return (
-    <MainLayout>
+    <TabLayout
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
+      showScannerTab={true}
+    >
       <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
-      <SafeAreaView style={{ flex: 1 }}>
-        {/* Header - sempre visível */}
-        {screen !== 'history' && screen !== 'report' && screen !== 'scanning' && (
-          <AppHeader currentSession={currentSession} />
-        )}
-
         {/* Main Content Area */}
         <View style={{ flex: 1 }}>
+          {/* Home Screen */}
+          {screen === 'welcome' && !currentSession && (
+            <HomeScreen
+              onStartSession={() => router.push('/new-session')}
+              onViewHistory={handleViewHistory}
+              onViewAnalytics={handleViewAnalytics}
+              onStartScanner={handleStartScanner}
+            />
+          )}
+          
+          {/* Settings Screen */}
+          {screen === 'settings' && (
+            <SettingsScreen />
+          )}
+
+          {/* Analytics Screen */}
+          {screen === 'analytics' && (
+            <AdvancedAnalytics
+              sessions={sessions}
+              onClose={() => setScreen('welcome')}
+            />
+          )}
+
           {/* Report Screen */}
-          {screen === 'report' && completedSession ? (
+          {(screen === 'report' && completedSession) ? (
             <ReportView
               session={completedSession}
               onNewSession={handleNewSession}
@@ -205,7 +294,7 @@ export default function HomeScreen() {
               onBack={() => setScreen('scanning')}
               onNewSession={handleNewSession}
             />
-          ) : /* Active Session Screen */ currentSession ? (
+          ) : /* Active Session Screen */ currentSession && screen === 'scanning' ? (
             <IndustrialScannerView
               maxScans={{
                 shopee: currentSession.declaredCounts.shopee,
@@ -217,48 +306,37 @@ export default function HomeScreen() {
               onEndSession={handleEndSession}
               onBack={() => setScreen('welcome')}
             />
-          ) : /* Welcome State */ (
-            <EmptyStateWelcome
-              onStartSession={() => setShowInitModal(true)}
-              onViewHistory={handleViewHistory}
+          ) : null}
+
+
+          <DuplicateModal
+            visible={duplicateVisible}
+            code={duplicateCode}
+            originalPackage={duplicateOriginal}
+            onDismiss={() => setDuplicateVisible(false)}
+          />
+
+          {currentSession && (
+            <DivergenceScreen
+              visible={divergenceVisible}
+              scannedCount={currentSession.packages.length}
+              declaredCount={currentSession.declaredCount}
+              onCancel={handleDivergenceCancel}
+            />
+          )}
+
+          {currentSession && (
+            <PackagePhotoCapture
+              visible={photoModalVisible}
+              packageCode={photoPackageCode || (lastScanned?.code ?? '')}
+              onPhotoCapture={handlePhotoCaptured}
+              onClose={() => {
+                setPhotoModalVisible(false);
+                setPhotoPackageCode(null);
+              }}
             />
           )}
         </View>
-
-        {/* Modals and Overlays */}
-        <SessionInitModal
-          visible={showInitModal}
-          onStart={handleStartSession}
-        />
-
-        <DuplicateModal
-          visible={duplicateVisible}
-          code={duplicateCode}
-          originalPackage={duplicateOriginal}
-          onDismiss={() => setDuplicateVisible(false)}
-        />
-
-        {currentSession && (
-          <DivergenceScreen
-            visible={divergenceVisible}
-            scannedCount={currentSession.packages.length}
-            declaredCount={currentSession.declaredCount}
-            onCancel={handleDivergenceCancel}
-          />
-        )}
-
-        {currentSession && (
-          <PackagePhotoCapture
-            visible={photoModalVisible}
-            packageCode={photoPackageCode || (lastScanned?.code ?? '')}
-            onPhotoCapture={handlePhotoCaptured}
-            onClose={() => {
-              setPhotoModalVisible(false);
-              setPhotoPackageCode(null);
-            }}
-          />
-        )}
-      </SafeAreaView>
-    </MainLayout>
+    </TabLayout>
   );
 }

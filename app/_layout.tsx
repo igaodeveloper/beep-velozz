@@ -74,6 +74,7 @@ function RootLayoutContent() {
         })}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="new-session" options={{ headerShown: false }} />
       </Stack>
       <StatusBar backgroundColor={isDark ? "#1a1a1a" : "#ffffff"} />
     </ThemeProvider>

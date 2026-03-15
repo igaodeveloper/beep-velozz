@@ -348,7 +348,7 @@ export default function IndustrialScannerView({
   }, [allLimitsReached, hasSomeProgress]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#000', position: 'relative' }}>
+    <View style={{ flex: 1, backgroundColor: '#000', position: 'relative', paddingBottom: 80 }}>
       {/* Câmera em tela cheia absoluta */}
       {Platform.OS !== 'web' && permission?.granted && (
         <CameraView
@@ -633,7 +633,7 @@ export default function IndustrialScannerView({
         {/* Contadores minimalistas */}
         <View style={{
           position: 'absolute',
-          bottom: isTablet ? 30 : 20,
+          bottom: isTablet ? 110 : 100,
           left: isTablet ? 30 : 20,
           right: isTablet ? 30 : 20,
           backgroundColor: 'rgba(0,0,0,0.6)',

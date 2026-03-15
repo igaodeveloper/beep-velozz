@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { Session, OperatorStats } from '@/types/session';
+import { Session } from '@/types/session';
+import { OperatorStats } from '@/utils/analytics';
 import { useAppTheme } from '@/utils/useAppTheme';
 import {
   calculateOperatorStats,

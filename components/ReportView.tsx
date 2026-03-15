@@ -168,7 +168,7 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
                   <Text style={{ color: badge.text, fontSize: 9, fontWeight: '700' }}>{packageTypeLabel(pkg.type)}</Text>
                 </View>
                 <View style={{ backgroundColor: colors.primary, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 }}>
-                  <Text style={{ color: colors.secondary, fontSize: 9, fontWeight: '700' }}>R$ {pkg.value.toFixed(2)}</Text>
+                  <Text style={{ color: colors.secondary, fontSize: 9, fontWeight: '700' }}>R$ {(pkg.value || 0).toFixed(2)}</Text>
                 </View>
               </View>
             );

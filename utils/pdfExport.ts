@@ -419,7 +419,7 @@ function generateReportHTML(session: Session): string {
                     </span>
                   </div>
                   <div style="font-weight: 600;">${pkg.code}</div>
-                  <div style="color: #1f2937; font-weight: 700;">R$ ${pkg.value.toFixed(2).replace('.', ',')}</div>
+                  <div style="color: #1f2937; font-weight: 700;">R$ ${(pkg.value || 0).toFixed(2).replace('.', ',')}</div>
                 </div>
               `
                 )
@@ -768,7 +768,7 @@ async function generateReportHTMLWithPhotos(session: Session): Promise<string> {
                     ${pkg.type === 'shopee' ? 'Shopee' : pkg.type === 'mercado_livre' ? 'ML' : 'Avulso'}
                   </span>
                 </div>
-                <div style="color: #1f2937; font-weight: 700; font-size: 13px;">R$ ${pkg.value.toFixed(2).replace('.', ',')}</div>
+                <div style="color: #1f2937; font-weight: 700; font-size: 13px;">R$ ${(pkg.value || 0).toFixed(2).replace('.', ',')}</div>
                 ${
                   photosBase64[pkg.code]
                     ? `<img src="${photosBase64[pkg.code]}" class="package-photo" alt="Foto - ${pkg.code}" /><div class="photo-label">✓ Foto capturada</div>`

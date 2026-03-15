@@ -1,5 +1,16 @@
-import { Session, OperatorStats } from '@/types/session';
+import { Session } from '@/types/session';
 import { getSessionMetrics } from './session';
+
+export interface OperatorStats {
+  name: string;
+  totalSessions: number;
+  totalPackages: number;
+  avgRatePerMinute: number;
+  errorRate: number;
+  avgResponseTime: number;
+  preferredMarketplace: string;
+  accuracyScore: number;
+}
 
 /**
  * Calcula estatísticas avançadas de um operador

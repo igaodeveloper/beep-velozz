@@ -27,7 +27,7 @@ export const usePedidoScanner = (options: UsePedidoScannerOptions = {}) => {
     parsedCode: null,
   });
 
-  const debounceTimer = useRef<NodeJS.Timeout | undefined>(undefined);
+  const debounceTimer = useRef<number | undefined>(undefined);
   const abortController = useRef<AbortController | undefined>(undefined);
   const lastSearchedCode = useRef<string>('');
 

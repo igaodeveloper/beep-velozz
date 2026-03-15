@@ -32,4 +32,8 @@ export interface SessionMetrics {
   mercadoLivre: number;
   avulsos: number;
   total: number;
+  valueShopee: number;
+  valueMercadoLivre: number;
+  valueAvulsos: number;
+  valueTotal: number;
 }

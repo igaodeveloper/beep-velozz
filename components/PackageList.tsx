@@ -151,8 +151,8 @@ export default function PackageList({ packages, expanded, onToggle }: PackageLis
                       paddingHorizontal: 8,
                       paddingVertical: 3,
                     }}>
-                      <Text style={{ color: colors.secondary, fontSize: 10, fontWeight: '700' }}>
-                        R$ {pkg.value.toFixed(2)}
+                      <Text style={{ color: colors.secondary, fontSize: 9, fontWeight: '700' }}>
+                        R$ {(pkg.value || 0).toFixed(2)}
                       </Text>
                     </View>
                   </Animated.View>

@@ -249,8 +249,8 @@ export default function App() {
       <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
         {/* Main Content Area */}
         <View style={{ flex: 1 }}>
-          {/* Home Screen */}
-          {screen === 'welcome' && !currentSession && (
+          {/* Home Screen - permanece ativa mesmo com sessão em andamento */}
+          {screen === 'welcome' && (
             <HomeScreen
               onStartSession={() => {
                 setActiveTab('scanner');

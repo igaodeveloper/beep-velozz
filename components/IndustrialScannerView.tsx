@@ -115,6 +115,10 @@ export default function IndustrialScannerView({
   const [scanQuality, setScanQuality] = useState<'excellent' | 'good' | 'poor'>('good');
   const [cameraStabilization, setCameraStabilization] = useState(false);
   const [showScanningPanel, setShowScanningPanel] = useState(true); // Novo estado para ocultar/mostrar
+  
+  // Estados para controle de cores baseado em leituras
+  const [lastScanStatus, setLastScanStatus] = useState<'success' | 'error' | 'duplicate' | 'idle' | null>('idle');
+  const [lastScanTime, setLastScanTime] = useState<number>(0);
 
   // Advanced animations with enhanced visual effects
   const pulseAnim = useSharedValue(1);
@@ -333,6 +337,18 @@ export default function IndustrialScannerView({
     );
   }, [showScanningPanel]);
 
+  // Reset color to idle (yellow) after 3 seconds of inactivity
+  useEffect(() => {
+    if (lastScanStatus === null || lastScanStatus === 'idle') return;
+
+    const timer = setTimeout(() => {
+      setLastScanStatus('idle');
+      setLastScanTime(Date.now());
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [lastScanStatus]);
+
   // Enhanced barcode handler with intelligent processing
   const handleBarcode = useCallback(async (event: any) => {
     console.debug(`[ProfessionalScanner] Barcode scanned: "${event?.data}"`);
@@ -365,8 +381,12 @@ export default function IndustrialScannerView({
     
     console.debug(`[ProfessionalScanner] Process result: success=${result.success}, reason=${result.reason}, type=${result.type}, time=${processingTime}ms`);
 
-    // Enhanced feedback system
+    // Enhanced feedback system with color control
     if (result.success) {
+      // Sucesso - definir cor verde
+      setLastScanStatus('success');
+      setLastScanTime(Date.now());
+      
       // Success animation
       successPulseAnim.value = withSequence(
         withTiming(1.2, { duration: 200 }),
@@ -388,12 +408,18 @@ export default function IndustrialScannerView({
       
       onScanned?.(result.code, result.type || 'unknown');
     } else {
+      // Erro ou duplicado - definir cor vermelha
+      const status = result.reason === 'duplicate' ? 'duplicate' : 'error';
+      setLastScanStatus(status);
+      setLastScanTime(Date.now());
+      
       // Error animation
       errorShakeAnim.value = withSequence(
         withTiming(-10, { duration: 100 }),
         withTiming(10, { duration: 100 }),
         withTiming(-10, { duration: 100 }),
         withTiming(10, { duration: 100 }),
+        withTiming(-10, { duration: 100 }),
         withTiming(0, { duration: 100 })
       );
       
@@ -434,6 +460,10 @@ export default function IndustrialScannerView({
     setIsProcessing(false);
 
     if (result.success) {
+      // Success - definir cor verde
+      setLastScanStatus('success');
+      setLastScanTime(Date.now());
+      
       // Success feedback
       triggerFeedback('success', 'medium');
       
@@ -449,6 +479,11 @@ export default function IndustrialScannerView({
       setManualCode('');
       setManualInputExpanded(false);
     } else {
+      // Erro ou duplicado - definir cor vermelha
+      const status = result.reason === 'duplicate' ? 'duplicate' : 'error';
+      setLastScanStatus(status);
+      setLastScanTime(Date.now());
+      
       // Enhanced error messages
       const errorMessages = {
         duplicate: 'Código já escaneado nesta sessão',
@@ -486,14 +521,34 @@ export default function IndustrialScannerView({
   
   const { width: reticleWidth, height: reticleHeight } = reticleDimensions;
 
-  // Enhanced status color system
+  // Enhanced status color system based on scan results
   const statusColor = useMemo(() => {
+    // Se houve um scan recente, usar a cor baseada no resultado
+    const now = Date.now();
+    const timeSinceLastScan = now - lastScanTime;
+    
+    // Manter a cor do último scan por 3 segundos
+    if (timeSinceLastScan < 3000 && lastScanStatus) {
+      switch (lastScanStatus) {
+        case 'success':
+          return '#10b981'; // Verde para sucesso
+        case 'error':
+        case 'duplicate':
+          return '#ef4444'; // Vermelho para erro/duplicado
+        case 'idle':
+          return '#f59e0b'; // Amarelo para inatividade
+        default:
+          break;
+      }
+    }
+    
+    // Caso contrário, usar a lógica original baseada em estado e qualidade
     if (scanner.state === ScannerState.LIMIT_REACHED) return colors.danger;
     if (scanner.state === ScannerState.PAUSED) return colors.warning;
     if (scanQuality === 'excellent') return '#10b981';
     if (scanQuality === 'good') return colors.success;
-    return colors.warning;
-  }, [scanner.state, scanQuality, colors]);
+    return '#f59e0b'; // Amarelo como padrão para inatividade
+  }, [scanner.state, scanQuality, colors, lastScanStatus, lastScanTime]);
 
   // Advanced session analytics
   const sessionAnalytics = useMemo(() => {

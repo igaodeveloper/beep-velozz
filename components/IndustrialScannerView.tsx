@@ -19,6 +19,9 @@ import {
   Dimensions,
   Vibration,
   Alert,
+  PixelRatio,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
@@ -88,8 +91,10 @@ export default function IndustrialScannerView({
   const { colors } = useAppTheme();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+  const pixelRatio = PixelRatio.get();
+  const fontScale = PixelRatio.getFontScale();
   
-  // Device detection
+  // Enhanced device detection with resolution awareness
   const isTablet = useMemo(() => {
     const aspectRatio = Math.max(windowWidth, windowHeight) / Math.min(windowWidth, windowHeight);
     const isLargeScreen = Math.max(windowWidth, windowHeight) >= 768;
@@ -100,6 +105,53 @@ export default function IndustrialScannerView({
     const aspectRatio = windowWidth / windowHeight;
     return aspectRatio > 2.0;
   }, [windowWidth, windowHeight]);
+  
+  // High resolution detection
+  const isHighResolution = useMemo(() => {
+    return pixelRatio >= 2; // Retina displays and higher
+  }, [pixelRatio]);
+  
+  // Responsive scale factors
+  const scaleFactor = useMemo(() => {
+    const baseScale = isTablet ? 1.2 : isHighResolution ? 1.1 : 1;
+    return baseScale * fontScale;
+  }, [isTablet, isHighResolution, fontScale]);
+  
+  // Responsive dimensions with high-res optimization
+  const responsiveScale = useCallback((value: number) => {
+    return Math.round(value * scaleFactor);
+  }, [scaleFactor]);
+  
+  // Responsive spacing and sizing
+  const spacing = useMemo(() => ({
+    xs: responsiveScale(4),
+    sm: responsiveScale(8),
+    md: responsiveScale(12),
+    lg: responsiveScale(16),
+    xl: responsiveScale(20),
+    xxl: responsiveScale(24),
+    xxxl: responsiveScale(32),
+  }), [responsiveScale]);
+  
+  const borderRadius = useMemo(() => ({
+    sm: responsiveScale(6),
+    md: responsiveScale(10),
+    lg: responsiveScale(14),
+    xl: responsiveScale(18),
+    xxl: responsiveScale(24),
+  }), [responsiveScale]);
+  
+  const fontSize = useMemo(() => ({
+    xs: responsiveScale(10),
+    sm: responsiveScale(12),
+    md: responsiveScale(14),
+    lg: responsiveScale(16),
+    xl: responsiveScale(18),
+    xxl: responsiveScale(20),
+    xxxl: responsiveScale(24),
+    xxxx: responsiveScale(28),
+    xxxxx: responsiveScale(32),
+  }), [responsiveScale]);
   
   // Enhanced state management
   const [manualCode, setManualCode] = useState('');
@@ -349,6 +401,14 @@ export default function IndustrialScannerView({
     return () => clearTimeout(timer);
   }, [lastScanStatus]);
 
+  // Function to dismiss keyboard and close manual input
+  const dismissKeyboardAndCloseInput = useCallback(() => {
+    Keyboard.dismiss();
+    setManualInputExpanded(false);
+    setManualCode('');
+    setManualError(null);
+  }, []);
+
   // Enhanced barcode handler with intelligent processing
   const handleBarcode = useCallback(async (event: any) => {
     console.debug(`[ProfessionalScanner] Barcode scanned: "${event?.data}"`);
@@ -497,27 +557,28 @@ export default function IndustrialScannerView({
     }
   }, [manualCode, scanner.state, triggerFeedback, onScanned]);
 
-  // Enhanced responsive reticle dimensions with modern design
+  // Enhanced responsive reticle dimensions with high-resolution optimization
   const reticleDimensions = useMemo(() => {
     const baseWidth = Math.min(windowWidth, windowHeight);
+    const scale = scaleFactor;
     
     if (isTablet) {
-      // Tablets: professional reticle
-      const width = Math.max(300, Math.min(baseWidth * 0.48, 400));
-      const height = Math.max(220, Math.min(width * 0.65, 300));
+      // Tablets: professional reticle with high-res optimization
+      const width = responsiveScale(Math.max(300, Math.min(baseWidth * 0.48, 400) / scale));
+      const height = responsiveScale(Math.max(220, Math.min(width * 0.65, 300) / scale));
       return { width, height };
     } else if (isUltraWide) {
-      // Ultra-wide: balanced reticle
-      const width = Math.max(280, Math.min(baseWidth * 0.42, 340));
-      const height = Math.max(200, Math.min(width * 0.75, 280));
+      // Ultra-wide: balanced reticle with high-res optimization
+      const width = responsiveScale(Math.max(280, Math.min(baseWidth * 0.42, 340) / scale));
+      const height = responsiveScale(Math.max(200, Math.min(width * 0.75, 280) / scale));
       return { width, height };
     } else {
-      // Mobile: compact professional reticle
-      const width = Math.max(240, Math.min(baseWidth * 0.58, 320));
-      const height = Math.max(180, Math.min(width * 0.7, 260));
+      // Mobile: compact professional reticle with high-res optimization
+      const width = responsiveScale(Math.max(240, Math.min(baseWidth * 0.58, 320) / scale));
+      const height = responsiveScale(Math.max(180, Math.min(width * 0.7, 260) / scale));
       return { width, height };
     }
-  }, [windowWidth, windowHeight, isTablet, isUltraWide]);
+  }, [windowWidth, windowHeight, isTablet, isUltraWide, scaleFactor, responsiveScale]);
   
   const { width: reticleWidth, height: reticleHeight } = reticleDimensions;
 
@@ -745,17 +806,17 @@ export default function IndustrialScannerView({
                 activeOpacity={0.8}
                 style={{
                   backgroundColor: torchEnabled ? statusColor : 'rgba(0,0,0,0.7)',
-                  borderRadius: isTablet ? 14 : 12,
-                  paddingHorizontal: isTablet ? 16 : 14,
-                  paddingVertical: isTablet ? 10 : 8,
-                  borderWidth: 1,
+                  borderRadius: borderRadius.lg,
+                  paddingHorizontal: spacing.md,
+                  paddingVertical: spacing.sm,
+                  borderWidth: responsiveScale(1),
                   borderColor: torchEnabled ? statusColor : 'rgba(255,255,255,0.2)',
                   backdropFilter: 'blur(10px)',
                 }}
               >
                 <Ionicons 
                   name={torchEnabled ? "flash" : "flash-outline"} 
-                  size={isTablet ? 20 : 18} 
+                  size={responsiveScale(isTablet ? 20 : 18)} 
                   color="#fff" 
                 />
               </TouchableOpacity>
@@ -783,11 +844,11 @@ export default function IndustrialScannerView({
         <Animated.View
           style={[{
             position: 'absolute',
-            top: -20,
-            left: -20,
-            right: -20,
-            bottom: -20,
-            borderRadius: 20,
+            top: -spacing.xl,
+            left: -spacing.xl,
+            right: -spacing.xl,
+            bottom: -spacing.xl,
+            borderRadius: borderRadius.xxl,
             backgroundColor: statusColor,
             opacity: 0.1,
           }, glowStyle]}
@@ -797,10 +858,10 @@ export default function IndustrialScannerView({
         <Animated.View
           style={[{
             position: 'absolute',
-            width: reticleWidth + 40,
-            height: reticleHeight + 40,
-            borderRadius: 20,
-            borderWidth: 2,
+            width: reticleWidth + responsiveScale(40),
+            height: reticleHeight + responsiveScale(40),
+            borderRadius: borderRadius.xxl,
+            borderWidth: responsiveScale(2),
             borderColor: statusColor,
             borderStyle: 'dashed',
           }, radarStyle]}
@@ -814,14 +875,14 @@ export default function IndustrialScannerView({
             left: 0,
             right: 0,
             bottom: 0,
-            borderWidth: isTablet ? 2.5 : 2,
+            borderWidth: responsiveScale(isTablet ? 2.5 : 2),
             borderColor: statusColor,
-            borderRadius: isTablet ? 20 : 16,
+            borderRadius: borderRadius.xxl,
             backgroundColor: 'rgba(0,0,0,0.3)',
             shadowColor: statusColor,
             shadowOffset: { width: 0, height: 0 },
             shadowOpacity: 0.5,
-            shadowRadius: 20,
+            shadowRadius: responsiveScale(20),
             elevation: 10,
           }}
         />
@@ -837,10 +898,10 @@ export default function IndustrialScannerView({
             key={corner.position}
             style={{
               position: 'absolute',
-              [corner.position.split('-')[0]]: isTablet ? -8 : -6,
-              [corner.position.split('-')[1]]: isTablet ? -8 : -6,
-              width: isTablet ? 32 : 28,
-              height: isTablet ? 32 : 28,
+              [corner.position.split('-')[0]]: -spacing.sm,
+              [corner.position.split('-')[1]]: -spacing.sm,
+              width: responsiveScale(isTablet ? 32 : 28),
+              height: responsiveScale(isTablet ? 32 : 28),
               transform: [{ rotate: `${corner.rotation}deg` }, { scale: cornerPulseAnim }],
             }}
           >
@@ -850,9 +911,9 @@ export default function IndustrialScannerView({
                 top: 0,
                 left: 0,
                 width: '100%',
-                height: isTablet ? 3 : 2.5,
+                height: responsiveScale(isTablet ? 3 : 2.5),
                 backgroundColor: statusColor,
-                borderTopLeftRadius: isTablet ? 4 : 3,
+                borderTopLeftRadius: borderRadius.sm,
               }}
             />
             <View
@@ -860,10 +921,10 @@ export default function IndustrialScannerView({
                 position: 'absolute',
                 top: 0,
                 left: 0,
-                width: isTablet ? 3 : 2.5,
+                width: responsiveScale(isTablet ? 3 : 2.5),
                 height: '100%',
                 backgroundColor: statusColor,
-                borderTopLeftRadius: isTablet ? 4 : 3,
+                borderTopLeftRadius: borderRadius.sm,
               }}
             />
           </Animated.View>
@@ -873,9 +934,9 @@ export default function IndustrialScannerView({
         <Animated.View
           style={[{
             position: 'absolute',
-            left: isTablet ? 16 : 12,
-            right: isTablet ? 16 : 12,
-            height: isTablet ? 2 : 1.5,
+            left: spacing.md,
+            right: spacing.md,
+            height: responsiveScale(isTablet ? 2 : 1.5),
             backgroundColor: statusColor,
             borderRadius: 1,
             shadowColor: statusColor,
@@ -896,14 +957,14 @@ export default function IndustrialScannerView({
         {/* Professional Center Indicator */}
         <Animated.View
           style={[{
-            width: isTablet ? 8 : 6,
-            height: isTablet ? 8 : 6,
-            borderRadius: isTablet ? 4 : 3,
+            width: responsiveScale(isTablet ? 8 : 6),
+            height: responsiveScale(isTablet ? 8 : 6),
+            borderRadius: borderRadius.sm,
             backgroundColor: statusColor,
             shadowColor: statusColor,
             shadowOffset: { width: 0, height: 0 },
             shadowOpacity: 0.8,
-            shadowRadius: 6,
+            shadowRadius: responsiveScale(6),
             elevation: 6,
           }, qualityIndicatorStyle]}
         />
@@ -912,24 +973,24 @@ export default function IndustrialScannerView({
         {isProcessing && (
           <View style={{
             position: 'absolute',
-            bottom: -30,
+            bottom: -spacing.xxxl,
             flexDirection: 'row',
             alignItems: 'center',
             backgroundColor: 'rgba(0,0,0,0.8)',
-            paddingHorizontal: isTablet ? 16 : 12,
-            paddingVertical: isTablet ? 8 : 6,
-            borderRadius: isTablet ? 12 : 10,
-            borderWidth: 1,
+            paddingHorizontal: spacing.md,
+            paddingVertical: spacing.sm,
+            borderRadius: borderRadius.md,
+            borderWidth: responsiveScale(1),
             borderColor: `${statusColor}60`,
           }}>
             <ActivityIndicator 
               size="small" 
               color={statusColor} 
-              style={{ marginRight: 8 }}
+              style={{ marginRight: spacing.sm }}
             />
             <Text style={{
               color: statusColor,
-              fontSize: isTablet ? 11 : 9,
+              fontSize: fontSize.xs,
               fontWeight: '600',
             }}>
               Processando...
@@ -942,20 +1003,20 @@ export default function IndustrialScannerView({
       <Animated.View style={[
         {
           position: 'absolute',
-          bottom: 20,
-          left: 20,
-          right: 20,
+          bottom: spacing.xl,
+          left: spacing.xl,
+          right: spacing.xl,
           backgroundColor: 'rgba(0,0,0,0.8)',
-          borderRadius: isTablet ? 20 : 16,
-          padding: isTablet ? 24 : 20,
-          borderWidth: 1,
+          borderRadius: borderRadius.xxl,
+          padding: spacing.xxl,
+          borderWidth: responsiveScale(1),
           borderColor: 'rgba(255,255,255,0.1)',
           backdropFilter: 'blur(20px)',
         },
         useAnimatedStyle(() => ({
           transform: [
             {
-              translateY: panelSlideAnim.value * (isTablet ? 200 : 180)
+              translateY: panelSlideAnim.value * responsiveScale(isTablet ? 200 : 180)
             },
             {
               scale: panelSlideAnim.value === 0 ? 1 : 0.95
@@ -969,22 +1030,22 @@ export default function IndustrialScannerView({
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: isTablet ? 16 : 12,
+          marginBottom: spacing.md,
         }}>
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
-            gap: isTablet ? 12 : 10,
+            gap: spacing.sm,
           }}>
             <View style={{
-              width: isTablet ? 8 : 6,
-              height: isTablet ? 8 : 6,
-              borderRadius: isTablet ? 4 : 3,
+              width: responsiveScale(isTablet ? 8 : 6),
+              height: responsiveScale(isTablet ? 8 : 6),
+              borderRadius: borderRadius.sm,
               backgroundColor: statusColor,
               shadowColor: statusColor,
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.8,
-              shadowRadius: 4,
+              shadowRadius: responsiveScale(4),
               elevation: 4,
             }} />
             <Text style={{
@@ -1227,78 +1288,84 @@ export default function IndustrialScannerView({
 
         {/* Enhanced Manual Input */}
         {manualInputExpanded && (
-          <View style={{
-            marginTop: isTablet ? 16 : 12,
-            paddingTop: isTablet ? 16 : 12,
-            borderTopWidth: 1,
-            borderTopColor: 'rgba(255,255,255,0.1)',
-          }}>
-            <Text style={{
-              color: 'rgba(255,255,255,0.8)',
-              fontSize: isTablet ? 12 : 10,
-              fontWeight: '600',
-              marginBottom: isTablet ? 12 : 10,
-              textAlign: 'center',
-            }}>
-              Digite o código do pacote manualmente
-            </Text>
+          <TouchableWithoutFeedback onPress={dismissKeyboardAndCloseInput}>
             <View style={{
-              flexDirection: 'row',
-              gap: isTablet ? 12 : 10,
+              marginTop: spacing.md,
+              paddingTop: spacing.md,
+              borderTopWidth: responsiveScale(1),
+              borderTopColor: 'rgba(255,255,255,0.1)',
             }}>
-              <TextInput
-                value={manualCode}
-                onChangeText={setManualCode}
-                placeholder="Código do pacote"
-                placeholderTextColor="rgba(255,255,255,0.4)"
-                style={{
-                  flex: 1,
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  borderRadius: isTablet ? 12 : 10,
-                  paddingHorizontal: isTablet ? 16 : 14,
-                  paddingVertical: isTablet ? 14 : 12,
-                  color: '#fff',
-                  fontSize: isTablet ? 14 : 12,
-                  fontWeight: '600',
-                  borderWidth: 1,
-                  borderColor: manualError ? colors.danger : 'rgba(255,255,255,0.2)',
-                }}
-                onSubmitEditing={handleManualSubmit}
-                autoFocus={true}
-                autoCapitalize="characters"
-                autoCorrect={false}
-              />
+              <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+                <View>
+                  <Text style={{
+                    color: 'rgba(255,255,255,0.8)',
+                    fontSize: fontSize.xs,
+                    fontWeight: '600',
+                    marginBottom: spacing.sm,
+                    textAlign: 'center',
+                  }}>
+                    Digite o código do pacote manualmente
+                  </Text>
+                  <View style={{
+                    flexDirection: 'row',
+                    gap: spacing.sm,
+                  }}>
+                    <TextInput
+                      value={manualCode}
+                      onChangeText={setManualCode}
+                      placeholder="Código do pacote"
+                      placeholderTextColor="rgba(255,255,255,0.4)"
+                      style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        borderRadius: borderRadius.md,
+                        paddingHorizontal: spacing.md,
+                        paddingVertical: spacing.sm,
+                        color: '#fff',
+                        fontSize: fontSize.sm,
+                        fontWeight: '600',
+                        borderWidth: responsiveScale(1),
+                        borderColor: manualError ? colors.danger : 'rgba(255,255,255,0.2)',
+                      }}
+                      onSubmitEditing={handleManualSubmit}
+                      autoFocus={true}
+                      autoCapitalize="characters"
+                      autoCorrect={false}
+                    />
               <TouchableOpacity
-                onPress={handleManualSubmit}
-                disabled={isProcessing}
-                style={{
-                  backgroundColor: isProcessing ? 'rgba(255,255,255,0.2)' : statusColor,
-                  borderRadius: isTablet ? 12 : 10,
-                  paddingHorizontal: isTablet ? 20 : 16,
-                  paddingVertical: isTablet ? 14 : 12,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                {isProcessing ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Ionicons name="send" size={isTablet ? 18 : 16} color="#fff" />
+                    onPress={handleManualSubmit}
+                    disabled={isProcessing}
+                    style={{
+                      backgroundColor: isProcessing ? 'rgba(255,255,255,0.2)' : statusColor,
+                      borderRadius: borderRadius.md,
+                      paddingHorizontal: spacing.md,
+                      paddingVertical: spacing.sm,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {isProcessing ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Ionicons name="send" size={responsiveScale(isTablet ? 18 : 16)} color="#fff" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+                {manualError && (
+                  <Text style={{
+                    color: colors.danger,
+                    fontSize: fontSize.xs,
+                    fontWeight: '500',
+                    marginTop: spacing.sm,
+                    textAlign: 'center',
+                  }}>
+                    {manualError}
+                  </Text>
                 )}
-              </TouchableOpacity>
-            </View>
-            {manualError && (
-              <Text style={{
-                color: colors.danger,
-                fontSize: isTablet ? 10 : 8,
-                fontWeight: '500',
-                marginTop: 8,
-                textAlign: 'center',
-              }}>
-                {manualError}
-              </Text>
-            )}
+              </View>
+            </TouchableWithoutFeedback>
           </View>
+        </TouchableWithoutFeedback>
         )}
       </Animated.View>
 

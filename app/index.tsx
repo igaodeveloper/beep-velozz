@@ -25,18 +25,32 @@ import { savePackagePhoto } from '@/utils/photoStorage';
 import SessionInitModal from '@/components/SessionInitModal';
 import BottomTabNavigator, { TabType } from '@/components/BottomTabNavigator';
 import TutorialModal from '@/components/TutorialModal';
+import ScreenTransition, { ANIMATION_TYPES, DIRECTIONS } from '@/components/ScreenTransition';
+import DeliveryBoyLoading from '@/components/DeliveryBoyLoading';
 
 type AppScreen = 'scanning' | 'report' | 'history' | 'welcome' | 'settings' | 'analytics';
+
+// Animation configuration for each screen - Ultra-fast performance
+const SCREEN_ANIMATIONS = {
+  welcome: { type: ANIMATION_TYPES.FADE, direction: DIRECTIONS.UP, duration: 150 },
+  scanning: { type: ANIMATION_TYPES.SLIDE, direction: DIRECTIONS.LEFT, duration: 180 },
+  report: { type: ANIMATION_TYPES.GLIDE, direction: DIRECTIONS.RIGHT, duration: 200 },
+  history: { type: ANIMATION_TYPES.SCALE, direction: DIRECTIONS.UP, duration: 160 },
+  settings: { type: ANIMATION_TYPES.FLIP, direction: DIRECTIONS.RIGHT, duration: 170 },
+  analytics: { type: ANIMATION_TYPES.BOUNCE, direction: DIRECTIONS.UP, duration: 190 },
+} as const;
 
 export default function App() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { colors } = useAppTheme();
   const [screen, setScreen] = useState<AppScreen>('welcome');
+  const [previousScreen, setPreviousScreen] = useState<AppScreen | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [packageListExpanded, setPackageListExpanded] = useState(false);
   const [lastScanned, setLastScanned] = useState<ScannedPackage | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Duplicate modal state
   const [duplicateVisible, setDuplicateVisible] = useState(false);
@@ -66,35 +80,51 @@ export default function App() {
     loadSessions().then(setSessions);
   }, []);
 
+  // Enhanced screen change with animation
+  const changeScreenWithAnimation = (newScreen: AppScreen, showLoading = false) => {
+    if (showLoading) {
+      setIsLoading(true);
+      setTimeout(() => {
+        setPreviousScreen(screen);
+        setScreen(newScreen);
+        setTimeout(() => setIsLoading(false), 300);
+      }, 500);
+    } else {
+      setPreviousScreen(screen);
+      setScreen(newScreen);
+    }
+  };
+
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
     
-    // Map tabs to screens
+    // Map tabs to screens with animations
     switch (tab) {
       case 'home':
-        setScreen('welcome');
+        changeScreenWithAnimation('welcome');
         break;
       case 'scanner':
         if (!currentSession) {
           // Abre modal de INICIAR CONFERÊNCIA em vez de navegar para outra tela
           setSessionModalVisible(true);
         } else {
-          setScreen('scanning');
+          changeScreenWithAnimation('scanning');
         }
         break;
       case 'analytics':
-        setScreen('analytics');
+        changeScreenWithAnimation('analytics');
         break;
       case 'history':
-        setScreen('history');
+        changeScreenWithAnimation('history');
         break;
       case 'settings':
-        setScreen('settings');
+        changeScreenWithAnimation('settings');
         break;
     }
   };
 
   const handleStartSession = (operatorName: string, driverName: string, declaredCounts: { shopee: number; mercadoLivre: number; avulso: number }) => {
+    setIsLoading(true);
     const totalDeclared = declaredCounts.shopee + declaredCounts.mercadoLivre + declaredCounts.avulso;
     const session: Session = {
       id: generateId(),
@@ -107,11 +137,15 @@ export default function App() {
       hasDivergence: false,
       notes: undefined
     };
-    setCurrentSession(session);
-    setScreen('scanning');
-    setActiveTab('scanner');
-    setLastScanned(null);
-    setPackageListExpanded(false);
+    
+    setTimeout(() => {
+      setCurrentSession(session);
+      changeScreenWithAnimation('scanning');
+      setActiveTab('scanner');
+      setLastScanned(null);
+      setPackageListExpanded(false);
+      setIsLoading(false);
+    }, 800);
   };
 
   const handlePackageScanned = (pkg: ScannedPackage) => {
@@ -249,49 +283,107 @@ export default function App() {
       showScannerTab={true}
     >
       <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
-        {/* Main Content Area */}
-        <View style={{ flex: 1 }}>
-          <AppHeader currentSession={currentSession} onOpenTutorial={() => setTutorialVisible(true)} />
-          {/* Home Screen - permanece ativa mesmo com sessão em andamento */}
-          {screen === 'welcome' && (
-            <HomeScreen
-              onStartSession={() => {
-                setActiveTab('scanner');
-                setSessionModalVisible(true);
-              }}
-              onViewHistory={handleViewHistory}
-              onViewAnalytics={handleViewAnalytics}
-              onStartScanner={handleStartScanner}
-            />
-          )}
-          
-          {/* Settings Screen */}
-          {screen === 'settings' && (
-            <SettingsScreen />
-          )}
+      
+      {/* Loading Overlay */}
+      {isLoading && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          zIndex: 1000,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <DeliveryBoyLoading size="large" />
+        </View>
+      )}
 
-          {/* Analytics Screen */}
-          {screen === 'analytics' && (
-            <AdvancedAnalytics
-              sessions={sessions}
-              onClose={() => setScreen('welcome')}
-            />
-          )}
+      {/* Main Content Area */}
+      <View style={{ flex: 1 }}>
+        <AppHeader currentSession={currentSession} onOpenTutorial={() => setTutorialVisible(true)} />
+        
+        {/* Home Screen */}
+        <ScreenTransition
+          isVisible={screen === 'welcome'}
+          animationType={SCREEN_ANIMATIONS.welcome.type}
+          direction={SCREEN_ANIMATIONS.welcome.direction}
+          duration={SCREEN_ANIMATIONS.welcome.duration}
+        >
+          <HomeScreen
+            onStartSession={() => {
+              setActiveTab('scanner');
+              setSessionModalVisible(true);
+            }}
+            onViewHistory={handleViewHistory}
+            onViewAnalytics={handleViewAnalytics}
+            onStartScanner={handleStartScanner}
+          />
+        </ScreenTransition>
+        
+        {/* Settings Screen */}
+        <ScreenTransition
+          isVisible={screen === 'settings'}
+          animationType={SCREEN_ANIMATIONS.settings.type}
+          direction={SCREEN_ANIMATIONS.settings.direction}
+          duration={SCREEN_ANIMATIONS.settings.duration}
+        >
+          <SettingsScreen />
+        </ScreenTransition>
 
-          {/* Report Screen */}
-          {(screen === 'report' && completedSession) ? (
+        {/* Analytics Screen */}
+        <ScreenTransition
+          isVisible={screen === 'analytics'}
+          animationType={SCREEN_ANIMATIONS.analytics.type}
+          direction={SCREEN_ANIMATIONS.analytics.direction}
+          duration={SCREEN_ANIMATIONS.analytics.duration}
+        >
+          <AdvancedAnalytics
+            sessions={sessions}
+            onClose={() => changeScreenWithAnimation('welcome')}
+          />
+        </ScreenTransition>
+
+        {/* Report Screen */}
+        <ScreenTransition
+          isVisible={screen === 'report' && !!completedSession}
+          animationType={SCREEN_ANIMATIONS.report.type}
+          direction={SCREEN_ANIMATIONS.report.direction}
+          duration={SCREEN_ANIMATIONS.report.duration}
+        >
+          {completedSession && (
             <ReportView
               session={completedSession}
               onNewSession={handleNewSession}
               onViewHistory={handleViewHistory}
             />
-          ) : /* History Screen */ screen === 'history' ? (
-            <HistoryBrowser
-              sessions={sessions}
-              onBack={() => setScreen('scanning')}
-              onNewSession={handleNewSession}
-            />
-          ) : /* Active Session Screen */ currentSession && screen === 'scanning' ? (
+          )}
+        </ScreenTransition>
+
+        {/* History Screen */}
+        <ScreenTransition
+          isVisible={screen === 'history'}
+          animationType={SCREEN_ANIMATIONS.history.type}
+          direction={SCREEN_ANIMATIONS.history.direction}
+          duration={SCREEN_ANIMATIONS.history.duration}
+        >
+          <HistoryBrowser
+            sessions={sessions}
+            onBack={() => changeScreenWithAnimation('scanning')}
+            onNewSession={handleNewSession}
+          />
+        </ScreenTransition>
+
+        {/* Active Session Screen */}
+        <ScreenTransition
+          isVisible={!!(currentSession && screen === 'scanning')}
+          animationType={SCREEN_ANIMATIONS.scanning.type}
+          direction={SCREEN_ANIMATIONS.scanning.direction}
+          duration={SCREEN_ANIMATIONS.scanning.duration}
+        >
+          {currentSession && (
             <IndustrialScannerView
               maxScans={{
                 shopee: currentSession.declaredCounts.shopee,
@@ -301,9 +393,10 @@ export default function App() {
               onScanned={handleScanned}
               onLimitReached={handleLimitReached}
               onEndSession={handleEndSession}
-              onBack={() => setScreen('welcome')}
+              onBack={() => changeScreenWithAnimation('welcome')}
             />
-          ) : null}
+          )}
+        </ScreenTransition>
 
 
           <DuplicateModal

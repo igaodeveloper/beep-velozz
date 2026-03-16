@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions, Image, useWindowDimensions } from 'react-native';
 import { useTheme } from '../utils/themeContext';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -7,29 +7,43 @@ const { width, height } = Dimensions.get('window');
 
 interface SplashScreenProps {
   onAnimationComplete?: () => void;
+  forceClose?: boolean;
 }
 
-export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete }) => {
+export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete, forceClose }) => {
   const { isDark } = useTheme();
   const theme = isDark ? darkTheme : lightTheme;
+  const { width, height } = useWindowDimensions();
+  
+  // Calculate responsive sizes based on screen dimensions
+  const logoSize = Math.min(width * 0.25, height * 0.15, 120); // Max 120px
+  const fontSize = Math.min(width * 0.06, 32); // Max 32px
+  const taglineSize = Math.min(width * 0.04, 14); // Max 14px
+  const progressWidth = width * 0.7; // 70% of screen width
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const logoRotateAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
   const slideUpAnim = useRef(new Animated.Value(50)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
-    // Staggered animation sequence with reduced timing for max 4 seconds total
+    // If forceClose is true, exit immediately
+    if (forceClose) {
+      onAnimationComplete?.();
+      return;
+    }
+
+    // Optimized animation sequence - max 2 seconds total
     const animationSequence = Animated.sequence([
-      // Initial fade in and scale - reduced from 600ms to 400ms
+      // Initial fade in and scale - reduced to 300ms
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 400,
+          duration: 300,
           useNativeDriver: true,
         }),
         Animated.spring(scaleAnim, {
@@ -40,71 +54,47 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete 
         }),
       ]),
       
-      // Logo rotation with easing - reduced from 1200ms to 800ms
+      // Logo rotation - reduced to 500ms
       Animated.timing(logoRotateAnim, {
         toValue: 1,
-        duration: 800,
+        duration: 500,
         useNativeDriver: true,
       }),
       
-      // Continuous pulse effect - reduced from 1500ms to 1000ms
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.05,
-            duration: 1000,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 1000,
-            useNativeDriver: true,
-          }),
-        ])
-      ),
-      
-      // Shimmer effect - reduced from 2000ms to 1200ms
-      Animated.loop(
-        Animated.timing(shimmerAnim, {
-          toValue: 1,
-          duration: 1200,
-          useNativeDriver: true,
-        })
-      ),
-      
-      // Progress bar animation - reduced from 2500ms to 1500ms
+      // Progress bar animation - reduced to 800ms
       Animated.timing(progressAnim, {
         toValue: 1,
-        duration: 1500,
+        duration: 800,
         useNativeDriver: false,
       }),
       
-      // Slide up text - reduced from 800ms to 500ms
+      // Slide up text - reduced to 300ms
       Animated.timing(slideUpAnim, {
         toValue: 0,
-        duration: 500,
-        delay: 300,
+        duration: 300,
+        delay: 200,
         useNativeDriver: true,
       }),
     ]);
 
+    animationRef.current = animationSequence;
     animationSequence.start(() => {
-      // Reduced hold time from 800ms to 300ms to ensure max 4 seconds total
+      // Reduced hold time from 300ms to 100ms
       setTimeout(() => {
         Animated.timing(fadeAnim, {
           toValue: 0,
-          duration: 400, // Reduced from 600ms to 400ms
+          duration: 300, // Reduced from 400ms to 300ms
           useNativeDriver: true,
         }).start(() => {
           onAnimationComplete?.();
         });
-      }, 300);
+      }, 100);
     });
 
     return () => {
-      animationSequence.stop();
+      animationRef.current?.stop();
     };
-  }, []);
+  }, [forceClose, onAnimationComplete]);
 
   const logoRotate = logoRotateAnim.interpolate({
     inputRange: [0, 0.5, 1],
@@ -116,12 +106,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete 
     outputRange: ['0%', '100%'],
   });
 
-  const shimmerTranslate = shimmerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-width, width],
-  });
-
-  const logoScale = Animated.multiply(scaleAnim, pulseAnim);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
@@ -134,23 +118,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete 
         style={styles.gradient}
       />
       
-      {/* Shimmer overlay effect */}
-      <Animated.View
-        style={[
-          styles.shimmerOverlay,
-          {
-            transform: [{ translateX: shimmerTranslate }],
-          },
-        ]}
-        pointerEvents="none"
-      >
-        <LinearGradient
-          colors={['transparent', 'rgba(255, 255, 255, 0.1)', 'transparent']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.shimmerGradient}
-        />
-      </Animated.View>
       
       {/* Animated content */}
       <Animated.View
@@ -159,16 +126,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete 
           {
             opacity: fadeAnim,
             transform: [
-              { scale: logoScale },
+              { scale: scaleAnim },
             ],
           },
         ]}
       >
-        {/* Logo container with enhanced effects */}
+        {/* Logo container com imagem do projeto */}
         <Animated.View
           style={[
             styles.logoContainer,
             {
+              width: logoSize * 1.2,
+              height: logoSize * 1.2,
               transform: [
                 { rotate: logoRotate },
               ],
@@ -176,15 +145,32 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete 
           ]}
         >
           <View style={[styles.logoCircle, { 
+            width: logoSize * 1.1,
+            height: logoSize * 1.1,
+            borderRadius: (logoSize * 1.1) / 2,
             backgroundColor: theme.colors.primary,
             shadowColor: theme.colors.primary,
           }]}>
-            <Text style={[styles.logoText, { color: '#ffffff' }]}>
-              BV
-            </Text>
+            <Image 
+              source={require('../assets/images/icon.png')}
+              style={[
+                styles.logoImage,
+                {
+                  width: logoSize * 0.8,
+                  height: logoSize * 0.8,
+                  borderRadius: (logoSize * 0.8) / 8,
+                }
+              ]}
+              resizeMode="contain"
+            />
             {/* Inner glow effect */}
             <View style={[styles.innerGlow, { 
               backgroundColor: theme.colors.primary,
+              width: logoSize * 0.6,
+              height: logoSize * 0.6,
+              borderRadius: (logoSize * 0.6) / 2,
+              top: (logoSize * 1.1 - logoSize * 0.6) / 2,
+              left: (logoSize * 1.1 - logoSize * 0.6) / 2,
             }]} />
           </View>
           
@@ -204,7 +190,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete 
                       }),
                     },
                     {
-                      translateX: 70,
+                      translateX: logoSize * 0.7,
                     },
                   ],
                 },
@@ -222,10 +208,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete 
             },
           ]}
         >
-          <Text style={[styles.appName, { color: theme.colors.text }]}>
+          <Text style={[styles.appName, { 
+            color: theme.colors.text,
+            fontSize: fontSize,
+          }]}>
             Beep Velozz
           </Text>
-          <Text style={[styles.tagline, { color: theme.colors.textMuted }]}>
+          <Text style={[styles.tagline, { 
+            color: theme.colors.textMuted,
+            fontSize: taglineSize,
+          }]}>
             Scanner Industrial Inteligente
           </Text>
         </Animated.View>
@@ -233,7 +225,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete 
         {/* Enhanced progress bar */}
         <View style={styles.progressContainer}>
           <View style={[styles.progressBackground, { 
-            backgroundColor: isDark ? '#1a1a1a' : '#e5e7eb' 
+            backgroundColor: isDark ? '#1a1a1a' : '#e5e7eb',
+            width: progressWidth,
           }]}>
             <Animated.View
               style={[
@@ -271,7 +264,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete 
       <View style={styles.decorativeElements}>
         {[...Array(8)].map((_, index) => {
           const angle = (index * 45) * Math.PI / 180;
-          const distance = 120;
+          const distance = logoSize * 1.5; // Responsive distance based on logo size
           const x = Math.cos(angle) * distance;
           const y = Math.sin(angle) * distance;
           
@@ -285,14 +278,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete 
                   left: width / 2 + x - 2,
                   top: height / 2 + y - 2,
                   opacity: 0.1 + (index * 0.05),
-                  transform: [
-                    {
-                      scale: pulseAnim.interpolate({
-                        inputRange: [1, 1.05],
-                        outputRange: [1, 1.2 + (index * 0.05)],
-                      }),
-                    },
-                  ],
                 },
               ]}
             />
@@ -322,34 +307,19 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
-  shimmerOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  shimmerGradient: {
-    flex: 1,
-    width: width * 0.3,
-  },
   content: {
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
+    paddingHorizontal: '5%',
   },
   logoContainer: {
-    marginBottom: 30,
-    width: 150,
-    height: 150,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 30,
     position: 'relative',
   },
   logoCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
     shadowOffset: { width: 0, height: 15 },
@@ -359,20 +329,13 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
   },
+  logoImage: {
+    // Responsive sizing handled by props
+    zIndex: 1,
+  },
   innerGlow: {
     position: 'absolute',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
     opacity: 0.3,
-    top: 20,
-    left: 20,
-  },
-  logoText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    letterSpacing: 2,
-    zIndex: 1,
   },
   orbitDot: {
     position: 'absolute',
@@ -389,26 +352,24 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   appName: {
-    fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 8,
     letterSpacing: 1,
+    textAlign: 'center',
     textShadowColor: 'rgba(0, 0, 0, 0.1)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
   tagline: {
-    fontSize: 14,
     textAlign: 'center',
     paddingHorizontal: 20,
     fontWeight: '500',
   },
   progressContainer: {
-    width: width * 0.7,
     alignItems: 'center',
+    width: '100%',
   },
   progressBackground: {
-    width: '100%',
     height: 6,
     borderRadius: 3,
     marginBottom: 12,

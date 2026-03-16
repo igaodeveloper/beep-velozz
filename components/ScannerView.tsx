@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   StatusBar,
   SafeAreaView,
+  Dimensions,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -61,9 +62,11 @@ export default function ScannerView({
   const [manualError, setManualError] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [manualInputExpanded, setManualInputExpanded] = useState(false);
+  const [showOutOfAreaWarning, setShowOutOfAreaWarning] = useState(false);
   const feedbackAnim = useSharedValue(0);
   const pulseAnim = useSharedValue(1);
   const scanLineAnim = useSharedValue(0);
+  const outOfAreaAnim = useSharedValue(0);
   const [permission, requestPermission] = useCameraPermissions();
   const [barcodeLocked, setBarcodeLocked] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
@@ -302,11 +305,77 @@ export default function ScannerView({
     if (barcodeLocked) return;
     setBarcodeLocked(true);
 
+    // Verificar se o código está dentro da área do reticle
+    if (event?.bounds && !isCodeInReticleArea(event.bounds)) {
+      console.log(`[ScannerView] ❌ Código fora da área do reticle - ignorando`);
+      
+      // Mostrar feedback visual de fora de área
+      setShowOutOfAreaWarning(true);
+      outOfAreaAnim.value = withSequence(
+        withTiming(1, { duration: 200 }),
+        withTiming(0, { duration: 800 })
+      );
+      
+      // Feedback tátil e sonoro para fora de área
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+      }
+      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
+      
+      setTimeout(() => {
+        setShowOutOfAreaWarning(false);
+        setBarcodeLocked(false);
+      }, 1000);
+      return;
+    }
+
     handleScannedCode(event?.data);
 
     setTimeout(() => {
       setBarcodeLocked(false);
     }, 900);
+  };
+
+  // Função para verificar se o código está dentro da área do reticle
+  const isCodeInReticleArea = (bounds: any): boolean => {
+    if (!bounds) return true; // Se não tiver bounds, assume que está dentro
+    
+    const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+    
+    // Calcular centro do reticle (baseado nas dimensões atuais)
+    const reticleCenterX = screenWidth / 2;
+    const reticleCenterY = screenHeight / 2;
+    
+    // Área do reticle com margem de tolerância
+    const reticleAreaWidth = reticleWidth * 0.9; // 90% do reticle para margem
+    const reticleAreaHeight = reticleHeight * 0.9;
+    
+    // Limites do reticle
+    const reticleLeft = reticleCenterX - reticleAreaWidth / 2;
+    const reticleRight = reticleCenterX + reticleAreaWidth / 2;
+    const reticleTop = reticleCenterY - reticleAreaHeight / 2;
+    const reticleBottom = reticleCenterY + reticleAreaHeight / 2;
+    
+    // Coordenadas do código escaneado
+    const codeLeft = bounds.x || 0;
+    const codeRight = (bounds.x || 0) + (bounds.width || 0);
+    const codeTop = bounds.y || 0;
+    const codeBottom = (bounds.y || 0) + (bounds.height || 0);
+    
+    // Verificar se o código está completamente dentro do reticle
+    const isWithinArea = 
+      codeLeft >= reticleLeft &&
+      codeRight <= reticleRight &&
+      codeTop >= reticleTop &&
+      codeBottom <= reticleBottom;
+    
+    console.log(`[ScannerView] 🎯 Verificação de área:`, {
+      codeBounds: { left: codeLeft, right: codeRight, top: codeTop, bottom: codeBottom },
+      reticleBounds: { left: reticleLeft, right: reticleRight, top: reticleTop, bottom: reticleBottom },
+      isWithinArea
+    });
+    
+    return isWithinArea;
   };
 
   const lastBadge = lastScanned ? packageTypeBadgeColors(lastScanned.type) : null;
@@ -353,6 +422,10 @@ export default function ScannerView({
 
   const feedbackStyle = useAnimatedStyle(() => ({
     opacity: feedbackAnim.value,
+  }));
+
+  const outOfAreaStyle = useAnimatedStyle(() => ({
+    opacity: outOfAreaAnim.value,
   }));
 
   // Gerenciar fullscreen automático
@@ -632,7 +705,7 @@ export default function ScannerView({
           textAlign: 'center',
           paddingHorizontal: responsive.padding.md,
         }}>
-          Posicione o QR Code ou código de barras dentro da área
+          Apenas códigos dentro da área verde serão lidos
         </Text>
         {/* counts vs declared with compact progress */}
         <View style={{ 
@@ -771,6 +844,37 @@ export default function ScannerView({
             </View>
           )}
         </View>
+
+        {/* Out of area warning overlay */}
+        {showOutOfAreaWarning && (
+          <Animated.View style={[
+            {
+              position: 'absolute',
+              top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              justifyContent: 'center',
+              alignItems: 'center',
+            },
+            outOfAreaStyle
+          ]}>
+            <View style={{
+              backgroundColor: 'rgba(239, 68, 68, 0.9)',
+              borderRadius: 12,
+              borderWidth: 2,
+              borderColor: '#ef4444',
+              padding: 16,
+              alignItems: 'center',
+            }}>
+              <Text style={{ fontSize: 28 }}>🎯</Text>
+              <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700', marginTop: 4 }}>
+                FORA DA ÁREA
+              </Text>
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600', marginTop: 2, textAlign: 'center' }}>
+                Posicione o código dentro do quadrado verde
+              </Text>
+            </View>
+          </Animated.View>
+        )}
 
         {/* Last scanned feedback overlay */}
         {showFeedback && lastScanned && lastBadge && (

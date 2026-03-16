@@ -16,6 +16,7 @@ import { ThemeProvider as CustomThemeProvider, useTheme } from "../utils/themeCo
 import { lightTheme, darkTheme } from "../utils/theme";
 import { getDeviceInfo } from "../utils/orientationUtils";
 import { FastSplashScreen } from "../components/FastSplashScreen";
+import { initializeAPIs } from "../utils/apiInitializer";
 
 // Lazy loading para componentes pesados
 const SplashScreenComponent = lazy(() => import("../components/SplashScreen").then(module => ({ default: module.SplashScreen })));
@@ -40,6 +41,11 @@ function RootLayoutContent() {
       SplashScreen.hideAsync();
       // Mark app as ready without additional delay
       setAppReady(true);
+      
+      // Initialize APIs em background
+      initializeAPIs().catch(error => {
+        console.warn('Failed to initialize APIs:', error);
+      });
     }
   }, [loaded]);
 

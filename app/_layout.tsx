@@ -15,6 +15,7 @@ import "../global.css";
 import { ThemeProvider as CustomThemeProvider, useTheme } from "../utils/themeContext";
 import { lightTheme, darkTheme } from "../utils/theme";
 import { getDeviceInfo } from "../utils/orientationUtils";
+import { SplashScreen as CustomSplashScreen } from "../components/SplashScreen";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -25,10 +26,17 @@ function RootLayoutContent() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
   const [deviceInfo, setDeviceInfo] = useState(getDeviceInfo());
+  const [showCustomSplash, setShowCustomSplash] = useState(true);
+  const [appReady, setAppReady] = useState(false);
 
   useEffect(() => {
     if (loaded) {
+      // Keep the native splash screen hidden while our custom splash shows
       SplashScreen.hideAsync();
+      // Mark app as ready after a short delay to ensure smooth transition
+      setTimeout(() => {
+        setAppReady(true);
+      }, 100);
     }
   }, [loaded]);
 
@@ -39,8 +47,13 @@ function RootLayoutContent() {
     return () => subscription?.remove();
   }, []);
 
-  if (!loaded) {
-    return null;
+  const handleSplashComplete = () => {
+    setShowCustomSplash(false);
+  };
+
+  // Show custom splash screen while app is loading
+  if (showCustomSplash || !appReady) {
+    return <CustomSplashScreen onAnimationComplete={handleSplashComplete} />;
   }
 
   const navTheme = isDark

@@ -49,7 +49,7 @@ const slides = [
       'Aponte para o código de barras ou QR Code e deixe o Beep Velozz contar, validar e alertar.',
     bullets: [
       'O retângulo no centro guia o enquadramento ideal',
-      'Cada leitura atualiza contadores por tipo e valor total',
+      'Cada leitura atualiza contadores por tipo e quantidade de itens',
       'Ao atingir o limite declarado, você é avisado automaticamente',
     ],
   },
@@ -72,7 +72,7 @@ const slides = [
     description:
       'Depois de cada conferência você tem um resumo executivo, lista detalhada e exportação.',
     bullets: [
-      'Veja totais por marketplace, valores e delta da divergência',
+      'Veja totais por marketplace, quantidades e delta da divergência',
       'Acesse fotos de pacotes anexadas à sessão',
       'Exporte e compartilhe via PDF, WhatsApp ou outros canais',
     ],

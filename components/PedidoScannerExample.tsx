@@ -54,13 +54,6 @@ export const PedidoScannerExample: React.FC = () => {
     });
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
-
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Scanner de Pedidos</Text>
@@ -164,11 +157,6 @@ export const PedidoScannerExample: React.FC = () => {
               <Text style={styles.infoValue}>{formatDate(pedido.dataCriacao)}</Text>
             </View>
 
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Valor Total:</Text>
-              <Text style={styles.infoValue}>{formatCurrency(pedido.valorTotal)}</Text>
-            </View>
-
             {pedido.entrega.transportadora && (
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Transportadora:</Text>
@@ -206,7 +194,6 @@ export const PedidoScannerExample: React.FC = () => {
                 <View key={index} style={styles.itemRow}>
                   <Text style={styles.itemNome}>{item.nome}</Text>
                   <Text style={styles.itemQuantidade}>Qtd: {item.quantidade}</Text>
-                  <Text style={styles.itemTotal}>{formatCurrency(item.total)}</Text>
                 </View>
               ))}
             </View>

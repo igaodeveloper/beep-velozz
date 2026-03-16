@@ -36,7 +36,6 @@ export interface Pedido {
   status: StatusPedido;
   dataCriacao: string;
   dataAtualizacao: string;
-  valorTotal: number;
   itens: ItemPedido[];
   observacoes?: string;
 }
@@ -45,8 +44,6 @@ export interface ItemPedido {
   id: string;
   nome: string;
   quantidade: number;
-  precoUnitario: number;
-  total: number;
 }
 
 export interface PedidoResponse {

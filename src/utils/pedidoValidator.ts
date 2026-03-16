@@ -20,7 +20,6 @@ export class PedidoValidator {
       this.isValidStatus(obj.status) &&
       typeof obj.dataCriacao === 'string' &&
       typeof obj.dataAtualizacao === 'string' &&
-      typeof obj.valorTotal === 'number' &&
       Array.isArray(obj.itens) &&
       obj.itens.every((item: any) => this.isValidItemPedido(item))
     );
@@ -70,9 +69,7 @@ export class PedidoValidator {
       obj &&
       typeof obj.id === 'string' &&
       typeof obj.nome === 'string' &&
-      typeof obj.quantidade === 'number' &&
-      typeof obj.precoUnitario === 'number' &&
-      typeof obj.total === 'number'
+      typeof obj.quantidade === 'number'
     );
   }
 
@@ -88,12 +85,9 @@ export class PedidoValidator {
     // Sanitização adicional se necessário
     return {
       ...data,
-      valorTotal: Math.max(0, data.valorTotal), // Garante valor não negativo
       itens: data.itens.map((item: any) => ({
         ...item,
         quantidade: Math.max(1, item.quantidade),
-        precoUnitario: Math.max(0, item.precoUnitario),
-        total: Math.max(0, item.total),
       })),
     };
   }

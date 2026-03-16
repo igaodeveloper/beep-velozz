@@ -98,7 +98,6 @@ export default function AdvancedHistorySearch({
     return {
       total: filteredSessions.length,
       packages: metrics.reduce((sum, m) => sum + m.total, 0),
-      value: metrics.reduce((sum, m) => sum + m.valueTotal, 0),
       divergences: filteredSessions.filter((s) => s.hasDivergence).length,
     };
   }, [filteredSessions]);
@@ -289,7 +288,6 @@ export default function AdvancedHistorySearch({
           <View style={{ gap: 8 }}>
             <StatRow label="Sessões Encontradas" value={stats.total.toString()} colors={colors} />
             <StatRow label="Total de Pacotes" value={stats.packages.toString()} colors={colors} />
-            <StatRow label="Valor Total" value={`R$ ${stats.value.toFixed(2).replace('.', ',')}`} colors={colors} />
             <StatRow
               label="Com Divergência"
               value={stats.divergences.toString()}
@@ -473,7 +471,7 @@ function SessionItemCompact({ session, onPress, colors }: SessionItemCompactProp
       </View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={{ color: colors.textMuted, fontSize: 11 }}>
-          {metrics.total} pacotes • R$ {metrics.valueTotal.toFixed(2).replace('.', ',')}
+          {metrics.total} pacotes
         </Text>
       </View>
     </TouchableOpacity>

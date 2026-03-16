@@ -110,9 +110,9 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
           </Text>
 
           <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-            <SummaryBox label="Shopee" count={metrics.shopee} value={metrics.valueShopee} color="#ff5722" />
-            <SummaryBox label="Merc. Livre" count={metrics.mercadoLivre} value={metrics.valueMercadoLivre} color="#ffe600" />
-            <SummaryBox label="Avulsos" count={metrics.avulsos} value={metrics.valueAvulsos} color="#64748b" />
+            <SummaryBox label="Shopee" count={metrics.shopee} color="#ff5722" />
+            <SummaryBox label="Merc. Livre" count={metrics.mercadoLivre} color="#ffe600" />
+            <SummaryBox label="Avulsos" count={metrics.avulsos} color="#64748b" />
           </View>
 
           <View style={{
@@ -122,7 +122,6 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
             <View>
               <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '700', letterSpacing: 1 }}>TOTAL CONFERIDO</Text>
               <Text style={{ color: colors.primary, fontSize: 28, fontWeight: '800' }}>{metrics.total}</Text>
-              <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700', marginTop: 4 }}>R$ {metrics.valueTotal.toFixed(2)}</Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '700', letterSpacing: 1 }}>DECLARADO</Text>
@@ -168,9 +167,6 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
                 </View>
                 <View style={{ backgroundColor: badge.bg, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, marginRight: 8 }}>
                   <Text style={{ color: badge.text, fontSize: 9, fontWeight: '700' }}>{packageTypeLabel(pkg.type)}</Text>
-                </View>
-                <View style={{ backgroundColor: colors.primary, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 }}>
-                  <Text style={{ color: colors.secondary, fontSize: 9, fontWeight: '700' }}>R$ {(pkg.value || 0).toFixed(2)}</Text>
                 </View>
               </View>
             );
@@ -280,7 +276,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function SummaryBox({ label, count, value, color }: { label: string; count: number; value: number; color: string }) {
+function SummaryBox({ label, count, color }: { label: string; count: number; color: string }) {
   const { colors } = useAppTheme();
   return (
     <View style={{
@@ -289,7 +285,6 @@ function SummaryBox({ label, count, value, color }: { label: string; count: numb
     }}>
       <Text style={{ color, fontSize: 20, fontWeight: '800' }}>{count}</Text>
       <Text style={{ color: colors.textSubtle, fontSize: 9, fontWeight: '600', marginTop: 2 }}>{label}</Text>
-      <Text style={{ color: colors.primary, fontSize: 10, fontWeight: '700', marginTop: 4 }}>R$ {value.toFixed(2)}</Text>
     </View>
   );
 }

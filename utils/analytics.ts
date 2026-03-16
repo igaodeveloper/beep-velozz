@@ -130,13 +130,13 @@ export function detectAnomalies(session: Session, historicalSessions: Session[])
     }
   }
 
-  // Flag: valor total muito fora do esperado
-  const historicalValues = historicalSessions.map((s) => getSessionMetrics(s.packages).valueTotal);
-  const avgValue = historicalValues.length > 0 ? historicalValues.reduce((a, b) => a + b) / historicalValues.length : 0;
-  const stdDevValue = calculateStdDev(historicalValues);
+  // Flag: quantidade de pacotes muito fora do esperado
+  const historicalCounts = historicalSessions.map((s) => getSessionMetrics(s.packages).total);
+  const avgCount = historicalCounts.length > 0 ? historicalCounts.reduce((a, b) => a + b) / historicalCounts.length : 0;
+  const stdDevCount = calculateStdDev(historicalCounts);
 
-  if (Math.abs(sessionMetrics.valueTotal - avgValue) > stdDevValue * 2.5) {
-    flags.push(`Valor total anômalo (R$ ${sessionMetrics.valueTotal.toFixed(2)} vs R$ ${avgValue.toFixed(2)} esperado)`);
+  if (Math.abs(sessionMetrics.total - avgCount) > stdDevCount * 2.5) {
+    flags.push(`Quantidade de pacotes anômala (${sessionMetrics.total} vs ${Math.round(avgCount)} esperado)`);
     score += 0.3;
   }
 
@@ -214,9 +214,9 @@ export function generateInsights(sessions: Session[]): string[] {
     insights.push(`⚡ ${fastest.name} é o operador mais ágil (${fastest.avgRatePerMinute} pkg/min)`);
   }
 
-  // Insight 4: Valor movimentado
-  const totalValue = allMetrics.reduce((sum, m) => sum + m.valueTotal, 0);
-  insights.push(`💰 R$ ${totalValue.toFixed(2)} movimentados em ${sessions.length} sessões`);
+  // Insight 4: Total de pacotes processados
+  const totalPackages = allMetrics.reduce((sum, m) => sum + m.total, 0);
+  insights.push(`� ${totalPackages} pacotes processados em ${sessions.length} sessões`);
 
   return insights;
 }
@@ -243,15 +243,13 @@ export function generatePerformanceReport(sessions: Session[]): {
   const operatorStats = calculateOperatorStats(sessions);
 
   const totalPackages = metrics.reduce((sum, m) => sum + m.total, 0);
-  const totalValue = metrics.reduce((sum, m) => sum + m.valueTotal, 0);
   const divergenceSessions = sessions.filter((s) => s.hasDivergence).length;
 
-  const summary = `Conferência de ${totalPackages} pacotes (R$ ${totalValue.toFixed(2)}) em ${sessions.length} sessões`;
+  const summary = `Conferência de ${totalPackages} pacotes em ${sessions.length} sessões`;
 
   const metricsObj: Record<string, string> = {
     'Total de Sessões': sessions.length.toString(),
     'Pacotes Conferenciados': totalPackages.toString(),
-    'Valor Total': `R$ ${totalValue.toFixed(2)}`,
     'Sessões com Divergência': divergenceSessions.toString(),
     'Taxa de Divergência': `${((divergenceSessions / sessions.length) * 100).toFixed(1)}%`,
     'Melhor Operador':

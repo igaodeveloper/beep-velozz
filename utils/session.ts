@@ -1,17 +1,6 @@
 import { PackageType } from '@/types/scanner';
 import { ScannedPackage, Session } from '@/types/session';
 
-// Valores de cada pacote por marketplace
-const PACKAGE_VALUES: Record<PackageType, number> = {
-  'shopee': 6,
-  'mercado_livre': 8,
-  'avulso': 8,
-  'unknown': 0,
-};
-
-export function getPackageValue(type: PackageType): number {
-  return PACKAGE_VALUES[type] || 0;
-}
 
 export function classifyPackage(code: string): PackageType {
   const normalized = (code ?? '').trim();
@@ -87,19 +76,12 @@ export function getSessionMetrics(packages: ScannedPackage[]) {
   const shopeePackages = packages.filter(p => p.type === 'shopee');
   const mercadoLivrePackages = packages.filter(p => p.type === 'mercado_livre');
   const avulsoPackages = packages.filter(p => p.type === 'avulso');
-  
-  // ensure value is defined for backwards compatibility
-  const safeValue = (p: ScannedPackage) => (typeof p.value === 'number' ? p.value : getPackageValue(p.type));
 
   return {
     shopee: shopeePackages.length,
     mercadoLivre: mercadoLivrePackages.length,
     avulsos: avulsoPackages.length,
     total: packages.length,
-    valueShopee: shopeePackages.reduce((acc, p) => acc + safeValue(p), 0),
-    valueMercadoLivre: mercadoLivrePackages.reduce((acc, p) => acc + safeValue(p), 0),
-    valueAvulsos: avulsoPackages.reduce((acc, p) => acc + safeValue(p), 0),
-    valueTotal: packages.reduce((acc, p) => acc + safeValue(p), 0),
   };
 }
 
@@ -132,12 +114,12 @@ export function formatWhatsAppMessage(session: Session): string {
 ● Motorista: ${session.driverName}
 
 *DISTRIBUIÇÃO DE PACOTES*
-🟠 Shopee: ${metrics.shopee} unid. | R$ ${metrics.valueShopee.toFixed(2).replace('.', ',')}
-🟡 Mercado Livre: ${metrics.mercadoLivre} unid. | R$ ${metrics.valueMercadoLivre.toFixed(2).replace('.', ',')}
-🔵 Avulsos: ${metrics.avulsos} unid. | R$ ${metrics.valueAvulsos.toFixed(2).replace('.', ',')}
+🟠 Shopee: ${metrics.shopee} unid.
+🟡 Mercado Livre: ${metrics.mercadoLivre} unid.
+🔵 Avulsos: ${metrics.avulsos} unid.
 
 *RESUMO EXECUTIVO*
-● Total: ${metrics.total} pacotes | R$ ${metrics.valueTotal.toFixed(2).replace('.', ',')}
+● Total: ${metrics.total} pacotes
 ${divergenceInfo}`;
 }
 

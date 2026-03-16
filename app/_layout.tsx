@@ -7,7 +7,7 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { Dimensions } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
@@ -15,8 +15,10 @@ import "../global.css";
 import { ThemeProvider as CustomThemeProvider, useTheme } from "../utils/themeContext";
 import { lightTheme, darkTheme } from "../utils/theme";
 import { getDeviceInfo } from "../utils/orientationUtils";
-import { SplashScreen as CustomSplashScreen } from "../components/SplashScreen";
 import { FastSplashScreen } from "../components/FastSplashScreen";
+
+// Lazy loading para componentes pesados
+const SplashScreenComponent = lazy(() => import("../components/SplashScreen").then(module => ({ default: module.SplashScreen })));
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -51,9 +53,13 @@ function RootLayoutContent() {
 
   // Show splash screen while app is loading
   if (!appReady) {
-    return useAnimatedSplash 
-      ? <CustomSplashScreen onAnimationComplete={() => {}} />
-      : <FastSplashScreen onAnimationComplete={() => {}} />;
+    return (
+      <Suspense fallback={<FastSplashScreen onAnimationComplete={() => {}} />}>
+        {useAnimatedSplash 
+          ? <SplashScreenComponent onAnimationComplete={() => {}} />
+          : <FastSplashScreen onAnimationComplete={() => {}} />}
+      </Suspense>
+    );
   }
 
   const navTheme = isDark

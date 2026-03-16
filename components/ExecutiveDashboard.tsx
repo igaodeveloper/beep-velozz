@@ -33,7 +33,6 @@ interface ExecutiveDashboardProps {
 }
 
 interface ExecutiveMetrics {
-  totalRevenue: number;
   totalPackages: number;
   totalSessions: number;
   avgSessionDuration: number;
@@ -42,8 +41,6 @@ interface ExecutiveMetrics {
   efficiencyScore: number;
   qualityScore: number;
   customerSatisfaction: number;
-  operationalCosts: number;
-  profitMargin: number;
 }
 
 interface KPIData {
@@ -79,9 +76,6 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
     const totalSessions = sessions.length;
     const completedSessionsArray = sessions.filter(s => s.completedAt);
     const totalPackages = sessions.reduce((sum, s) => sum + s.packages.length, 0);
-    const totalRevenue = sessions.reduce((sum, s) => 
-      sum + s.packages.reduce((pkgSum, pkg) => pkgSum + (pkg.value || 0), 0), 0
-    );
 
     // Duração média das sessões
     const durations = completedSessionsArray.map((s: Session) => {
@@ -108,12 +102,7 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
     const qualityScore = Math.max(0, 100 - (sessions.filter(s => s.hasDivergence).length / Math.max(totalSessions, 1)) * 100);
     const customerSatisfaction = 92.3; // Simulação
 
-    // Custos e margem (simulações)
-    const operationalCosts = totalRevenue * 0.35; // 35% de custos operacionais
-    const profitMargin = ((totalRevenue - operationalCosts) / Math.max(totalRevenue, 1)) * 100;
-
     return {
-      totalRevenue,
       totalPackages,
       totalSessions,
       avgSessionDuration,
@@ -122,22 +111,11 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
       efficiencyScore,
       qualityScore,
       customerSatisfaction,
-      operationalCosts,
-      profitMargin,
     };
   }, [sessions, operatorStats]);
 
   // Dados para KPIs
   const kpiData: KPIData[] = useMemo(() => [
-    {
-      title: 'Receita Total',
-      value: `R$ ${executiveMetrics.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-      change: executiveMetrics.revenueGrowth,
-      changeType: executiveMetrics.revenueGrowth > 0 ? 'increase' : 'decrease',
-      icon: 'cash-outline',
-      color: '#4ECDC4',
-      trend: [100, 105, 102, 108, 112, 115, 118],
-    },
     {
       title: 'Pacotes Processados',
       value: executiveMetrics.totalPackages.toLocaleString('pt-BR'),
@@ -157,13 +135,13 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
       trend: [85, 87, 86, 89, 91, 92, 94],
     },
     {
-      title: 'Margem de Lucro',
-      value: `${Math.round(executiveMetrics.profitMargin)}%`,
-      change: -2.1,
+      title: 'Taxa de Divergência',
+      value: `${Math.round(100 - executiveMetrics.qualityScore)}%`,
+      change: -1.2,
       changeType: 'decrease',
-      icon: 'analytics-outline',
-      color: '#96CEB4',
-      trend: [68, 70, 67, 65, 66, 64, 65],
+      icon: 'alert-circle-outline',
+      color: '#FFD93D',
+      trend: [5, 4.8, 5.2, 4.5, 4.3, 4.0, 3.8],
     },
     {
       title: 'Satisfação Cliente',
@@ -492,15 +470,6 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
             </Text>
             <Text style={[styles.summaryLabel, { color: colors.secondary }]}>
               Duração Média
-            </Text>
-          </View>
-          
-          <View style={styles.summaryItem}>
-            <Text style={[styles.summaryValue, { color: colors.text }]}>
-              R$ {Math.round(executiveMetrics.operationalCosts).toLocaleString('pt-BR')}
-            </Text>
-            <Text style={[styles.summaryLabel, { color: colors.secondary }]}>
-              Custos Operacionais
             </Text>
           </View>
         </View>

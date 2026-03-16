@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { View, Text } from 'react-native';
 import { SessionMetrics } from '@/types/session';
 import { useAppTheme } from '@/utils/useAppTheme';
@@ -6,98 +6,168 @@ import { useAppTheme } from '@/utils/useAppTheme';
 interface MetricCardProps {
   label: string;
   count: number;
-  value: number;
   color: string;
   emoji: string;
 }
 
-function MetricCard({ label, count, value, color, emoji }: MetricCardProps) {
+const MetricCard = memo(({ label, count, color, emoji }: MetricCardProps) => {
   const { colors } = useAppTheme();
+  const cardStyle = useMemo(() => ({
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 10,
+    alignItems: 'center' as const,
+    minWidth: 0,
+  }), [colors]);
+  
+  const countStyle = useMemo(() => ({
+    color, 
+    fontSize: 18, 
+    fontWeight: '800' as const, 
+    marginTop: 3
+  }), [color]);
+  
+  const labelStyle = useMemo(() => ({
+    color: colors.textSubtle, 
+    fontSize: 8, 
+    fontWeight: '600' as const, 
+    marginTop: 1
+  }), [colors.textSubtle]);
+  
   return (
-    <View style={{
-      flex: 1,
-      backgroundColor: colors.surface,
-      borderRadius: 10,
-      borderWidth: 1,
-      borderColor: colors.border,
-      padding: 10,
-      alignItems: 'center',
-      minWidth: 0,
-    }}>
+    <View style={cardStyle}>
       <Text style={{ fontSize: 16 }}>{emoji}</Text>
-      <Text style={{ color, fontSize: 18, fontWeight: '800', marginTop: 3 }}>
+      <Text style={countStyle}>
         {count}
       </Text>
-      <Text style={{ color: colors.textSubtle, fontSize: 8, fontWeight: '600', marginTop: 1 }}>
+      <Text style={labelStyle}>
         {label}
-      </Text>
-      <Text style={{ color: colors.primary, fontSize: 10, fontWeight: '700', marginTop: 3 }}>
-        R$ {value.toFixed(2)}
       </Text>
     </View>
   );
-}
+});
+
+MetricCard.displayName = 'MetricCard';
 
 interface MetricsDashboardProps {
   metrics: SessionMetrics;
   declaredCount: number;
 }
 
-export default function MetricsDashboard({ metrics, declaredCount }: MetricsDashboardProps) {
+export default memo(function MetricsDashboard({ metrics, declaredCount }: MetricsDashboardProps) {
   const { colors } = useAppTheme();
-  const progressPct = declaredCount > 0 ? Math.min((metrics.total / declaredCount) * 100, 100) : 0;
-  const isComplete = metrics.total === declaredCount && declaredCount > 0;
-  const isOver = metrics.total > declaredCount && declaredCount > 0;
+  
+  const progressData = useMemo(() => {
+    const progressPct = declaredCount > 0 ? Math.min((metrics.total / declaredCount) * 100, 100) : 0;
+    const isComplete = metrics.total === declaredCount && declaredCount > 0;
+    const isOver = metrics.total > declaredCount && declaredCount > 0;
+    return { progressPct, isComplete, isOver };
+  }, [metrics.total, declaredCount]);
+  
+  const containerStyle = useMemo(() => ({
+    paddingHorizontal: 12, 
+    paddingTop: 8, 
+    paddingBottom: 4
+  }), []);
+  
+  const progressContainerStyle = useMemo(() => ({ marginBottom: 8 }), []);
+  
+  const progressHeaderStyle = useMemo(() => ({
+    flexDirection: 'row' as const, 
+    justifyContent: 'space-between' as const, 
+    marginBottom: 4
+  }), []);
+  
+  const progressLabelStyle = useMemo(() => ({
+    color: colors.textMuted, 
+    fontSize: 10, 
+    fontWeight: '600' as const, 
+    letterSpacing: 0.3
+  }), [colors.textMuted]);
+  
+  const progressCountStyle = useMemo(() => ({
+    color: progressData.isComplete ? colors.success : progressData.isOver ? colors.danger : colors.primary,
+    fontSize: 10, 
+    fontWeight: '700' as const
+  }), [progressData.isComplete, progressData.isOver, colors]);
+  
+  const progressBarBgStyle = useMemo(() => ({
+    height: 5, 
+    backgroundColor: colors.surface2, 
+    borderRadius: 2.5
+  }), [colors.surface2]);
+  
+  const progressBarStyle = useMemo(() => ({
+    height: 5,
+    width: `${progressData.progressPct}%` as any,
+    backgroundColor: progressData.isComplete ? colors.success : progressData.isOver ? colors.danger : colors.primary,
+    borderRadius: 2.5,
+  }), [progressData.progressPct, progressData.isComplete, progressData.isOver, colors]);
+  
+  const metricCardsContainerStyle = useMemo(() => ({
+    flexDirection: 'row' as const, 
+    gap: 6, 
+    marginBottom: 8, 
+    flexWrap: 'wrap' as const
+  }), []);
+  
+  const totalCardStyle = useMemo(() => ({
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    padding: 10,
+    alignItems: 'center' as const
+  }), [colors.primary]);
+  
+  const totalLabelStyle = useMemo(() => ({
+    color: colors.secondary, 
+    fontSize: 10, 
+    fontWeight: '600' as const, 
+    letterSpacing: 0.3
+  }), [colors.secondary]);
+  
+  const totalValueStyle = useMemo(() => ({
+    color: colors.secondary, 
+    fontSize: 18, 
+    fontWeight: '800' as const, 
+    marginTop: 2
+  }), [colors.secondary]);
 
   return (
-    <View style={{ paddingHorizontal: 12, paddingTop: 8, paddingBottom: 4 }}>
+    <View style={containerStyle}>
       {/* Progress bar */}
-      <View style={{ marginBottom: 8 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-          <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '600', letterSpacing: 0.3 }}>
+      <View style={progressContainerStyle}>
+        <View style={progressHeaderStyle}>
+          <Text style={progressLabelStyle}>
             PROGRESSO
           </Text>
-          <Text style={{
-            color: isComplete ? colors.success : isOver ? colors.danger : colors.primary,
-            fontSize: 10, fontWeight: '700'
-          }}>
+          <Text style={progressCountStyle}>
             {metrics.total} / {declaredCount}
           </Text>
         </View>
-        <View style={{ height: 5, backgroundColor: colors.surface2, borderRadius: 2.5 }}>
-          <View style={{
-            height: 5,
-            width: `${progressPct}%` as any,
-            backgroundColor: isComplete ? colors.success : isOver ? colors.danger : colors.primary,
-            borderRadius: 2.5,
-          }} />
+        <View style={progressBarBgStyle}>
+          <View style={progressBarStyle} />
         </View>
       </View>
 
       {/* Metric Cards */}
-      <View style={{ flexDirection: 'row', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
-        <MetricCard label="SHOPEE" count={metrics.shopee} value={metrics.valueShopee} color="#ff5722" emoji="🛍️" />
-        <MetricCard label="MERC. LIVRE" count={metrics.mercadoLivre} value={metrics.valueMercadoLivre} color="#ffe600" emoji="🟡" />
-        <MetricCard label="AVULSOS" count={metrics.avulsos} value={metrics.valueAvulsos} color="#64748b" emoji="📦" />
+      <View style={metricCardsContainerStyle}>
+        <MetricCard label="SHOPEE" count={metrics.shopee} color="#ff5722" emoji="🛍️" />
+        <MetricCard label="MERC. LIVRE" count={metrics.mercadoLivre} color="#ffe600" emoji="🟡" />
+        <MetricCard label="AVULSOS" count={metrics.avulsos} color="#64748b" emoji="📦" />
       </View>
 
       {/* Total Card */}
-      <View style={{
-        backgroundColor: colors.primary,
-        borderRadius: 10,
-        padding: 10,
-        alignItems: 'center'
-      }}>
-        <Text style={{ color: colors.secondary, fontSize: 10, fontWeight: '600', letterSpacing: 0.3 }}>
+      <View style={totalCardStyle}>
+        <Text style={totalLabelStyle}>
           TOTAL GERAL
         </Text>
-        <Text style={{ color: colors.secondary, fontSize: 18, fontWeight: '800', marginTop: 2 }}>
+        <Text style={totalValueStyle}>
           {metrics.total}
-        </Text>
-        <Text style={{ color: colors.secondary, fontSize: 11, fontWeight: '600', marginTop: 1 }}>
-          R$ {metrics.valueTotal.toFixed(2)}
         </Text>
       </View>
     </View>
   );
-}
+});

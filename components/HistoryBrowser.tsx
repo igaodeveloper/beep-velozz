@@ -205,13 +205,12 @@ export default function HistoryBrowser({
                 </View>
 
                 <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-                  <CountBadge label="SP" count={metrics.shopee} value={metrics.valueShopee} color="#ff5722" />
-                  <CountBadge label="ML" count={metrics.mercadoLivre} value={metrics.valueMercadoLivre} color="#ffe600" />
-                  <CountBadge label="AV" count={metrics.avulsos} value={metrics.valueAvulsos} color="#64748b" />
+                  <CountBadge label="SP" count={metrics.shopee} color="#ff5722" />
+                  <CountBadge label="ML" count={metrics.mercadoLivre} color="#ffe600" />
+                  <CountBadge label="AV" count={metrics.avulsos} color="#64748b" />
                   <View style={{ flex: 1 }} />
                   <View style={{ alignItems: 'flex-end' }}>
                     <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '800' }}>{metrics.total}</Text>
-                    <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700' }}>R$ {metrics.valueTotal.toFixed(2)}</Text>
                     <Text style={{ color: colors.textSubtle, fontSize: 9 }}>/ {session.declaredCount} decl.</Text>
                   </View>
                 </View>
@@ -240,7 +239,7 @@ export default function HistoryBrowser({
   );
 }
 
-function CountBadge({ label, count, value, color }: { label: string; count: number; value: number; color: string }) {
+function CountBadge({ label, count, color }: { label: string; count: number; color: string }) {
   const { colors } = useAppTheme();
   return (
     <View style={{
@@ -250,7 +249,6 @@ function CountBadge({ label, count, value, color }: { label: string; count: numb
     }}>
       <Text style={{ color, fontSize: 13, fontWeight: '800' }}>{count}</Text>
       <Text style={{ color: colors.textSubtle, fontSize: 9, fontWeight: '700' }}>{label}</Text>
-      <Text style={{ color: colors.primary, fontSize: 8, fontWeight: '700' }}>R$ {value.toFixed(2)}</Text>
     </View>
   );
 }
@@ -330,15 +328,14 @@ function SessionDetailView({ session, onBack }: { session: Session; onBack: () =
             MÉTRICAS
           </Text>
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
-            <MetricItem label="Shopee" count={metrics.shopee} value={metrics.valueShopee} color="#ff5722" />
-            <MetricItem label="Merc. Livre" count={metrics.mercadoLivre} value={metrics.valueMercadoLivre} color="#ffe600" />
-            <MetricItem label="Avulsos" count={metrics.avulsos} value={metrics.valueAvulsos} color="#64748b" />
+            <MetricItem label="Shopee" count={metrics.shopee} color="#ff5722" />
+            <MetricItem label="Merc. Livre" count={metrics.mercadoLivre} color="#ffe600" />
+            <MetricItem label="Avulsos" count={metrics.avulsos} color="#64748b" />
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', backgroundColor: colors.surface2, borderRadius: 10, padding: 12 }}>
             <View>
               <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '700' }}>CONFERIDO</Text>
               <Text style={{ color: colors.primary, fontSize: 24, fontWeight: '800' }}>{metrics.total}</Text>
-              <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700', marginTop: 4 }}>R$ {metrics.valueTotal.toFixed(2)}</Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '700' }}>DECLARADO</Text>
@@ -378,9 +375,6 @@ function SessionDetailView({ session, onBack }: { session: Session; onBack: () =
                 <View style={{ backgroundColor: badge.bg, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, marginRight: 8 }}>
                   <Text style={{ color: badge.text, fontSize: 9, fontWeight: '700' }}>{packageTypeLabel(pkg.type)}</Text>
                 </View>
-                <View style={{ backgroundColor: colors.primary, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 }}>
-                  <Text style={{ color: colors.secondary, fontSize: 9, fontWeight: '700' }}>R$ {(pkg.value || 0).toFixed(2)}</Text>
-                </View>
               </View>
             );
           })}
@@ -390,13 +384,12 @@ function SessionDetailView({ session, onBack }: { session: Session; onBack: () =
   );
 }
 
-function MetricItem({ label, count, value, color }: { label: string; count: number; value: number; color: string }) {
+function MetricItem({ label, count, color }: { label: string; count: number; color: string }) {
   const { colors } = useAppTheme();
   return (
     <View style={{ flex: 1, backgroundColor: colors.surface2, borderRadius: 10, padding: 10, alignItems: 'center' }}>
       <Text style={{ color, fontSize: 18, fontWeight: '800' }}>{count}</Text>
       <Text style={{ color: colors.textSubtle, fontSize: 9, fontWeight: '600' }}>{label}</Text>
-      <Text style={{ color: colors.primary, fontSize: 9, fontWeight: '700', marginTop: 2 }}>R$ {value.toFixed(2)}</Text>
     </View>
   );
 }

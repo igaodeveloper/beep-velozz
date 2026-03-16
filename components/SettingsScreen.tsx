@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
 import { useAppTheme } from '@/utils/useAppTheme';
 import { useTheme } from '@/utils/themeContext';
 import MainLayout from '@/components/MainLayout';
+import SimpleScrollView from '@/components/SimpleScrollView';
 import {
   Moon,
   Sun,
@@ -19,6 +20,7 @@ import {
   HelpCircle,
   ChevronRight,
 } from 'lucide-react-native';
+import { useResponsive, useResponsiveTypography, useResponsiveSpacing } from '@/hooks/useResponsiveAdvanced';
 
 type SettingsSection = 'root' | 'notifications' | 'privacy' | 'storage' | 'support';
 
@@ -32,23 +34,41 @@ interface SettingsItemProps {
 
 function SettingsItem({ icon: Icon, title, subtitle, onPress, rightComponent }: SettingsItemProps) {
   const { colors } = useAppTheme();
+  const responsive = useResponsive();
+  const spacing = useResponsiveSpacing();
+  
+  const itemStyle = useMemo(() => ({
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    padding: responsive.isMobile ? spacing.md : spacing.lg,
+    borderRadius: responsive.isMobile ? 12 : 14,
+    borderWidth: 1,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    marginBottom: spacing.sm,
+  }), [responsive, spacing, colors]);
 
   return (
     <TouchableOpacity
-      style={[styles.settingsItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+      style={itemStyle}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <View style={styles.itemLeft}>
-        <Icon size={20} color={colors.textMuted} style={styles.itemIcon} />
-        <View style={styles.itemText}>
-          <Text style={[styles.itemTitle, { color: colors.text }]}>{title}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+        <Icon size={responsive.isMobile ? 20 : 24} color={colors.textMuted} style={{ marginRight: spacing.md }} />
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: colors.text, fontSize: responsive.isMobile ? 16 : 18, fontWeight: '600', marginBottom: 2 }}>
+            {title}
+          </Text>
           {subtitle && (
-            <Text style={[styles.itemSubtitle, { color: colors.textMuted }]}>{subtitle}</Text>
+            <Text style={{ color: colors.textMuted, fontSize: responsive.isMobile ? 14 : 16, lineHeight: 20 }}>
+              {subtitle}
+            </Text>
           )}
         </View>
       </View>
-      {rightComponent || <ChevronRight size={20} color={colors.textFaint} />}
+      {rightComponent || <ChevronRight size={responsive.isMobile ? 20 : 24} color={colors.textFaint} />}
     </TouchableOpacity>
   );
 }
@@ -56,15 +76,19 @@ function SettingsItem({ icon: Icon, title, subtitle, onPress, rightComponent }: 
 export default function SettingsScreen() {
   const { colors, isDark } = useAppTheme();
   const { setColorScheme, colorScheme } = useTheme();
+  const responsive = useResponsive();
+  const typography = useResponsiveTypography();
+  const spacing = useResponsiveSpacing();
+  
   const [scannerHapticsEnabled, setScannerHapticsEnabled] = React.useState(true);
   const [scannerSoundEnabled, setScannerSoundEnabled] = React.useState(true);
   const [autoCloseSessions, setAutoCloseSessions] = React.useState(false);
   const [autoCloseHours, setAutoCloseHours] = React.useState(4);
   const [activeSection, setActiveSection] = React.useState<SettingsSection>('root');
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setColorScheme(colorScheme === 'dark' ? 'light' : 'dark');
-  };
+  }, [colorScheme, setColorScheme]);
 
   if (activeSection === 'notifications') {
     return (
@@ -100,101 +124,99 @@ export default function SettingsScreen() {
 
   return (
     <MainLayout>
-      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
-        <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Configurações</Text>
-        <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>
-          Personalize sua experiência
-        </Text>
-      </View>
-
-      <View style={styles.section}>
-        <SettingsItem
-          icon={isDark ? Moon : Sun}
-          title="Tema Escuro"
-          subtitle={isDark ? "Desativar tema escuro" : "Ativar tema escuro"}
-          onPress={toggleTheme}
-          rightComponent={
-            <Switch
-              value={isDark}
-              onValueChange={toggleTheme}
-              trackColor={{ false: colors.border, true: colors.primary + '40' }}
-              thumbColor={isDark ? colors.primary : colors.textFaint}
-            />
-          }
-        />
-      </View>
-
-      <View style={styles.section}>
-        <SettingsItem
-          icon={Bell}
-          title="Feedback tátil no scanner"
-          subtitle={scannerHapticsEnabled ? 'Vibração ao ler códigos' : 'Sem vibração nas leituras'}
-          onPress={() => setScannerHapticsEnabled((prev) => !prev)}
-          rightComponent={
-            <Switch
-              value={scannerHapticsEnabled}
-              onValueChange={() => setScannerHapticsEnabled((prev) => !prev)}
-              trackColor={{ false: colors.border, true: colors.primary + '40' }}
-              thumbColor={scannerHapticsEnabled ? colors.primary : colors.textFaint}
-            />
-          }
-        />
-        <SettingsItem
-          icon={Bell}
-          title="Som de confirmação"
-          subtitle={scannerSoundEnabled ? 'Bip ao escanear com sucesso' : 'Leitura silenciosa'}
-          onPress={() => setScannerSoundEnabled((prev) => !prev)}
-          rightComponent={
-            <Switch
-              value={scannerSoundEnabled}
-              onValueChange={() => setScannerSoundEnabled((prev) => !prev)}
-              trackColor={{ false: colors.border, true: colors.primary + '40' }}
-              thumbColor={scannerSoundEnabled ? colors.primary : colors.textFaint}
-            />
-          }
-        />
-      </View>
-
-      <View style={styles.section}>
-        <SettingsItem
-          icon={Bell}
-          title="Notificações"
-          subtitle="Gerenciar alertas e sons"
-          onPress={() => setActiveSection('notifications')}
-        />
-        <SettingsItem
-          icon={Shield}
-          title="Privacidade e Segurança"
-          subtitle="Proteger seus dados"
-          onPress={() => setActiveSection('privacy')}
-        />
-      </View>
-
-      <View style={styles.section}>
-        <SettingsItem
-          icon={Database}
-          title="Armazenamento"
-          subtitle="Gerenciar espaço e backup"
-          onPress={() => setActiveSection('storage')}
-        />
-        <SettingsItem
-          icon={HelpCircle}
-          title="Ajuda e Suporte"
-          subtitle="Central de ajuda e contato"
-          onPress={() => setActiveSection('support')}
-        />
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={[styles.footerText, { color: colors.textFaint }]}>
-          Beep Velozz v1.0.0
-        </Text>
-        <Text style={[styles.footerText, { color: colors.textFaint }]}>
-          © 2024 - Todos os direitos reservados
-        </Text>
+      <SimpleScrollView
+        responsivePadding
+      >
+        <View style={{ padding: spacing.xl, paddingTop: responsive.isMobile ? spacing.xxxl : spacing.xxl }}>
+          <Text style={{ color: colors.text, fontSize: typography.h1, fontWeight: '700', marginBottom: spacing.sm }}>
+            Configurações
+          </Text>
+          <Text style={{ color: colors.textMuted, fontSize: typography.body, lineHeight: 22 }}>
+            Personalize sua experiência
+          </Text>
         </View>
-      </ScrollView>
+
+        <View style={{ marginHorizontal: spacing.lg, marginBottom: spacing.xl }}>
+          <SettingsItem
+            icon={isDark ? Moon : Sun}
+            title="Tema Escuro"
+            subtitle={isDark ? "Desativar tema escuro" : "Ativar tema escuro"}
+            onPress={toggleTheme}
+            rightComponent={
+              <Switch
+                value={isDark}
+                onValueChange={toggleTheme}
+                trackColor={{ false: colors.border, true: colors.primary + '40' }}
+                thumbColor={isDark ? colors.primary : colors.textFaint}
+              />
+            }
+          />
+        </View>
+
+        <View style={{ marginHorizontal: spacing.lg, marginBottom: spacing.xl }}>
+          <SettingsItem
+            icon={Bell}
+            title="Feedback tátil no scanner"
+            subtitle={scannerHapticsEnabled ? 'Vibração ao ler códigos' : 'Sem vibração nas leituras'}
+            onPress={() => setScannerHapticsEnabled((prev) => !prev)}
+            rightComponent={
+              <Switch
+                value={scannerHapticsEnabled}
+                onValueChange={() => setScannerHapticsEnabled((prev) => !prev)}
+                trackColor={{ false: colors.border, true: colors.primary + '40' }}
+                thumbColor={scannerHapticsEnabled ? colors.primary : colors.textFaint}
+              />
+            }
+          />
+          <SettingsItem
+            icon={Bell}
+            title="Som de confirmação"
+            subtitle={scannerSoundEnabled ? 'Bip ao escanear com sucesso' : 'Leitura silenciosa'}
+            onPress={() => setScannerSoundEnabled((prev) => !prev)}
+            rightComponent={
+              <Switch
+                value={scannerSoundEnabled}
+                onValueChange={() => setScannerSoundEnabled((prev) => !prev)}
+                trackColor={{ false: colors.border, true: colors.primary + '40' }}
+                thumbColor={scannerSoundEnabled ? colors.primary : colors.textFaint}
+              />
+            }
+          />
+        </View>
+
+        <View style={{ marginHorizontal: spacing.lg, marginBottom: spacing.xl }}>
+          <SettingsItem
+            icon={Bell}
+            title="Notificações"
+            subtitle="Gerenciar alertas e sons"
+            onPress={() => setActiveSection('notifications')}
+          />
+          <SettingsItem
+            icon={Shield}
+            title="Privacidade e Segurança"
+            subtitle="Proteger seus dados"
+            onPress={() => setActiveSection('privacy')}
+          />
+        </View>
+
+        <View style={{ marginHorizontal: responsive.isMobile ? spacing.md : spacing.lg, marginBottom: spacing.xl }}>
+          <SettingsItem
+            icon={Database}
+            title="Armazenamento"
+            subtitle="Gerenciar espaço e backup"
+            onPress={() => setActiveSection('storage')}
+          />
+          <SettingsItem
+            icon={HelpCircle}
+            title="Ajuda e Suporte"
+            subtitle="Central de ajuda e contato"
+            onPress={() => setActiveSection('support')}
+          />
+          <Text style={{ color: colors.textFaint, fontSize: typography.small, textAlign: 'center', marginBottom: spacing.xs }}>
+            © 2024 - Todos os direitos reservados
+          </Text>
+        </View>
+      </SimpleScrollView>
     </MainLayout>
   );
 }

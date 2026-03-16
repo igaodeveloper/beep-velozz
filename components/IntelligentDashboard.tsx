@@ -7,11 +7,9 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   Alert,
   Dimensions,
-  RefreshControl,
 } from 'react-native';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { Session, OperatorStats } from '@/types/session';
@@ -19,6 +17,8 @@ import { aiPatternRecognition, PatternInsight } from '@/utils/aiPatternRecogniti
 import { smartNotificationManager, SmartNotification } from '@/utils/smartNotifications';
 import { packageImageRecognition, ImageAnalysisResult } from '@/utils/imageRecognition';
 import { packageAPIIntegration } from '@/utils/apiIntegration';
+import SimpleScrollView from '@/components/SimpleScrollView';
+import { useResponsive, useResponsiveTypography, useResponsiveSpacing, useResponsiveGrid } from '@/hooks/useResponsiveAdvanced';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -38,6 +38,11 @@ export default function IntelligentDashboard({
   refreshing = false,
 }: IntelligentDashboardProps) {
   const { colors } = useAppTheme();
+  const responsive = useResponsive();
+  const typography = useResponsiveTypography();
+  const spacing = useResponsiveSpacing();
+  const grid = useResponsiveGrid();
+  
   const [insights, setInsights] = useState<PatternInsight[]>([]);
   const [notifications, setNotifications] = useState<SmartNotification[]>([]);
   const [imageStats, setImageStats] = useState(packageImageRecognition.getAnalysisStats());
@@ -72,9 +77,6 @@ export default function IntelligentDashboard({
     const completedSessions = sessions.filter(s => s.completedAt).length;
     const divergentSessions = sessions.filter(s => s.hasDivergence).length;
     const totalPackages = sessions.reduce((sum, s) => sum + s.packages.length, 0);
-    const totalValue = sessions.reduce((sum, s) => {
-      return sum + s.packages.reduce((pkgSum, pkg) => pkgSum + (pkg.value || 0), 0);
-    }, 0);
 
     const divergenceRate = completedSessions > 0 ? (divergentSessions / completedSessions) * 100 : 0;
     const completionRate = totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
@@ -85,7 +87,6 @@ export default function IntelligentDashboard({
       completedSessions,
       divergentSessions,
       totalPackages,
-      totalValue,
       divergenceRate,
       completionRate,
       avgPackagesPerSession,
@@ -146,40 +147,46 @@ export default function IntelligentDashboard({
     };
   }, [sessions, colors]);
 
+  // Responsive tab styles
+  const tabStyle = useMemo(() => ({
+    flexDirection: 'row' as const,
+    backgroundColor: colors.surface,
+    borderRadius: responsive.isMobile ? 12 : 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: responsive.isMobile ? spacing.xs : spacing.sm,
+    marginBottom: spacing.lg,
+  }), [responsive, colors, spacing]);
+  
+  const tabButtonStyle = useCallback((isActive: boolean) => ({
+    flex: 1,
+    paddingVertical: responsive.isMobile ? spacing.sm : spacing.md,
+    paddingHorizontal: spacing.sm,
+    borderRadius: responsive.isMobile ? 8 : 10,
+    backgroundColor: isActive ? colors.primary : 'transparent',
+    alignItems: 'center' as const,
+  }), [responsive, colors, spacing]);
+  
+  const tabTextStyle = useCallback((isActive: boolean) => ({
+    fontSize: responsive.isMobile ? typography.caption : typography.body,
+    fontWeight: '600' as const,
+    color: isActive ? colors.secondary : colors.textMuted,
+  }), [responsive, typography, colors]);
+
   // Renderiza abas
   const renderTabs = () => (
-    <View style={{
-      flexDirection: 'row',
-      backgroundColor: colors.surface,
-      marginHorizontal: 16,
-      marginTop: 16,
-      borderRadius: 12,
-      padding: 4,
-    }}>
-      {[
-        { key: 'overview', label: 'Visão Geral' },
-        { key: 'insights', label: 'Insights IA' },
-        { key: 'performance', label: 'Performance' },
-        { key: 'quality', label: 'Qualidade' },
-      ].map(tab => (
+    <View style={tabStyle}>
+      {(['overview', 'insights', 'performance', 'quality'] as const).map((tab) => (
         <TouchableOpacity
-          key={tab.key}
-          onPress={() => setSelectedTab(tab.key as any)}
-          style={{
-            flex: 1,
-            paddingVertical: 12,
-            paddingHorizontal: 8,
-            borderRadius: 8,
-            backgroundColor: selectedTab === tab.key ? colors.primary : 'transparent',
-            alignItems: 'center',
-          }}
+          key={tab}
+          style={tabButtonStyle(selectedTab === tab)}
+          onPress={() => setSelectedTab(tab)}
+          activeOpacity={0.7}
         >
-          <Text style={{
-            color: selectedTab === tab.key ? '#fff' : colors.text,
-            fontSize: 12,
-            fontWeight: '600',
-          }}>
-            {tab.label}
+          <Text style={tabTextStyle(selectedTab === tab)}>
+            {tab === 'overview' ? 'Visão' : 
+             tab === 'insights' ? 'Insights' :
+             tab === 'performance' ? 'Performance' : 'Qualidade'}
           </Text>
         </TouchableOpacity>
       ))}
@@ -440,43 +447,43 @@ export default function IntelligentDashboard({
   };
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.bg }}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+    <SimpleScrollView
+      enableRefreshControl={!!onRefresh}
+      onRefresh={onRefresh}
+      refreshing={refreshing}
+      responsivePadding
     >
-      <Text style={{
-        color: colors.text,
-        fontSize: 24,
-        fontWeight: 'bold',
-        margin: 16,
-        marginBottom: 8,
-      }}>
-        🎯 Dashboard Inteligente
-      </Text>
+      {/* Header */}
+      <View style={{ padding: spacing.xl, paddingTop: responsive.isMobile ? spacing.xxxl : spacing.xxl }}>
+        <Text style={{ color: colors.text, fontSize: typography.h1, fontWeight: '700', marginBottom: spacing.sm }}>
+          Dashboard Analytics
+        </Text>
+        <Text style={{ color: colors.textMuted, fontSize: typography.body, lineHeight: 22 }}>
+          Insights e métricas em tempo real
+        </Text>
+      </View>
 
       {currentSession && (
         <View style={{
           backgroundColor: colors.primary + '20',
-          marginHorizontal: 16,
-          padding: 16,
-          borderRadius: 12,
-          marginBottom: 16,
+          marginHorizontal: spacing.lg,
+          padding: spacing.lg,
+          borderRadius: responsive.isMobile ? 12 : 14,
+          marginBottom: spacing.lg,
           borderLeftWidth: 4,
           borderLeftColor: colors.primary,
         }}>
-          <Text style={{ color: colors.text, fontSize: 14, fontWeight: '600', marginBottom: 4 }}>
+          <Text style={{ color: colors.text, fontSize: typography.caption, fontWeight: '600' as const, marginBottom: spacing.xs }}>
             Sessão Ativa
           </Text>
-          <Text style={{ color: colors.text, fontSize: 16 }}>
-            {currentSession.operatorName} - {currentSession.packages.length}/{currentSession.declaredCount} pacotes
+          <Text style={{ color: colors.text, fontSize: typography.body }}>
+            {currentSession?.operatorName} - {currentSession?.packages.length}/{currentSession?.declaredCount} pacotes
           </Text>
         </View>
       )}
 
       {renderTabs()}
       {renderContent()}
-    </ScrollView>
+    </SimpleScrollView>
   );
 }

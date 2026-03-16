@@ -4,7 +4,6 @@ export interface ScannedPackage {
   id: string;
   code: string;
   type: PackageType;
-  value?: number; // Optional value property for backwards compatibility
   scannedAt: string; // ISO timestamp
 }
 
@@ -32,10 +31,6 @@ export interface SessionMetrics {
   mercadoLivre: number;
   avulsos: number;
   total: number;
-  valueShopee: number;
-  valueMercadoLivre: number;
-  valueAvulsos: number;
-  valueTotal: number;
 }
 
 export interface OperatorStats {

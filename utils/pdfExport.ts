@@ -370,10 +370,6 @@ function generateReportHTML(session: Session): string {
                 <div class="summary-box-value">${metrics.total}</div>
               </div>
               <div class="summary-box-item">
-                <div class="summary-box-label">Valor Total</div>
-                <div class="summary-box-value">R$ ${metrics.valueTotal.toFixed(2).replace('.', ',')}</div>
-              </div>
-              <div class="summary-box-item">
                 <div class="summary-box-label">Conformidade</div>
                 <div class="summary-box-value">${hasDivergence ? ((metrics.total / session.declaredCount) * 100).toFixed(0) : '100'}%</div>
               </div>
@@ -387,17 +383,14 @@ function generateReportHTML(session: Session): string {
               <div class="metric-card">
                 <div class="metric-label">🟠 Shopee</div>
                 <div class="metric-value">${metrics.shopee}</div>
-                <div class="metric-subtitle">R$ ${metrics.valueShopee.toFixed(2).replace('.', ',')}</div>
               </div>
               <div class="metric-card">
                 <div class="metric-label">🟡 Mercado Livre</div>
                 <div class="metric-value">${metrics.mercadoLivre}</div>
-                <div class="metric-subtitle">R$ ${metrics.valueMercadoLivre.toFixed(2).replace('.', ',')}</div>
               </div>
               <div class="metric-card">
                 <div class="metric-label">🔵 Avulsos</div>
                 <div class="metric-value">${metrics.avulsos}</div>
-                <div class="metric-subtitle">R$ ${metrics.valueAvulsos.toFixed(2).replace('.', ',')}</div>
               </div>
             </div>
           </div>
@@ -419,7 +412,6 @@ function generateReportHTML(session: Session): string {
                     </span>
                   </div>
                   <div style="font-weight: 600;">${pkg.code}</div>
-                  <div style="color: #1f2937; font-weight: 700;">R$ ${(pkg.value || 0).toFixed(2).replace('.', ',')}</div>
                 </div>
               `
                 )
@@ -768,7 +760,6 @@ async function generateReportHTMLWithPhotos(session: Session): Promise<string> {
                     ${pkg.type === 'shopee' ? 'Shopee' : pkg.type === 'mercado_livre' ? 'ML' : 'Avulso'}
                   </span>
                 </div>
-                <div style="color: #1f2937; font-weight: 700; font-size: 13px;">R$ ${(pkg.value || 0).toFixed(2).replace('.', ',')}</div>
                 ${
                   photosBase64[pkg.code]
                     ? `<img src="${photosBase64[pkg.code]}" class="package-photo" alt="Foto - ${pkg.code}" /><div class="photo-label">✓ Foto capturada</div>`

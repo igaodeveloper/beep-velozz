@@ -192,7 +192,7 @@ export default function IndustrialScannerView({
   const scanner = useIndustrialScanner({
     maxAllowedScans: maxScans,
     debounceMs: 300, // Faster response
-    onStateChange: (state) => {
+    onStateChange: useCallback((state: ScannerState) => {
       // Enhanced haptic feedback based on state
       if (Platform.OS !== 'web') {
         switch (state) {
@@ -204,21 +204,28 @@ export default function IndustrialScannerView({
             break;
         }
       }
-      
-      if (state === ScannerState.LIMIT_REACHED) {
-        const types = scanner.stats.limitReached;
-        const limitedList = Object.entries(types)
-          .filter(([_, reached]) => reached)
-          .map(([type]) => type);
-
-        setLimitModalMessage(
-          `Limite atingido para: ${limitedList.map(t => getPackageTypeLabel(t as any)).join(', ')}`
-        );
-        setLimitModalVisible(true);
-        onLimitReached?.(limitedList);
-      }
-    },
+    }, []),
   });
+
+  // Handle limit reached separately to avoid circular dependency
+  useEffect(() => {
+    if (scanner.state === ScannerState.LIMIT_REACHED) {
+      const types = {
+        shopee: scanner.counts.shopee >= maxScans.shopee,
+        mercado_livre: scanner.counts.mercado_livre >= maxScans.mercado_livre,
+        avulso: scanner.counts.avulso >= maxScans.avulso,
+      };
+      const limitedList = Object.entries(types)
+        .filter(([_, reached]) => reached)
+        .map(([type]) => type);
+
+      setLimitModalMessage(
+        `Limite atingido para: ${limitedList.map(t => getPackageTypeLabel(t as any)).join(', ')}`
+      );
+      setLimitModalVisible(true);
+      onLimitReached?.(limitedList);
+    }
+  }, [scanner.state, scanner.counts, maxScans, onLimitReached]);
 
   // Smart suggestions algorithm
   const generateSmartSuggestions = useCallback(() => {
@@ -305,62 +312,62 @@ export default function IndustrialScannerView({
     setScanQuality(qualityScore >= 2 ? 'excellent' : qualityScore >= 1 ? 'good' : 'poor');
   }, [scanHistory]);
 
-  // Enhanced animation system with premium effects
+  // Enhanced animation system with premium effects - optimized
   useEffect(() => {
-    // Main pulse animation with breathing effect
+    // Main pulse animation with breathing effect - optimized duration
     pulseAnim.value = withRepeat(
       withSequence(
-        withTiming(1.03, { duration: 1500, easing: ReEasing.inOut(ReEasing.ease) }),
+        withTiming(1.02, { duration: 2000, easing: ReEasing.inOut(ReEasing.ease) }),
+        withTiming(1, { duration: 2000, easing: ReEasing.inOut(ReEasing.ease) })
+      ),
+      -1,
+      true
+    );
+
+    // Corner pulse animation for visual feedback - optimized
+    cornerPulseAnim.value = withRepeat(
+      withSequence(
+        withTiming(1.1, { duration: 1500, easing: ReEasing.out(ReEasing.ease) }),
         withTiming(1, { duration: 1500, easing: ReEasing.inOut(ReEasing.ease) })
       ),
       -1,
       true
     );
 
-    // Corner pulse animation for visual feedback
-    cornerPulseAnim.value = withRepeat(
-      withSequence(
-        withTiming(1.15, { duration: 1000, easing: ReEasing.out(ReEasing.ease) }),
-        withTiming(1, { duration: 1000, easing: ReEasing.inOut(ReEasing.ease) })
-      ),
-      -1,
-      true
-    );
-
-    // Glow animation for premium feel
+    // Glow animation for premium feel - optimized
     glowAnim.value = withRepeat(
       withSequence(
-        withTiming(1, { duration: 2500, easing: ReEasing.inOut(ReEasing.ease) }),
-        withTiming(0.3, { duration: 2500, easing: ReEasing.inOut(ReEasing.ease) })
+        withTiming(0.8, { duration: 3000, easing: ReEasing.inOut(ReEasing.ease) }),
+        withTiming(0.2, { duration: 3000, easing: ReEasing.inOut(ReEasing.ease) })
       ),
       -1,
       true
     );
 
-    // Radar animation for scanning indication
+    // Radar animation for scanning indication - optimized
     radarAnim.value = withRepeat(
-      withTiming(1, { duration: 3500, easing: ReEasing.linear }),
+      withTiming(1, { duration: 4000, easing: ReEasing.linear }),
       -1,
       false
     );
 
-    // Quality indicator animation
+    // Quality indicator animation - optimized
     qualityIndicatorAnim.value = withRepeat(
       withSequence(
-        withTiming(1, { duration: 2000, easing: ReEasing.inOut(ReEasing.ease) }),
-        withTiming(0.7, { duration: 2000, easing: ReEasing.inOut(ReEasing.ease) })
+        withTiming(0.9, { duration: 2500, easing: ReEasing.inOut(ReEasing.ease) }),
+        withTiming(0.6, { duration: 2500, easing: ReEasing.inOut(ReEasing.ease) })
       ),
       -1,
       true
     );
   }, []);
 
-  // Enhanced scan line animation with smooth transitions
+  // Enhanced scan line animation with smooth transitions - optimized
   useEffect(() => {
     scanLineAnim.value = withRepeat(
       withSequence(
-        withTiming(1, { duration: 1300, easing: ReEasing.inOut(ReEasing.ease) }),
-        withTiming(0, { duration: 1300, easing: ReEasing.inOut(ReEasing.ease) })
+        withTiming(1, { duration: 1500, easing: ReEasing.inOut(ReEasing.ease) }),
+        withTiming(0, { duration: 1500, easing: ReEasing.inOut(ReEasing.ease) })
       ),
       -1,
       true

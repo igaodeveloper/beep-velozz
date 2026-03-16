@@ -128,9 +128,6 @@ const PackageListItem = memo<{
           </Text>
         </View>
         <View style={styles.itemRight}>
-          <Text style={[styles.itemValue, { color: colors.primary }]}>
-            {item.value ? `R$ ${item.value.toFixed(2)}` : ''}
-          </Text>
           <Text style={[styles.itemTime, { color: colors.secondary }]}>
             {new Date(item.scannedAt).toLocaleTimeString('pt-BR', {
               hour: '2-digit',

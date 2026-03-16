@@ -143,18 +143,6 @@ export default function PackageList({ packages, expanded, onToggle }: PackageLis
                         {packageTypeLabel(pkg.type)}
                       </Text>
                     </View>
-
-                    {/* Value */}
-                    <View style={{
-                      backgroundColor: colors.primary,
-                      borderRadius: 6,
-                      paddingHorizontal: 8,
-                      paddingVertical: 3,
-                    }}>
-                      <Text style={{ color: colors.secondary, fontSize: 9, fontWeight: '700' }}>
-                        R$ {(pkg.value || 0).toFixed(2)}
-                      </Text>
-                    </View>
                   </Animated.View>
                 );
               })

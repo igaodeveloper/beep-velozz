@@ -28,7 +28,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { ScannedPackage } from '@/types/session';
 import { PackageType } from '@/types/scanner';
-import { packageTypeLabel, packageTypeBadgeColors, generateId, getPackageValue, getSessionMetrics } from '@/utils/session';
+import { packageTypeLabel, packageTypeBadgeColors, generateId, getSessionMetrics } from '@/utils/session';
 import { normalizeCode as normalizeScannerCode, identifyPackage } from '@/utils/scannerIdentification';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { useResponsive, responsiveSize, responsiveValue } from '@/utils/useResponsive';
@@ -214,7 +214,6 @@ export default function ScannerView({
       id: generateId(),
       code,
       type,
-      value: getPackageValue(type),
       scannedAt: new Date().toISOString(),
     };
     console.log(`[ScannerView] 📦 MANUAL PACOTE CRIADO: ${JSON.stringify(pkg)}`);
@@ -280,7 +279,6 @@ export default function ScannerView({
       id: generateId(),
       code,
       type,
-      value: getPackageValue(type),
       scannedAt: new Date().toISOString(),
     };
 
@@ -775,9 +773,6 @@ export default function ScannerView({
               </Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
-              <Text style={{ color: colors.primary, fontSize: responsive.fontSize.sm, fontWeight: '800' }}>
-                R$ {(lastScanned.value || 0).toFixed(2)}
-              </Text>
             </View>
             {onRequestPhoto && (
               <TouchableOpacity
@@ -908,9 +903,6 @@ export default function ScannerView({
                   {packageTypeLabel(lastScanned.type)}
                 </Text>
               </View>
-              <Text style={{ color: colors.primary, fontSize: responsive.fontSize.lg, fontWeight: '800', marginTop: 8 }}>
-                R$ {(lastScanned.value || 0).toFixed(2)}
-              </Text>
             </View>
           </Animated.View>
         )}

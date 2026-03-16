@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, SafeAreaView, StatusBar, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Session, ScannedPackage } from '@/types/session';
-import { getSessionMetrics, generateId, getPackageValue } from '@/utils/session';
+import { getSessionMetrics, generateId } from '@/utils/session';
 import { addSession, loadSessions } from '@/utils/storage';
 import { useAppTheme } from '@/utils/useAppTheme';
 
@@ -240,7 +240,6 @@ export default function App() {
       id: generateId(),
       code,
       type: pkgType,
-      value: getPackageValue(pkgType),
       scannedAt: new Date().toISOString(),
     };
     handlePackageScanned(pkg);
@@ -342,7 +341,7 @@ export default function App() {
 
   const metrics = currentSession
     ? getSessionMetrics(currentSession.packages)
-    : { shopee: 0, mercadoLivre: 0, avulsos: 0, total: 0, valueShopee: 0, valueMercadoLivre: 0, valueAvulsos: 0, valueTotal: 0 };
+    : { shopee: 0, mercadoLivre: 0, avulsos: 0, total: 0 };
 
   return (
     <TabLayout

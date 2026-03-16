@@ -114,6 +114,7 @@ export default function IndustrialScannerView({
   const [isProcessing, setIsProcessing] = useState(false);
   const [scanQuality, setScanQuality] = useState<'excellent' | 'good' | 'poor'>('good');
   const [cameraStabilization, setCameraStabilization] = useState(false);
+  const [showScanningPanel, setShowScanningPanel] = useState(true); // Novo estado para ocultar/mostrar
 
   // Advanced animations with enhanced visual effects
   const pulseAnim = useSharedValue(1);
@@ -124,6 +125,7 @@ export default function IndustrialScannerView({
   const successPulseAnim = useSharedValue(0);
   const errorShakeAnim = useSharedValue(0);
   const qualityIndicatorAnim = useSharedValue(0);
+  const panelSlideAnim = useSharedValue(0); // Nova animação para o painel
 
   // Modal states
   const [limitModalVisible, setLimitModalVisible] = useState(false);
@@ -322,6 +324,14 @@ export default function IndustrialScannerView({
   useEffect(() => {
     generateSmartSuggestions();
   }, [scanHistory, generateSmartSuggestions]);
+
+  // Panel slide animation based on visibility state
+  useEffect(() => {
+    panelSlideAnim.value = withTiming(
+      showScanningPanel ? 0 : 1, 
+      { duration: 300, easing: ReEasing.inOut(ReEasing.ease) }
+    );
+  }, [showScanningPanel]);
 
   // Enhanced barcode handler with intelligent processing
   const handleBarcode = useCallback(async (event: any) => {
@@ -874,18 +884,31 @@ export default function IndustrialScannerView({
       </Animated.View>
 
       {/* Professional Progress Dashboard */}
-      <View style={{
-        position: 'absolute',
-        bottom: 20,
-        left: 20,
-        right: 20,
-        backgroundColor: 'rgba(0,0,0,0.8)',
-        borderRadius: isTablet ? 20 : 16,
-        padding: isTablet ? 24 : 20,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
-        backdropFilter: 'blur(20px)',
-      }}>
+      <Animated.View style={[
+        {
+          position: 'absolute',
+          bottom: 20,
+          left: 20,
+          right: 20,
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          borderRadius: isTablet ? 20 : 16,
+          padding: isTablet ? 24 : 20,
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(20px)',
+        },
+        useAnimatedStyle(() => ({
+          transform: [
+            {
+              translateY: panelSlideAnim.value * (isTablet ? 200 : 180)
+            },
+            {
+              scale: panelSlideAnim.value === 0 ? 1 : 0.95
+            }
+          ],
+          opacity: 1 - panelSlideAnim.value * 0.3,
+        }))
+      ]}>
         {/* Enhanced Status Header */}
         <View style={{
           flexDirection: 'row',
@@ -923,25 +946,50 @@ export default function IndustrialScannerView({
             </Text>
           </View>
           
-          {/* Quality Indicator */}
+          {/* Toggle Button and Quality Indicator */}
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 6,
+            gap: 8,
           }}>
-            <Ionicons 
-              name={scanQuality === 'excellent' ? 'checkmark-circle' : scanQuality === 'good' ? 'checkmark' : 'alert'} 
-              size={isTablet ? 14 : 12} 
-              color={scanQuality === 'excellent' ? '#10b981' : scanQuality === 'good' ? '#3b82f6' : '#f59e0b'} 
-            />
-            <Text style={{
-              color: 'rgba(255,255,255,0.7)',
-              fontSize: isTablet ? 9 : 7,
-              fontWeight: '600',
-              textTransform: 'uppercase',
+            {/* Quality Indicator */}
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
             }}>
-              {scanQuality === 'excellent' ? 'Excelente' : scanQuality === 'good' ? 'Bom' : 'Regular'}
-            </Text>
+              <Ionicons 
+                name={scanQuality === 'excellent' ? 'checkmark-circle' : scanQuality === 'good' ? 'checkmark' : 'alert'} 
+                size={isTablet ? 14 : 12} 
+                color={scanQuality === 'excellent' ? '#10b981' : scanQuality === 'good' ? '#3b82f6' : '#f59e0b'} 
+              />
+              <Text style={{
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: isTablet ? 9 : 7,
+                fontWeight: '600',
+                textTransform: 'uppercase',
+              }}>
+                {scanQuality === 'excellent' ? 'Excelente' : scanQuality === 'good' ? 'Bom' : 'Regular'}
+              </Text>
+            </View>
+            
+            {/* Toggle Panel Button */}
+            <TouchableOpacity
+              onPress={() => setShowScanningPanel(!showScanningPanel)}
+              style={{
+                padding: isTablet ? 6 : 4,
+                borderRadius: isTablet ? 8 : 6,
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.2)',
+              }}
+            >
+              <Ionicons 
+                name={showScanningPanel ? 'eye-off' : 'eye'} 
+                size={isTablet ? 16 : 14} 
+                color="rgba(255,255,255,0.8)" 
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -1197,7 +1245,7 @@ export default function IndustrialScannerView({
             )}
           </View>
         )}
-      </View>
+      </Animated.View>
 
       {/* Enhanced Limit Reached Modal */}
       <Modal visible={limitModalVisible} transparent animationType="fade">

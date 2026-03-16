@@ -14,9 +14,16 @@ import MainLayout from '@/components/MainLayout';
 interface AdvancedAnalyticsProps {
   sessions: Session[];
   onClose: () => void;
+  onAnalyzeAll?: () => void;
+  onResetAnalysis?: () => void;
 }
 
-export default function AdvancedAnalytics({ sessions, onClose }: AdvancedAnalyticsProps) {
+export default function AdvancedAnalytics({ 
+  sessions, 
+  onClose, 
+  onAnalyzeAll, 
+  onResetAnalysis 
+}: AdvancedAnalyticsProps) {
   const { colors } = useAppTheme();
 
   const operatorStats = useMemo(() => calculateOperatorStats(sessions), [sessions]);
@@ -47,19 +54,64 @@ export default function AdvancedAnalytics({ sessions, onClose }: AdvancedAnalyti
             Performance & Insights
           </Text>
         </View>
-        <TouchableOpacity
-          onPress={onClose}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 10,
-            backgroundColor: colors.surface,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Text style={{ fontSize: 18 }}>✕</Text>
-        </TouchableOpacity>
+        
+        {/* Action Buttons */}
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          {/* Zerar Análise Button */}
+          <TouchableOpacity
+            onPress={onResetAnalysis}
+            style={{
+              height: 40,
+              paddingHorizontal: 12,
+              borderRadius: 10,
+              backgroundColor: '#ef4444',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 1,
+              borderColor: '#dc2626',
+            }}
+          >
+            <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>
+              ZERAR
+            </Text>
+          </TouchableOpacity>
+          
+          {/* Tudo Button */}
+          <TouchableOpacity
+            onPress={onAnalyzeAll}
+            style={{
+              height: 40,
+              paddingHorizontal: 12,
+              borderRadius: 10,
+              backgroundColor: colors.primary,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          >
+            <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>
+              TUDO
+            </Text>
+          </TouchableOpacity>
+          
+          {/* Close Button */}
+          <TouchableOpacity
+            onPress={onClose}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              backgroundColor: colors.surface,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 1,
+              borderColor: colors.surface2,
+            }}
+          >
+            <Text style={{ fontSize: 18, color: colors.text }}>✕</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={{ padding: 16, paddingTop: 20 }}>

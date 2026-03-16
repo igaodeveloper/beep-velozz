@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, TextInput,
+  View, Text, ScrollView, TouchableOpacity, TextInput, Alert,
 } from 'react-native';
 import { Session } from '@/types/session';
 import { formatDate, formatTimestamp, getSessionMetrics, packageTypeBadgeColors, packageTypeLabel } from '@/utils/session';
@@ -11,9 +11,17 @@ interface HistoryBrowserProps {
   sessions: Session[];
   onBack: () => void;
   onNewSession: () => void;
+  onLoadAllHistory?: () => void;
+  onClearHistory?: () => void;
 }
 
-export default function HistoryBrowser({ sessions, onBack, onNewSession }: HistoryBrowserProps) {
+export default function HistoryBrowser({ 
+  sessions, 
+  onBack, 
+  onNewSession, 
+  onLoadAllHistory, 
+  onClearHistory 
+}: HistoryBrowserProps) {
   const { colors } = useAppTheme();
   const [filter, setFilter] = useState('');
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
@@ -56,11 +64,72 @@ export default function HistoryBrowser({ sessions, onBack, onNewSession }: Histo
             Histórico de Sessões
           </Text>
         </View>
-        <View style={{
-          backgroundColor: colors.surface2, borderRadius: 10,
-          paddingHorizontal: 10, paddingVertical: 4,
-        }}>
-          <Text style={{ color: colors.textSubtle, fontSize: 13, fontWeight: '700' }}>{sessions.length}</Text>
+        
+        {/* Action Buttons */}
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          {/* Zerar Histórico Button */}
+          <TouchableOpacity
+            onPress={() => {
+              if (onClearHistory) {
+                Alert.alert(
+                  'Zerar Histórico',
+                  'Tem certeza que deseja apagar todo o histórico? Esta ação não pode ser desfeita.',
+                  [
+                    { text: 'Cancelar', style: 'cancel' },
+                    { 
+                      text: 'Zerar', 
+                      style: 'destructive',
+                      onPress: onClearHistory
+                    }
+                  ]
+                );
+              }
+            }}
+            style={{
+              height: 40,
+              paddingHorizontal: 12,
+              borderRadius: 10,
+              backgroundColor: '#ef4444',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 1,
+              borderColor: '#dc2626',
+            }}
+          >
+            <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>
+              ZERAR
+            </Text>
+          </TouchableOpacity>
+          
+          {/* Tudo Button */}
+          <TouchableOpacity
+            onPress={onLoadAllHistory}
+            style={{
+              height: 40,
+              paddingHorizontal: 12,
+              borderRadius: 10,
+              backgroundColor: colors.primary,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          >
+            <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>
+              TUDO
+            </Text>
+          </TouchableOpacity>
+          
+          {/* Session Count Badge */}
+          <View style={{
+            backgroundColor: colors.surface2, borderRadius: 10,
+            paddingHorizontal: 10, paddingVertical: 4,
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderColor: colors.surface2,
+          }}>
+            <Text style={{ color: colors.textSubtle, fontSize: 13, fontWeight: '700' }}>{sessions.length}</Text>
+          </View>
         </View>
       </View>
 

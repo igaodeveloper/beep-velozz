@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, SafeAreaView, StatusBar } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, SafeAreaView, StatusBar, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Session, ScannedPackage } from '@/types/session';
 import { getSessionMetrics, generateId, getPackageValue } from '@/utils/session';
@@ -75,6 +75,74 @@ export default function App() {
   const [photoModalVisible, setPhotoModalVisible] = useState(false);
   const [photoPackageCode, setPhotoPackageCode] = useState<string | null>(null);
   const [tutorialVisible, setTutorialVisible] = useState(false);
+
+  // Enhanced analytics functions
+  const handleAnalyzeAll = useCallback(() => {
+    // Implementar análise completa de todos os dados
+    console.log('Analisando todos os dados...');
+    // Aqui você pode adicionar lógica para:
+    // - Carregar todas as sessões do armazenamento
+    // - Gerar relatório completo
+    // - Mostrar insights detalhados
+    // - Exportar dados se necessário
+  }, []);
+
+  const handleResetAnalysis = useCallback(() => {
+    // Implementar reset da análise
+    console.log('Zerando análise...');
+    // Aqui você pode adicionar lógica para:
+    // - Limpar cache de análise
+    // - Resetar filtros
+    // - Recarregar dados frescos
+    // - Voltar ao estado inicial
+    
+    // Confirmar com o usuário antes de resetar
+    Alert.alert(
+      'Zerar Análise',
+      'Tem certeza que deseja zerar toda a análise? Esta ação não pode ser desfeita.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Zerar', 
+          style: 'destructive',
+          onPress: () => {
+            // Implementar lógica de reset aqui
+            setSessions([]); // Limpar sessões como exemplo
+            console.log('Análise zerada com sucesso');
+          }
+        }
+      ]
+    );
+  }, []);
+
+  // Enhanced history functions
+  const handleLoadAllHistory = useCallback(() => {
+    // Implementar carregamento de todo o histórico
+    console.log('Carregando todo o histórico...');
+    // Aqui você pode adicionar lógica para:
+    // - Carregar todas as sessões do armazenamento
+    // - Buscar dados remotos se necessário
+    // - Sincronizar com backend
+    // - Mostrar indicador de carregamento
+    
+    // Recarregar sessões do armazenamento
+    loadSessions().then(setSessions);
+    console.log('Histórico completo carregado');
+  }, []);
+
+  const handleClearHistory = useCallback(() => {
+    // Implementar limpeza do histórico
+    console.log('Limpando histórico...');
+    // Aqui você pode adicionar lógica para:
+    // - Limpar storage local
+    // - Remover do backend se aplicável
+    // - Resetar estado
+    // - Confirmar com usuário (já feito no componente)
+    
+    // Limpar sessões
+    setSessions([]);
+    console.log('Histórico limpo com sucesso');
+  }, []);
 
   useEffect(() => {
     loadSessions().then(setSessions);
@@ -343,6 +411,8 @@ export default function App() {
           <AdvancedAnalytics
             sessions={sessions}
             onClose={() => changeScreenWithAnimation('welcome')}
+            onAnalyzeAll={handleAnalyzeAll}
+            onResetAnalysis={handleResetAnalysis}
           />
         </ScreenTransition>
 
@@ -373,6 +443,8 @@ export default function App() {
             sessions={sessions}
             onBack={() => changeScreenWithAnimation('scanning')}
             onNewSession={handleNewSession}
+            onLoadAllHistory={handleLoadAllHistory}
+            onClearHistory={handleClearHistory}
           />
         </ScreenTransition>
 

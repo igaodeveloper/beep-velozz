@@ -37,3 +37,14 @@ export interface SessionMetrics {
   valueAvulsos: number;
   valueTotal: number;
 }
+
+export interface OperatorStats {
+  name: string;
+  totalSessions: number;
+  totalPackages: number;
+  avgRatePerMinute: number;
+  errorRate: number;
+  avgResponseTime: number;
+  preferredMarketplace: PackageType;
+  accuracyScore: number;
+}

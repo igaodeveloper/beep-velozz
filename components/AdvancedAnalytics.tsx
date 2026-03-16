@@ -31,8 +31,15 @@ export default function AdvancedAnalytics({
   const report = useMemo(() => generatePerformanceReport(sessions), [sessions]);
 
   return (
-    <MainLayout>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
+    <View style={{ flex: 1 }}>
+      <ScrollView 
+        style={{ flex: 1 }} 
+        contentContainerStyle={{ 
+          paddingBottom: 32,
+          flexGrow: 1,
+        }}
+        showsVerticalScrollIndicator={true}
+      >
       {/* Header */}
       <View
         style={{
@@ -299,7 +306,7 @@ export default function AdvancedAnalytics({
         )}
       </View>
       </ScrollView>
-    </MainLayout>
+    </View>
   );
 }
 

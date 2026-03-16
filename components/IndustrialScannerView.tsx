@@ -578,7 +578,7 @@ export default function IndustrialScannerView({
       const height = responsiveScale(Math.max(180, Math.min(width * 0.7, 260) / scale));
       return { width, height };
     }
-  }, [windowWidth, windowHeight, isTablet, isUltraWide, scaleFactor, responsiveScale]);
+  }, [windowWidth, windowHeight, isTablet, isUltraWide, scaleFactor]);
   
   const { width: reticleWidth, height: reticleHeight } = reticleDimensions;
 
@@ -682,6 +682,11 @@ export default function IndustrialScannerView({
     opacity: qualityIndicatorAnim.value,
     transform: [{ scale: qualityIndicatorAnim.value }],
   }));
+
+  // Cache responsive values for animations
+  const panelTranslateY = useMemo(() => responsiveScale(isTablet ? 200 : 180), [isTablet, responsiveScale]);
+  const iconSize = useMemo(() => responsiveScale(isTablet ? 18 : 16), [isTablet, responsiveScale]);
+  const borderWidthValue = useMemo(() => responsiveScale(1), [responsiveScale]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#000', position: 'relative' }}>
@@ -809,7 +814,7 @@ export default function IndustrialScannerView({
                   borderRadius: borderRadius.lg,
                   paddingHorizontal: spacing.md,
                   paddingVertical: spacing.sm,
-                  borderWidth: responsiveScale(1),
+                  borderWidth: borderWidthValue,
                   borderColor: torchEnabled ? statusColor : 'rgba(255,255,255,0.2)',
                   backdropFilter: 'blur(10px)',
                 }}
@@ -980,7 +985,7 @@ export default function IndustrialScannerView({
             paddingHorizontal: spacing.md,
             paddingVertical: spacing.sm,
             borderRadius: borderRadius.md,
-            borderWidth: responsiveScale(1),
+            borderWidth: borderWidthValue,
             borderColor: `${statusColor}60`,
           }}>
             <ActivityIndicator 
@@ -1009,14 +1014,14 @@ export default function IndustrialScannerView({
           backgroundColor: 'rgba(0,0,0,0.8)',
           borderRadius: borderRadius.xxl,
           padding: spacing.xxl,
-          borderWidth: responsiveScale(1),
+          borderWidth: borderWidthValue,
           borderColor: 'rgba(255,255,255,0.1)',
           backdropFilter: 'blur(20px)',
         },
         useAnimatedStyle(() => ({
           transform: [
             {
-              translateY: panelSlideAnim.value * responsiveScale(isTablet ? 200 : 180)
+              translateY: panelSlideAnim.value * panelTranslateY
             },
             {
               scale: panelSlideAnim.value === 0 ? 1 : 0.95
@@ -1324,7 +1329,7 @@ export default function IndustrialScannerView({
                         color: '#fff',
                         fontSize: fontSize.sm,
                         fontWeight: '600',
-                        borderWidth: responsiveScale(1),
+                        borderWidth: borderWidthValue,
                         borderColor: manualError ? colors.danger : 'rgba(255,255,255,0.2)',
                       }}
                       onSubmitEditing={handleManualSubmit}
@@ -1347,7 +1352,7 @@ export default function IndustrialScannerView({
                     {isProcessing ? (
                       <ActivityIndicator size="small" color="#fff" />
                     ) : (
-                      <Ionicons name="send" size={responsiveScale(isTablet ? 18 : 16)} color="#fff" />
+                      <Ionicons name="send" size={iconSize} color="#fff" />
                     )}
                   </TouchableOpacity>
                 </View>

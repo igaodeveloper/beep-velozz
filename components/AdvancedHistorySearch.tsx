@@ -304,7 +304,7 @@ export default function AdvancedHistorySearch({
           <FlatList
             scrollEnabled={false}
             data={filteredSessions}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item, index) => `${item.id}-${index}`}
             renderItem={({ item }) => (
               <SessionItemCompact session={item} onPress={() => onSessionSelect(item)} colors={colors} />
             )}

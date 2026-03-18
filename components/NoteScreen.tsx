@@ -245,7 +245,7 @@ export function NoteScreen({
                 <View style={styles.tagsContainer}>
                   {note.tags.map((tag, index) => (
                     <View
-                      key={index}
+                      key={`${note.id}-tag-${index}`}
                       style={[styles.tag, { backgroundColor: colors.primary }]}
                     >
                       <Text style={[styles.tagText, { color: '#000' }]}>

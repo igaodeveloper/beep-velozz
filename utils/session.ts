@@ -141,6 +141,13 @@ export function formatWhatsAppMessage(session: Session): string {
 ${divergenceInfo}`;
 }
 
+// Counter para garantir unicidade em chamadas rápidas
+let idCounter = 0;
+
 export function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  // Usa timestamp de alta precisão + counter para evitar duplicações
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substr(2, 9);
+  const counter = (++idCounter).toString(36);
+  return `${timestamp.toString(36)}-${counter}-${random}`;
 }

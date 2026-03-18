@@ -58,6 +58,7 @@ interface IndustrialScannerViewProps {
   // Enhanced features
   sessionStartTime?: number;
   operatorName?: string;
+  divergenceAccepted?: boolean;
 }
 
 interface ScanHistoryItem {
@@ -85,6 +86,7 @@ export default function IndustrialScannerView({
   onBack,
   sessionStartTime,
   operatorName,
+  divergenceAccepted = false,
 }: IndustrialScannerViewProps) {
   const { colors } = useAppTheme();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
@@ -617,12 +619,13 @@ export default function IndustrialScannerView({
     }
     
     // Caso contrário, usar a lógica original baseada em estado e qualidade
+    if (divergenceAccepted) return '#f97316'; // Laranja para divergência aceita
     if (scanner.state === ScannerState.LIMIT_REACHED) return colors.danger;
     if (scanner.state === ScannerState.PAUSED) return colors.warning;
     if (scanQuality === 'excellent') return '#10b981';
     if (scanQuality === 'good') return colors.success;
     return '#f59e0b'; // Amarelo como padrão para inatividade
-  }, [scanner.state, scanQuality, colors, lastScanStatus, lastScanTime]);
+  }, [scanner.state, scanQuality, colors, lastScanStatus, lastScanTime, divergenceAccepted]);
 
   // Advanced session analytics
   const sessionAnalytics = useMemo(() => {
@@ -780,6 +783,7 @@ export default function IndustrialScannerView({
               {allLimitsReached ? 'Concluído' :
                scanner.state === ScannerState.LIMIT_REACHED ? 'Limite' :
                scanner.state === ScannerState.PAUSED ? 'Pausado' :
+               divergenceAccepted ? 'Divergência Aceita' :
                'Escaneando'}
             </Text>
             <Text style={{
@@ -1677,7 +1681,7 @@ export default function IndustrialScannerView({
                 </Text>
                 
                 {scanHistory.slice(-5).reverse().map((scan, index) => (
-                  <View key={index} style={{
+                  <View key={`${scan.code}-${scan.timestamp}`} style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',

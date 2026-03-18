@@ -304,7 +304,7 @@ const VoiceCommandInterface: React.FC<VoiceCommandInterfaceProps> = ({
             <View style={styles.commandsList}>
               {getAvailableCommands().slice(0, 8).map((command, index) => (
                 <Text
-                  key={index}
+                  key={`command-${command}-${index}`}
                   style={[styles.commandItem, { color: colors.secondary }]}
                   onPress={() => {
                     handleSimulateCommand(command);

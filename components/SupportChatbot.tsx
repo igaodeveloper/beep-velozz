@@ -326,7 +326,7 @@ const SupportChatbot: React.FC<{
           <View style={styles.suggestionsContainer}>
             {message.metadata.suggestions.map((suggestion, index) => (
               <TouchableOpacity
-                key={index}
+                key={`${message.id}-suggestion-${index}`}
                 style={[styles.suggestion, { backgroundColor: colors.surface }]}
                 onPress={() => handleSuggestion(suggestion)}
               >
@@ -343,7 +343,7 @@ const SupportChatbot: React.FC<{
           <View style={styles.actionsContainer}>
             {message.metadata.actions.map((action, index) => (
               <TouchableOpacity
-                key={index}
+                key={`${message.id}-action-${index}`}
                 style={[styles.actionButton, { backgroundColor: colors.primary }]}
                 onPress={() => handleQuickAction(action.action)}
               >

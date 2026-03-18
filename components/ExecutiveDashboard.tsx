@@ -333,7 +333,7 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
       
       {aiPredictions.length > 0 ? (
         aiPredictions.map((prediction, index) => (
-          <View key={index} style={[styles.insightCard, { borderColor: colors.border }]}>
+          <View key={`prediction-${index}-${prediction.type}`} style={[styles.insightCard, { borderColor: colors.border }]}>
             <View style={styles.insightHeader}>
               <Text style={[styles.insightType, { color: colors.primary }]}>
                 {prediction.type === 'divergence' ? '⚠️ Risco de Divergência' : 

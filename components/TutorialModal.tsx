@@ -229,9 +229,9 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
                     {slide.description}
                   </Text>
                   <View style={{ marginTop: 4, gap: 6 }}>
-                    {slide.bullets.map((b) => (
+                    {slide.bullets.map((b, bulletIndex) => (
                       <Text
-                        key={b}
+                        key={`${slide.id}-bullet-${bulletIndex}`}
                         style={{
                           color: colors.text,
                           fontSize: 13,

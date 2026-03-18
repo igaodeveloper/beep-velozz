@@ -82,7 +82,7 @@ export default function PackageList({ packages, expanded, onToggle }: PackageLis
                 const isCopied = copiedId === pkg.id;
                 return (
                   <Animated.View
-                    key={pkg.id}
+                    key={`${pkg.id}-${idx}`}
                     entering={FadeInDown.duration(220).delay(Math.min(idx * 20, 180))}
                     layout={Layout.springify()}
                     style={{

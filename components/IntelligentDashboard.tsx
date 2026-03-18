@@ -200,7 +200,7 @@ export default function IntelligentDashboard({
         { label: 'Taxa Conclusão', value: `${metrics.completionRate.toFixed(1)}%`, color: '#45B7D1' },
         { label: 'Taxa Divergência', value: `${metrics.divergenceRate.toFixed(1)}%`, color: '#FF6B6B' },
       ].map((metric, index) => (
-        <View key={index} style={{
+        <View key={`metric-${metric.label}-${index}`} style={{
           width: '50%',
           padding: 12,
           backgroundColor: colors.surface,
@@ -248,7 +248,7 @@ export default function IntelligentDashboard({
         </View>
       ) : (
         insights.map((insight, index) => (
-          <View key={index} style={{
+          <View key={`insight-${index}-${insight.type}`} style={{
             backgroundColor: colors.surface,
             padding: 16,
             borderRadius: 12,

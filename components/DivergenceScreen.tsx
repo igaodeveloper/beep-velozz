@@ -8,6 +8,7 @@ interface DivergenceScreenProps {
   scannedCount: number;
   declaredCount: number;
   onCancel: () => void;
+  onProceedWithDivergence?: () => void;
 }
 
 export default function DivergenceScreen({
@@ -15,6 +16,7 @@ export default function DivergenceScreen({
   scannedCount,
   declaredCount,
   onCancel,
+  onProceedWithDivergence,
 }: DivergenceScreenProps) {
   const { colors } = useAppTheme();
   const delta = scannedCount - declaredCount;
@@ -110,22 +112,49 @@ export default function DivergenceScreen({
             </View>
           </View>
 
-          {/* Action button */}
-          <TouchableOpacity
-            onPress={onCancel}
-            activeOpacity={0.85}
-            style={{
-              backgroundColor: colors.primary,
-              borderRadius: 12,
-              padding: 16,
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <Text style={{ color: '#000', fontSize: 16, fontWeight: '800' }}>
-              CONTINUAR BIPANDO
-            </Text>
-          </TouchableOpacity>
+          {/* Action buttons */}
+          <View style={{ width: '100%', gap: 12 }}>
+            {/* Primary action - Continue scanning */}
+            <TouchableOpacity
+              onPress={onCancel}
+              activeOpacity={0.85}
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 12,
+                padding: 16,
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Text style={{ color: '#000', fontSize: 16, fontWeight: '800' }}>
+                CONTINUAR BIPANDO
+              </Text>
+            </TouchableOpacity>
+
+            {/* Secondary action - Proceed with divergence */}
+            {onProceedWithDivergence && (
+              <TouchableOpacity
+                onPress={onProceedWithDivergence}
+                activeOpacity={0.85}
+                style={{
+                  backgroundColor: 'transparent',
+                  borderRadius: 12,
+                  padding: 16,
+                  alignItems: 'center',
+                  width: '100%',
+                  borderWidth: 2,
+                  borderColor: '#64748b',
+                }}
+              >
+                <Text style={{ color: '#64748b', fontSize: 14, fontWeight: '600' }}>
+                  FINALIZAR MESMO ASSIM
+                </Text>
+                <Text style={{ color: '#94a3b8', fontSize: 11, marginTop: 4 }}>
+                  Pacote pode ter sido perdido/danificado
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </Animated.View>
       </Animated.View>
     </Modal>

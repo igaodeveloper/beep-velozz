@@ -159,11 +159,11 @@ export default function HistoryBrowser({
             <Text style={{ color: colors.textMuted, fontSize: 16, fontWeight: '600' }}>Nenhuma sessão encontrada</Text>
           </View>
         ) : (
-          filtered.map(session => {
+          filtered.map((session, index) => {
             const metrics = getSessionMetrics(session.packages);
             return (
               <TouchableOpacity
-                key={session.id}
+                key={`${session.id}-${index}`}
                 onPress={() => setSelectedSession(session)}
                 activeOpacity={0.8}
                 style={{
@@ -311,8 +311,8 @@ function SessionDetailView({ session, onBack }: { session: Session; onBack: () =
             ...(session.completedAt ? [['Fim', formatTimestamp(session.completedAt)]] : []),
             ['Operador', session.operatorName],
             ['Motorista', session.driverName],
-          ].map(([label, value]) => (
-            <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+          ].map(([label, value], infoIndex) => (
+            <View key={`${session.id}-${label}-${infoIndex}`} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
               <Text style={{ color: colors.textMuted, fontSize: 13 }}>{label}</Text>
               <Text style={{ color: colors.text, fontSize: 13, fontWeight: '600' }}>{value}</Text>
             </View>
@@ -363,7 +363,7 @@ function SessionDetailView({ session, onBack }: { session: Session; onBack: () =
           {session.packages.map((pkg, idx) => {
             const badge = packageTypeBadgeColors(pkg.type);
             return (
-              <View key={pkg.id} style={{
+              <View key={`${pkg.id}-${idx}`} style={{
                 flexDirection: 'row', alignItems: 'center',
                 paddingVertical: 8,
                 borderTopWidth: idx > 0 ? 1 : 0, borderTopColor: colors.border,

@@ -203,7 +203,7 @@ export const PedidoScannerExample: React.FC = () => {
             <View style={styles.itensContainer}>
               <Text style={styles.itensTitle}>📋 Itens do Pedido</Text>
               {pedido.itens.map((item, index) => (
-                <View key={index} style={styles.itemRow}>
+                <View key={`item-${index}-${item.nome}`} style={styles.itemRow}>
                   <Text style={styles.itemNome}>{item.nome}</Text>
                   <Text style={styles.itemQuantidade}>Qtd: {item.quantidade}</Text>
                   <Text style={styles.itemTotal}>{formatCurrency(item.total)}</Text>
@@ -222,7 +222,7 @@ export const PedidoScannerExample: React.FC = () => {
             <Text style={styles.exemploTipoNome}>{tipo}:</Text>
             {codigos.map((codigo, index) => (
               <TouchableOpacity
-                key={index}
+                key={`codigo-${tipo}-${index}`}
                 style={styles.exemploCodigo}
                 onPress={() => setCodigoInput(codigo)}
               >

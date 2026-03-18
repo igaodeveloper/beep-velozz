@@ -58,6 +58,7 @@ export default function App() {
 
   // Divergence screen state
   const [divergenceVisible, setDivergenceVisible] = useState(false);
+  const [divergenceAccepted, setDivergenceAccepted] = useState(false);
 
   // Completed session for report
   const [completedSession, setCompletedSession] = useState<Session | null>(null);
@@ -149,6 +150,7 @@ export default function App() {
     
     setTimeout(() => {
       setCurrentSession(session);
+      setDivergenceAccepted(false); // Resetar estado de divergência aceita
       changeScreenWithAnimation('scanning');
       setActiveTab('scanner');
       setLastScanned(null);
@@ -159,6 +161,14 @@ export default function App() {
 
   const handlePackageScanned = useCallback((pkg: ScannedPackage) => {
     if (!currentSession) return false;
+    
+    // Verificar se o pacote já existe para evitar duplicação
+    const existingPackage = currentSession.packages.find(p => p.code === pkg.code);
+    if (existingPackage) {
+      console.warn('Pacote duplicado ignorado:', pkg.code);
+      return false;
+    }
+    
     const updated = {
       ...currentSession,
       packages: [...currentSession.packages, pkg],
@@ -224,12 +234,20 @@ export default function App() {
     if (!currentSession) return;
     const scannedCount = currentSession.packages.length;
     const declaredCount = currentSession.declaredCount;
+    
+    // Se já aceitou divergência, finaliza diretamente
+    if (divergenceAccepted) {
+      finalizeSession(true);
+      return;
+    }
+    
+    // Se houver divergência e ainda não foi aceita, mostra o modal
     if (scannedCount !== declaredCount) {
       setDivergenceVisible(true);
     } else {
       finalizeSession(false);
     }
-  }, [currentSession]);
+  }, [currentSession, divergenceAccepted]);
 
   const finalizeSession = async (hasDivergence: boolean) => {
     if (!currentSession) return;
@@ -251,10 +269,17 @@ export default function App() {
     setDivergenceVisible(false);
   }, []);
 
+  const handleProceedWithDivergence = useCallback(() => {
+    setDivergenceAccepted(true);
+    setDivergenceVisible(false);
+    // Permite continuar bipando mesmo com divergência
+  }, []);
+
   const handleNewSession = useCallback(() => {
     setCurrentSession(null);
     setCompletedSession(null);
     setLastScanned(null);
+    setDivergenceAccepted(false); // Resetar estado de divergência aceita
     setScreen('welcome');
     setActiveTab('home');
   }, []);
@@ -386,6 +411,7 @@ export default function App() {
               onLimitReached={handleLimitReached}
               onEndSession={handleEndSession}
               onBack={() => changeScreenWithAnimation('welcome')}
+              divergenceAccepted={divergenceAccepted}
             />
           )}
         </ScreenTransition>
@@ -404,6 +430,7 @@ export default function App() {
               scannedCount={currentSession.packages.length}
               declaredCount={currentSession.declaredCount}
               onCancel={handleDivergenceCancel}
+              onProceedWithDivergence={handleProceedWithDivergence}
             />
           )}
 

@@ -48,9 +48,9 @@ export default function ThemeTest() {
           Clique para mudar o tema:
         </Text>
         
-        {themes.map((theme) => (
+        {themes.map((theme, themeIndex) => (
           <TouchableOpacity
-            key={theme}
+            key={`theme-${theme}-${themeIndex}`}
             style={{
               backgroundColor: themePresets[theme].colors.primary,
               padding: 15,

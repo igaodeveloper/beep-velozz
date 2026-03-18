@@ -221,8 +221,11 @@ const OptimizedPackageListComponent = forwardRef<OptimizedPackageListRef, Optimi
     );
   }, [memoizedOnPress, memoizedOnLongPress, highlightedPackageId, showTypeColors, compact, colors]);
 
-  // Memoiza key extractor
-  const keyExtractor = useCallback((item: ScannedPackage) => item.id, []);
+  // Memoiza key extractor com fallback para garantir unicidade
+  const keyExtractor = useCallback((item: ScannedPackage, index: number) => {
+    // Usa ID do pacote + índice como fallback para garantir unicidade
+    return `${item.id}-${index}`;
+  }, []);
 
   // Memoiza getItemLayout para performance
   const getItemLayout = useCallback((data: any, index: number) => ({

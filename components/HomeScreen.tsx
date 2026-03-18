@@ -18,7 +18,6 @@ import {
   Clock,
   Users,
   Play,
-  BarChart3,
   History,
   Camera,
 } from 'lucide-react-native';
@@ -27,14 +26,12 @@ import * as Haptics from 'expo-haptics';
 interface HomeScreenProps {
   onStartSession: () => void;
   onViewHistory: () => void;
-  onViewAnalytics: () => void;
   onStartScanner: () => void;
 }
 
 export default function HomeScreen({
   onStartSession,
   onViewHistory,
-  onViewAnalytics,
   onStartScanner,
 }: HomeScreenProps) {
   const { colors } = useAppTheme();
@@ -221,12 +218,6 @@ export default function HomeScreen({
             title="Iniciar Scanner"
             onPress={onStartScanner}
             color={colors.primary}
-          />
-          <QuickAction
-            icon={BarChart3}
-            title="Analytics"
-            onPress={onViewAnalytics}
-            color={colors.warning}
           />
           <QuickAction
             icon={History}

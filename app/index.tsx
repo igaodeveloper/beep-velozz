@@ -20,7 +20,7 @@ import PackagePhotoCapture from '@/components/PackagePhotoCapture';
 import TabLayout from '@/components/TabLayout';
 import HomeScreen from '@/components/HomeScreen';
 import SettingsScreen from '@/components/SettingsScreen';
-import AdvancedAnalytics from '@/components/AdvancedAnalytics';
+import ThemeSelector from '@/components/ThemeSelector';
 import { savePackagePhoto } from '@/utils/photoStorage';
 import SessionInitModal from '@/components/SessionInitModal';
 import BottomTabNavigator, { TabType } from '@/components/BottomTabNavigator';
@@ -28,7 +28,7 @@ import TutorialModal from '@/components/TutorialModal';
 import ScreenTransition, { ANIMATION_TYPES, DIRECTIONS } from '@/components/ScreenTransition';
 import DeliveryBoyLoading from '@/components/DeliveryBoyLoading';
 
-type AppScreen = 'scanning' | 'report' | 'history' | 'welcome' | 'settings' | 'analytics';
+type AppScreen = 'scanning' | 'report' | 'history' | 'welcome' | 'settings';
 
 // Animation configuration for each screen - Ultra-fast performance
 const SCREEN_ANIMATIONS = {
@@ -37,7 +37,6 @@ const SCREEN_ANIMATIONS = {
   report: { type: ANIMATION_TYPES.GLIDE, direction: DIRECTIONS.RIGHT, duration: 200 },
   history: { type: ANIMATION_TYPES.SCALE, direction: DIRECTIONS.UP, duration: 160 },
   settings: { type: ANIMATION_TYPES.FLIP, direction: DIRECTIONS.RIGHT, duration: 170 },
-  analytics: { type: ANIMATION_TYPES.BOUNCE, direction: DIRECTIONS.UP, duration: 190 },
 } as const;
 
 export default function App() {
@@ -75,45 +74,8 @@ export default function App() {
   const [photoModalVisible, setPhotoModalVisible] = useState(false);
   const [photoPackageCode, setPhotoPackageCode] = useState<string | null>(null);
   const [tutorialVisible, setTutorialVisible] = useState(false);
+  const [themeSelectorVisible, setThemeSelectorVisible] = useState(false);
 
-  // Enhanced analytics functions
-  const handleAnalyzeAll = useCallback(() => {
-    // Implementar análise completa de todos os dados
-    console.log('Analisando todos os dados...');
-    // Aqui você pode adicionar lógica para:
-    // - Carregar todas as sessões do armazenamento
-    // - Gerar relatório completo
-    // - Mostrar insights detalhados
-    // - Exportar dados se necessário
-  }, []);
-
-  const handleResetAnalysis = useCallback(() => {
-    // Implementar reset da análise
-    console.log('Zerando análise...');
-    // Aqui você pode adicionar lógica para:
-    // - Limpar cache de análise
-    // - Resetar filtros
-    // - Recarregar dados frescos
-    // - Voltar ao estado inicial
-    
-    // Confirmar com o usuário antes de resetar
-    Alert.alert(
-      'Zerar Análise',
-      'Tem certeza que deseja zerar toda a análise? Esta ação não pode ser desfeita.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Zerar', 
-          style: 'destructive',
-          onPress: () => {
-            // Implementar lógica de reset aqui
-            setSessions([]); // Limpar sessões como exemplo
-            console.log('Análise zerada com sucesso');
-          }
-        }
-      ]
-    );
-  }, []);
 
   // Enhanced history functions
   const handleLoadAllHistory = useCallback(() => {
@@ -178,9 +140,6 @@ export default function App() {
         } else {
           changeScreenWithAnimation('scanning');
         }
-        break;
-      case 'analytics':
-        changeScreenWithAnimation('analytics');
         break;
       case 'history':
         changeScreenWithAnimation('history');
@@ -324,10 +283,6 @@ export default function App() {
     setActiveTab('history');
   };
 
-  const handleViewAnalytics = () => {
-    setScreen('analytics');
-    setActiveTab('analytics');
-  };
 
   const handleStartScanner = () => {
     if (!currentSession) {
@@ -386,7 +341,6 @@ export default function App() {
               setSessionModalVisible(true);
             }}
             onViewHistory={handleViewHistory}
-            onViewAnalytics={handleViewAnalytics}
             onStartScanner={handleStartScanner}
           />
         </ScreenTransition>
@@ -399,21 +353,6 @@ export default function App() {
           duration={SCREEN_ANIMATIONS.settings.duration}
         >
           <SettingsScreen />
-        </ScreenTransition>
-
-        {/* Analytics Screen */}
-        <ScreenTransition
-          isVisible={screen === 'analytics'}
-          animationType={SCREEN_ANIMATIONS.analytics.type}
-          direction={SCREEN_ANIMATIONS.analytics.direction}
-          duration={SCREEN_ANIMATIONS.analytics.duration}
-        >
-          <AdvancedAnalytics
-            sessions={sessions}
-            onClose={() => changeScreenWithAnimation('welcome')}
-            onAnalyzeAll={handleAnalyzeAll}
-            onResetAnalysis={handleResetAnalysis}
-          />
         </ScreenTransition>
 
         {/* Report Screen */}
@@ -509,6 +448,10 @@ export default function App() {
           <TutorialModal
             visible={tutorialVisible}
             onClose={() => setTutorialVisible(false)}
+          />
+          <ThemeSelector
+            visible={themeSelectorVisible}
+            onClose={() => setThemeSelectorVisible(false)}
           />
         </View>
     </TabLayout>

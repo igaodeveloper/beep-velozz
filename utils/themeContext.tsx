@@ -1,39 +1,34 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-export type ColorScheme = 'light' | 'dark';
+import { ThemeName, themePresets, getTheme } from './theme';
 
 interface ThemeContextType {
-  colorScheme: ColorScheme;
-  setColorScheme: (scheme: ColorScheme) => void;
+  themeName: ThemeName;
+  setThemeName: (theme: ThemeName) => void;
   isDark: boolean;
+  colors: any;
+  theme: any;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemColorScheme = useColorScheme();
-  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(
-    (systemColorScheme as ColorScheme) || 'light'
-  );
+  const [themeName, setThemeNameState] = useState<ThemeName>('light');
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Carregar preferência salva
     const loadTheme = async () => {
       try {
         const savedTheme = await AsyncStorage.getItem('theme-preference');
-        if (savedTheme === 'light' || savedTheme === 'dark') {
-          setColorSchemeState(savedTheme);
-        } else if (systemColorScheme) {
-          setColorSchemeState(systemColorScheme as ColorScheme);
+        if (savedTheme && Object.keys(themePresets).includes(savedTheme)) {
+          setThemeNameState(savedTheme as ThemeName);
+        } else if (systemColorScheme === 'dark') {
+          setThemeNameState('dark');
         }
       } catch (error) {
-        // Fallback ao tema do sistema
-        if (systemColorScheme) {
-          setColorSchemeState(systemColorScheme as ColorScheme);
-        }
+        console.warn('Failed to load theme preference:', error);
       }
       setIsLoaded(true);
     };
@@ -41,14 +36,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     loadTheme();
   }, [systemColorScheme]);
 
-  const setColorScheme = async (scheme: ColorScheme) => {
-    setColorSchemeState(scheme);
+  const setThemeName = async (theme: ThemeName) => {
+    setThemeNameState(theme);
     try {
-      await AsyncStorage.setItem('theme-preference', scheme);
+      await AsyncStorage.setItem('theme-preference', theme);
     } catch (error) {
       console.warn('Failed to save theme preference:', error);
     }
   };
+
+  const currentTheme = getTheme(themeName);
+  const isDark = themeName === 'dark' || themeName === 'midnight' || themeName === 'ocean' || themeName === 'forest' || themeName === 'volcano' || themeName === 'rose' || themeName === 'emerald' || themeName === 'amber' || themeName === 'sunset';
 
   if (!isLoaded) {
     return null;
@@ -57,9 +55,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
     <ThemeContext.Provider
       value={{
-        colorScheme,
-        setColorScheme,
-        isDark: colorScheme === 'dark',
+        themeName,
+        setThemeName,
+        isDark,
+        colors: currentTheme.colors,
+        theme: currentTheme,
       }}
     >
       {children}

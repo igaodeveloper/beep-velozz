@@ -6,7 +6,9 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
+  Animated,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '@/utils/useAppTheme';
 import MainLayout from '@/components/MainLayout';
 import { Session } from '@/types/session';
@@ -22,6 +24,9 @@ import {
   Camera,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import ModernButton from './ModernButton';
+import ModernCard from './ModernCard';
+import ModernIcon from './ModernIcon';
 
 interface HomeScreenProps {
   onStartSession: () => void;
@@ -34,9 +39,11 @@ export default function HomeScreen({
   onViewHistory,
   onStartScanner,
 }: HomeScreenProps) {
+  const navigation = useNavigation();
   const { colors } = useAppTheme();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const scrollY = React.useRef(new Animated.Value(0)).current;
   const [todayStats, setTodayStats] = useState({
     totalSessions: 0,
     totalPackages: 0,
@@ -105,48 +112,42 @@ export default function HomeScreen({
     setRefreshing(false);
   };
 
-  const handleQuickAction = (action: () => void) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    action();
-  };
-
   const StatCard = ({ icon: Icon, title, value, subtitle, onPress, color = colors.primary }: any) => (
-    <TouchableOpacity
-      style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+    <ModernCard
+      title={value}
+      subtitle={title}
+      description={subtitle}
+      icon={<Icon />}
       onPress={onPress}
-      activeOpacity={0.8}
-    >
-      <View style={[styles.statIcon, { backgroundColor: color + '20' }]}>
-        <Icon size={24} color={color} />
-      </View>
-      <View style={styles.statContent}>
-        <Text style={[styles.statValue, { color: colors.text }]}>{value}</Text>
-        <Text style={[styles.statTitle, { color: colors.textMuted }]}>{title}</Text>
-        {subtitle && (
-          <Text style={[styles.statSubtitle, { color: colors.textSubtle }]}>{subtitle}</Text>
-        )}
-      </View>
-    </TouchableOpacity>
+      variant="elevated"
+      size="md"
+      fullWidth
+      style={{ marginBottom: 12 }}
+    />
   );
 
   const QuickAction = ({ icon: Icon, title, onPress, color = colors.primary }: any) => (
-    <TouchableOpacity
-      style={[styles.quickAction, { backgroundColor: colors.surface, borderColor: colors.border }]}
-      onPress={() => handleQuickAction(onPress)}
-      activeOpacity={0.8}
-    >
-      <View style={[styles.actionIcon, { backgroundColor: color + '20' }]}>
-        <Icon size={20} color={color} />
-      </View>
-      <Text style={[styles.actionTitle, { color: colors.text }]}>{title}</Text>
-    </TouchableOpacity>
+    <ModernButton
+      title={title}
+      onPress={onPress}
+      variant="outline"
+      size="md"
+      icon={<Icon />}
+      fullWidth
+      style={{ marginBottom: 12 }}
+    />
   );
 
   return (
     <MainLayout>
-      <ScrollView
+      <Animated.ScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: 32 }}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
@@ -207,62 +208,72 @@ export default function HomeScreen({
       <View style={styles.actionsSection}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Ações Rápidas</Text>
         <View style={styles.actionsGrid}>
-          <QuickAction
-            icon={Play}
-            title="Nova Sessão"
-            onPress={onStartSession}
-            color={colors.success}
-          />
-          <QuickAction
-            icon={Camera}
-            title="Iniciar Scanner"
-            onPress={onStartScanner}
-            color={colors.primary}
-          />
-          <QuickAction
-            icon={History}
-            title="Histórico"
-            onPress={onViewHistory}
-            color={colors.primary}
-          />
+          <View style={styles.actionItem}>
+            <ModernButton
+              title="Nova Sessão"
+              onPress={onStartSession}
+              variant="primary"
+              size="md"
+              icon={<Play />}
+              fullWidth
+            />
+          </View>
+          <View style={styles.actionItem}>
+            <ModernButton
+              title="Iniciar Scanner"
+              onPress={onStartScanner}
+              variant="secondary"
+              size="md"
+              icon={<Camera />}
+              fullWidth
+            />
+          </View>
+          <View style={styles.actionItem}>
+            <ModernButton
+              title="Histórico"
+              onPress={onViewHistory}
+              variant="outline"
+              size="md"
+              icon={<History />}
+              fullWidth
+            />
+          </View>
         </View>
       </View>
 
       {sessions.length > 0 && (
         <View style={styles.recentSection}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Atividade Recente</Text>
-          <View style={[styles.recentCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={styles.recentHeader}>
-              <Users size={20} color={colors.textMuted} />
-              <Text style={[styles.recentTitle, { color: colors.text }]}>
-                Última sessão: {sessions[0].operatorName}
-              </Text>
-            </View>
-            <Text style={[styles.recentSubtitle, { color: colors.textMuted }]}>
-              {sessions[0].packages.length} pacotes • {new Date(sessions[0].startedAt).toLocaleDateString('pt-BR')}
-            </Text>
-          </View>
+          <ModernCard
+            title={`Última sessão: ${sessions[0].operatorName}`}
+            description={`${sessions[0].packages.length} pacotes • ${new Date(sessions[0].startedAt).toLocaleDateString('pt-BR')}`}
+            icon={<Users />}
+            variant="glass"
+            size="md"
+            fullWidth
+          />
         </View>
       )}
 
       <View style={styles.insightSection}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Insight do dia</Text>
-        <View style={[styles.insightCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[styles.insightLabel, { color: colors.textMuted }]}>
-            Operação em tempo real
-          </Text>
-          <Text style={[styles.insightText, { color: colors.text }]}>
-            {todayStats.totalSessions === 0
+        <ModernCard
+          title="Operação em tempo real"
+          description={
+            todayStats.totalSessions === 0
               ? 'Comece uma nova conferência para gerar suas primeiras métricas do dia.'
               : todayStats.divergenceRate === 0
               ? 'Nenhuma divergência registrada hoje. Mantenha esse nível de precisão na conferência.'
               : todayStats.divergenceRate < 20
               ? 'Sua taxa de divergência está controlada. Continue acompanhando de perto os volumes mais altos.'
-              : 'A taxa de divergência de hoje está acima do ideal. Priorize sessões com maiores volumes para investigação.'}
-          </Text>
+              : 'A taxa de divergência de hoje está acima do ideal. Priorize sessões com maiores volumes para investigação.'
+          }
+          variant="gradient"
+          size="lg"
+          fullWidth
+        />
         </View>
-        </View>
-      </ScrollView>
+      </Animated.ScrollView>
     </MainLayout>
   );
 }
@@ -271,9 +282,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  contentContainer: {
+    paddingTop: 8,
+  },
   header: {
     padding: 24,
-    paddingTop: 32,
+    paddingTop: 16,
   },
   greeting: {
     fontSize: 28,
@@ -332,75 +346,17 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   actionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
     paddingHorizontal: 24,
     gap: 12,
   },
-  quickAction: {
-    width: '48%',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  actionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  actionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
+  actionItem: {
+    marginBottom: 8,
   },
   recentSection: {
     marginBottom: 32,
     paddingHorizontal: 24,
   },
-  recentCard: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  recentHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  recentTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 12,
-    flex: 1,
-  },
-  recentSubtitle: {
-    fontSize: 14,
-    marginLeft: 32,
-  },
   insightSection: {
     marginBottom: 40,
-  },
-  insightCard: {
-    marginTop: 12,
-    marginHorizontal: 24,
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 16,
-  },
-  insightLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    marginBottom: 6,
-  },
-  insightText: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: '500',
   },
 });

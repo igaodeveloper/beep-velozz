@@ -6,7 +6,9 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
+  Animated,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '@/utils/useAppTheme';
 import MainLayout from '@/components/MainLayout';
 import {
@@ -20,6 +22,8 @@ import {
   Palette,
 } from 'lucide-react-native';
 import SimpleThemeSelector from './SimpleThemeSelector';
+import ModernCard from './ModernCard';
+import ModernIcon from './ModernIcon';
 
 interface SettingsScreenProps {
   onOpenThemeSelector?: () => void;
@@ -29,56 +33,66 @@ function SettingsItem({ icon: Icon, title, subtitle, onPress, rightComponent }: 
   const { colors } = useAppTheme();
 
   return (
-    <TouchableOpacity
-      style={[styles.settingsItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+    <ModernCard
+      title={title}
+      description={subtitle}
+      icon={<Icon />}
       onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <View style={styles.itemLeft}>
-        <Icon size={20} color={colors.textMuted} style={styles.itemIcon} />
-        <View style={styles.itemText}>
-          <Text style={[styles.itemTitle, { color: colors.text }]}>{title}</Text>
-          {subtitle && (
-            <Text style={[styles.itemSubtitle, { color: colors.textMuted }]}>{subtitle}</Text>
-          )}
-        </View>
-      </View>
-      {rightComponent || <ChevronRight size={20} color={colors.textFaint} />}
-    </TouchableOpacity>
+      rightComponent={rightComponent}
+      variant="default"
+      size="md"
+      fullWidth
+      style={{ marginBottom: 12 }}
+    />
   );
 }
 
 export default function SettingsScreen({ onOpenThemeSelector }: SettingsScreenProps) {
+  const navigation = useNavigation();
   const { colors, theme, themeName } = useAppTheme();
   const [showThemeSelector, setShowThemeSelector] = useState(false);
   const [scannerHapticsEnabled, setScannerHapticsEnabled] = useState(true);
   const [scannerSoundEnabled, setScannerSoundEnabled] = useState(true);
+  const scrollY = React.useRef(new Animated.Value(0)).current;
 
   return (
     <>
       <MainLayout>
-        <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
-        <View style={styles.header}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Configurações</Text>
-          <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>
-            Personalize sua experiência
-          </Text>
-        </View>
+        <Animated.ScrollView 
+          style={styles.container} 
+          contentContainerStyle={{ paddingBottom: 32 }}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+        >
+        <View style={styles.contentContainer}>
+          <View style={styles.header}>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>Configurações</Text>
+            <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>
+              Personalize sua experiência
+            </Text>
+          </View>
 
         <View style={styles.section}>
-          <SettingsItem
-            icon={Palette}
+          <ModernCard
             title="Personalizar Tema"
-            subtitle={`Tema atual: ${theme?.name || 'Claro'}`}
+            description={`Tema atual: ${theme?.name || 'Claro'}`}
+            icon={<Palette />}
             onPress={() => setShowThemeSelector(true)}
+            rightComponent={<ChevronRight size={20} color={colors.textFaint} />}
+            variant="elevated"
+            size="md"
+            fullWidth
           />
         </View>
 
         <View style={styles.section}>
-          <SettingsItem
-            icon={Bell}
+          <ModernCard
             title="Feedback tátil no scanner"
-            subtitle={scannerHapticsEnabled ? 'Vibração ao ler códigos' : 'Sem vibração nas leituras'}
+            description={scannerHapticsEnabled ? 'Vibração ao ler códigos' : 'Sem vibração nas leituras'}
+            icon={<Bell />}
             onPress={() => setScannerHapticsEnabled((prev) => !prev)}
             rightComponent={
               <Switch
@@ -88,11 +102,15 @@ export default function SettingsScreen({ onOpenThemeSelector }: SettingsScreenPr
                 thumbColor={scannerHapticsEnabled ? colors.primary : colors.textFaint}
               />
             }
+            variant="default"
+            size="md"
+            fullWidth
+            style={{ marginBottom: 12 }}
           />
-          <SettingsItem
-            icon={Bell}
+          <ModernCard
             title="Som de confirmação"
-            subtitle={scannerSoundEnabled ? 'Bip ao escanear com sucesso' : 'Leitura silenciosa'}
+            description={scannerSoundEnabled ? 'Bip ao escanear com sucesso' : 'Leitura silenciosa'}
+            icon={<Bell />}
             onPress={() => setScannerSoundEnabled((prev) => !prev)}
             rightComponent={
               <Switch
@@ -102,30 +120,47 @@ export default function SettingsScreen({ onOpenThemeSelector }: SettingsScreenPr
                 thumbColor={scannerSoundEnabled ? colors.primary : colors.textFaint}
               />
             }
+            variant="default"
+            size="md"
+            fullWidth
           />
         </View>
 
         <View style={styles.section}>
-          <SettingsItem
-            icon={Shield}
+          <ModernCard
             title="Privacidade e Segurança"
-            subtitle="Gerencie seus dados e permissões"
+            description="Gerencie seus dados e permissões"
+            icon={<Shield />}
+            rightComponent={<ChevronRight size={20} color={colors.textFaint} />}
+            variant="default"
+            size="md"
+            fullWidth
+            style={{ marginBottom: 12 }}
           />
-          <SettingsItem
-            icon={Database}
+          <ModernCard
             title="Armazenamento"
-            subtitle="Sessões e fotos salvas no dispositivo"
+            description="Sessões e fotos salvas no dispositivo"
+            icon={<Database />}
+            rightComponent={<ChevronRight size={20} color={colors.textFaint} />}
+            variant="default"
+            size="md"
+            fullWidth
           />
         </View>
 
         <View style={styles.section}>
-          <SettingsItem
-            icon={HelpCircle}
+          <ModernCard
             title="Ajuda e Suporte"
-            subtitle="FAQ e contato com o suporte"
+            description="FAQ e contato com o suporte"
+            icon={<HelpCircle />}
+            rightComponent={<ChevronRight size={20} color={colors.textFaint} />}
+            variant="default"
+            size="md"
+            fullWidth
           />
         </View>
-      </ScrollView>
+        </View>
+        </Animated.ScrollView>
       </MainLayout>
       
       <SimpleThemeSelector
@@ -140,9 +175,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  contentContainer: {
+    paddingTop: 8,
+  },
   header: {
     padding: 24,
-    paddingTop: 32,
+    paddingTop: 16,
   },
   headerTitle: {
     fontSize: 28,
@@ -156,33 +194,5 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 24,
     paddingHorizontal: 24,
-  },
-  settingsItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 12,
-  },
-  itemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  itemIcon: {
-    marginRight: 16,
-  },
-  itemText: {
-    flex: 1,
-  },
-  itemTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  itemSubtitle: {
-    fontSize: 13,
-    lineHeight: 18,
   },
 });

@@ -56,17 +56,16 @@ export default function SettingsScreen({ onOpenThemeSelector }: SettingsScreenPr
   const scrollY = React.useRef(new Animated.Value(0)).current;
 
   return (
-    <>
-      <MainLayout>
-        <Animated.ScrollView 
-          style={styles.container} 
-          contentContainerStyle={{ paddingBottom: 32 }}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: false }
-          )}
-          scrollEventThrottle={16}
-        >
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <Animated.ScrollView 
+        style={styles.container} 
+        contentContainerStyle={{ paddingBottom: 32 }}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+      >
         <View style={styles.contentContainer}>
           <View style={styles.header}>
             <Text style={[styles.headerTitle, { color: colors.text }]}>Configurações</Text>
@@ -160,14 +159,13 @@ export default function SettingsScreen({ onOpenThemeSelector }: SettingsScreenPr
           />
         </View>
         </View>
-        </Animated.ScrollView>
-      </MainLayout>
+      </Animated.ScrollView>
       
       <SimpleThemeSelector
         visible={showThemeSelector}
         onClose={() => setShowThemeSelector(false)}
       />
-    </>
+    </View>
   );
 }
 

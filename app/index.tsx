@@ -79,31 +79,13 @@ export default function App() {
 
   // Enhanced history functions
   const handleLoadAllHistory = useCallback(() => {
-    // Implementar carregamento de todo o histórico
-    console.log('Carregando todo o histórico...');
-    // Aqui você pode adicionar lógica para:
-    // - Carregar todas as sessões do armazenamento
-    // - Buscar dados remotos se necessário
-    // - Sincronizar com backend
-    // - Mostrar indicador de carregamento
-    
     // Recarregar sessões do armazenamento
     loadSessions().then(setSessions);
-    console.log('Histórico completo carregado');
   }, []);
 
   const handleClearHistory = useCallback(() => {
-    // Implementar limpeza do histórico
-    console.log('Limpando histórico...');
-    // Aqui você pode adicionar lógica para:
-    // - Limpar storage local
-    // - Remover do backend se aplicável
-    // - Resetar estado
-    // - Confirmar com usuário (já feito no componente)
-    
     // Limpar sessões
     setSessions([]);
-    console.log('Histórico limpo com sucesso');
   }, []);
 
   useEffect(() => {
@@ -111,7 +93,7 @@ export default function App() {
   }, []);
 
   // Enhanced screen change with animation
-  const changeScreenWithAnimation = (newScreen: AppScreen, showLoading = false) => {
+  const changeScreenWithAnimation = useCallback((newScreen: AppScreen, showLoading = false) => {
     if (showLoading) {
       setIsLoading(true);
       setTimeout(() => {
@@ -123,9 +105,9 @@ export default function App() {
       setPreviousScreen(screen);
       setScreen(newScreen);
     }
-  };
+  }, [screen]);
 
-  const handleTabChange = (tab: TabType) => {
+  const handleTabChange = useCallback((tab: TabType) => {
     setActiveTab(tab);
     
     // Map tabs to screens with animations
@@ -148,7 +130,7 @@ export default function App() {
         changeScreenWithAnimation('settings');
         break;
     }
-  };
+  }, [currentSession, changeScreenWithAnimation]);
 
   const handleStartSession = (operatorName: string, driverName: string, declaredCounts: { shopee: number; mercadoLivre: number; avulso: number }) => {
     setIsLoading(true);
@@ -175,7 +157,7 @@ export default function App() {
     }, 800);
   };
 
-  const handlePackageScanned = (pkg: ScannedPackage) => {
+  const handlePackageScanned = useCallback((pkg: ScannedPackage) => {
     if (!currentSession) return false;
     const updated = {
       ...currentSession,
@@ -191,9 +173,9 @@ export default function App() {
       setDivergenceVisible(false);
     }
     return true;
-  };
+  }, [currentSession]);
 
-  const handleScanned = (code: string, type: string) => {
+  const handleScanned = useCallback((code: string, type: string) => {
     const pkgType = type as 'shopee' | 'mercado_livre' | 'avulso';
     const pkg: ScannedPackage = {
       id: generateId(),
@@ -203,19 +185,18 @@ export default function App() {
       scannedAt: new Date().toISOString(),
     };
     handlePackageScanned(pkg);
-  };
+  }, [handlePackageScanned]);
 
-  const handleLimitReached = (limitedTypes: string[]) => {
+  const handleLimitReached = useCallback((limitedTypes: string[]) => {
     // TODO: implementar lógica para quando limites são atingidos
-    console.log('Limites atingidos para:', limitedTypes);
-  };
+  }, []);
 
-  const handleRequestPhoto = (pkg: ScannedPackage) => {
+  const handleRequestPhoto = useCallback((pkg: ScannedPackage) => {
     setPhotoPackageCode(pkg.code);
     setPhotoModalVisible(true);
-  };
+  }, []);
 
-  const handlePhotoCaptured = async (uri: string) => {
+  const handlePhotoCaptured = useCallback(async (uri: string) => {
     if (!currentSession || !photoPackageCode) {
       setPhotoModalVisible(false);
       setPhotoPackageCode(null);
@@ -224,22 +205,22 @@ export default function App() {
     try {
       await savePackagePhoto(uri, photoPackageCode, currentSession.id);
     } catch (error) {
-      console.error('Erro ao salvar foto do pacote:', error);
+      // Silently handle error
     } finally {
       setPhotoModalVisible(false);
       setPhotoPackageCode(null);
     }
-  };
+  }, [currentSession, photoPackageCode]);
 
-  const handleDuplicate = (code: string) => {
+  const handleDuplicate = useCallback((code: string) => {
     if (!currentSession) return;
     const original = currentSession.packages.find(p => p.code === code);
     setDuplicateCode(code);
     setDuplicateOriginal(original);
     setDuplicateVisible(true);
-  };
+  }, [currentSession]);
 
-  const handleEndSession = () => {
+  const handleEndSession = useCallback(() => {
     if (!currentSession) return;
     const scannedCount = currentSession.packages.length;
     const declaredCount = currentSession.declaredCount;
@@ -248,7 +229,7 @@ export default function App() {
     } else {
       finalizeSession(false);
     }
-  };
+  }, [currentSession]);
 
   const finalizeSession = async (hasDivergence: boolean) => {
     if (!currentSession) return;
@@ -266,25 +247,25 @@ export default function App() {
     setActiveTab('home');
   };
 
-  const handleDivergenceCancel = () => {
+  const handleDivergenceCancel = useCallback(() => {
     setDivergenceVisible(false);
-  };
+  }, []);
 
-  const handleNewSession = () => {
+  const handleNewSession = useCallback(() => {
     setCurrentSession(null);
     setCompletedSession(null);
     setLastScanned(null);
     setScreen('welcome');
     setActiveTab('home');
-  };
+  }, []);
 
-  const handleViewHistory = () => {
+  const handleViewHistory = useCallback(() => {
     setScreen('history');
     setActiveTab('history');
-  };
+  }, []);
 
 
-  const handleStartScanner = () => {
+  const handleStartScanner = useCallback(() => {
     if (!currentSession) {
       // Quando não existe sessão, abrimos o modal de INICIAR CONFERÊNCIA
       setActiveTab('scanner');
@@ -293,7 +274,7 @@ export default function App() {
       setScreen('scanning');
       setActiveTab('scanner');
     }
-  };
+  }, [currentSession]);
 
   const metrics = currentSession
     ? getSessionMetrics(currentSession.packages)

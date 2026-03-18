@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -56,7 +56,7 @@ export default function HomeScreen({
     loadData();
   }, []);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const loadedSessions = await loadSessions();
       setSessions(loadedSessions);
@@ -102,15 +102,15 @@ export default function HomeScreen({
         divergenceRate,
       });
     } catch (error) {
-      console.error('Error loading data:', error);
+      // Silently handle error
     }
-  };
+  }, []);
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
-  };
+  }, [loadData]);
 
   const StatCard = ({ icon: Icon, title, value, subtitle, onPress, color = colors.primary }: any) => (
     <ModernCard
@@ -139,7 +139,7 @@ export default function HomeScreen({
   );
 
   return (
-    <MainLayout>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <Animated.ScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: 32 }}
@@ -151,6 +151,8 @@ export default function HomeScreen({
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={true}
       >
         <View style={styles.header}>
         <Text style={[styles.greeting, { color: colors.text }]}>
@@ -242,7 +244,7 @@ export default function HomeScreen({
       </View>
 
       {sessions.length > 0 && (
-        <View style={styles.recentSection}>
+        <View style={[styles.contentContainer, { backgroundColor: 'transparent' }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Atividade Recente</Text>
           <ModernCard
             title={`Última sessão: ${sessions[0].operatorName}`}
@@ -274,13 +276,14 @@ export default function HomeScreen({
         />
         </View>
       </Animated.ScrollView>
-    </MainLayout>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
   contentContainer: {
     paddingTop: 8,

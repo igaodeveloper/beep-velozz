@@ -298,6 +298,7 @@ export default function ModernCard({
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
           activeOpacity={0.8}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           {CardContent}
         </TouchableOpacity>

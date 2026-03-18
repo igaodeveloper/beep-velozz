@@ -47,8 +47,7 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
   };
 
   return (
-    <MainLayout>
-      <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       {/* Header */}
       <View style={{
         flexDirection: 'row', alignItems: 'center',
@@ -265,8 +264,7 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
         onClose={() => setShowPhotoGallery(false)}
         onExportWithPhotos={handleExportWithPhotos}
       />
-      </View>
-    </MainLayout>
+    </View>
   );
 }
 

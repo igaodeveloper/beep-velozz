@@ -10,7 +10,6 @@ import {
   TouchableOpacity,
   TextInput,
   Animated as RNAnimated,
-  Easing,
   Platform,
   useWindowDimensions,
   Modal,
@@ -18,7 +17,6 @@ import {
   ScrollView,
   Dimensions,
   Vibration,
-  Alert,
   PixelRatio,
   Keyboard,
   TouchableWithoutFeedback,
@@ -347,13 +345,29 @@ export default function IndustrialScannerView({
     // Quality indicator animation
     qualityIndicatorAnim.value = withRepeat(
       withSequence(
-        withTiming(1, { duration: 2000, easing: ReEasing.inOut(ReEasing.ease) }),
-        withTiming(0.7, { duration: 2000, easing: ReEasing.inOut(ReEasing.ease) })
+        withTiming(1, { duration: 800, easing: ReEasing.out(ReEasing.ease) }),
+        withTiming(0.7, { duration: 800, easing: ReEasing.inOut(ReEasing.ease) })
       ),
       -1,
       true
     );
-  }, []);
+
+    // Panel slide animation
+    panelSlideAnim.value = withTiming(showScanningPanel ? 0 : 1, { 
+      duration: 300, 
+      easing: ReEasing.out(ReEasing.ease) 
+    });
+
+    return () => {
+      // Cleanup animations
+      pulseAnim.value = 1;
+      cornerPulseAnim.value = 1;
+      glowAnim.value = 0;
+      radarAnim.value = 0;
+      qualityIndicatorAnim.value = 0.7;
+      panelSlideAnim.value = 0;
+    };
+  }, [showScanningPanel]);
 
   // Enhanced scan line animation with smooth transitions
   useEffect(() => {
@@ -492,7 +506,6 @@ export default function IndustrialScannerView({
 
   // Enhanced manual submission with smart validation
   const handleManualSubmit = useCallback(async () => {
-    console.log(`[ProfessionalScanner] Manual submit: "${manualCode}"`);
     setManualError(null);
 
     if (!manualCode.trim()) {

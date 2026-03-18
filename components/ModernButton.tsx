@@ -250,6 +250,7 @@ export default function ModernButton({
         onPressOut={handlePressOut}
         disabled={status === 'loading' || status === 'disabled'}
         activeOpacity={0.8}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
         {status === 'loading' ? (
           <ActivityIndicator

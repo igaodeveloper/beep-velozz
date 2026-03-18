@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -120,7 +120,7 @@ export default function BottomTabNavigator({
     });
   }, [activeTab]);
 
-  const handleTabPress = (tabId: TabType) => {
+  const handleTabPress = useCallback((tabId: TabType) => {
     if (tabId === activeTab) return;
 
     // Haptic feedback avançado
@@ -133,7 +133,7 @@ export default function BottomTabNavigator({
     tabAnimations[tabId].activate();
 
     onTabChange(tabId);
-  };
+  }, [activeTab, onTabChange, tabAnimations]);
 
   const getAnimatedTabStyle = (tabId: TabType) => {
     const scaleStyle = useAnimatedStyle(() => {
@@ -147,7 +147,7 @@ export default function BottomTabNavigator({
     return scaleStyle;
   };
 
-  const getTabStyle = (tabId: TabType) => {
+  const getTabStyle = useCallback((tabId: TabType) => {
     const isActive = activeTab === tabId;
     return {
       backgroundColor: 'transparent',
@@ -158,19 +158,19 @@ export default function BottomTabNavigator({
       elevation: isActive ? 6 : 0,
       transform: [{ scale: isActive ? 1.05 : 1 }],
     };
-  };
+  }, [activeTab, colors.primary]);
 
-  const getIconColor = (tabId: TabType) => {
-    const isActive = activeTab === tabId;
-    return isActive ? colors.primary : colors.textMuted;
-  };
+  const getIconColor = useCallback((tabId: TabType) => {
+    return activeTab === tabId ? colors.primary : colors.textMuted;
+  }, [activeTab, colors.primary, colors.textMuted]);
 
-  const getTextColor = (tabId: TabType) => {
-    const isActive = activeTab === tabId;
-    return isActive ? colors.primary : colors.textMuted;
-  };
+  const getTextColor = useCallback((tabId: TabType) => {
+    return activeTab === tabId ? colors.primary : colors.textMuted;
+  }, [activeTab, colors.primary, colors.textMuted]);
 
-  const filteredTabs = showScannerTab ? tabs : tabs.filter(tab => tab.id !== 'scanner');
+  const filteredTabs = useMemo(() => {
+    return showScannerTab ? tabs : tabs.filter(tab => tab.id !== 'scanner');
+  }, [showScannerTab]);
 
   const handleSwipeChangeTab = (direction: 'left' | 'right') => {
     const currentIndex = filteredTabs.findIndex((t) => t.id === activeTab);

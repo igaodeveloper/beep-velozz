@@ -34,18 +34,17 @@ export default function HistoryBrowser({
 
   if (selectedSession) {
     return (
-      <MainLayout>
+      <View style={{ flex: 1, backgroundColor: colors.bg }}>
         <SessionDetailView
           session={selectedSession}
           onBack={() => setSelectedSession(null)}
         />
-      </MainLayout>
+      </View>
     );
   }
 
   return (
-    <MainLayout>
-      <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       {/* Header */}
       <View style={{
         flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap',
@@ -236,7 +235,6 @@ export default function HistoryBrowser({
         </TouchableOpacity>
       </View>
       </View>
-    </MainLayout>
   );
 }
 

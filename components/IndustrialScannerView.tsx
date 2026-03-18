@@ -77,7 +77,7 @@ interface SmartSuggestion {
 
 /**
  * Professional Industrial Scanner Component
- * Features: Advanced UI, Smart Suggestions, Real-time Analytics, Premium Animations
+ * Features: Advanced UI, Smart Suggestions, Premium Animations
  */
 export default function IndustrialScannerView({
   maxScans,
@@ -161,7 +161,6 @@ export default function IndustrialScannerView({
   const [manualInputExpanded, setManualInputExpanded] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
-  const [showAnalytics, setShowAnalytics] = useState(false);
   const [smartSuggestions, setSmartSuggestions] = useState<SmartSuggestion[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [scanQuality, setScanQuality] = useState<'excellent' | 'good' | 'poor'>('good');
@@ -186,7 +185,6 @@ export default function IndustrialScannerView({
   // Modal states
   const [limitModalVisible, setLimitModalVisible] = useState(false);
   const [limitModalMessage, setLimitModalMessage] = useState('');
-  const [analyticsModalVisible, setAnalyticsModalVisible] = useState(false);
 
   // Enhanced scanner hook with intelligent features
   const scanner = useIndustrialScanner({
@@ -618,24 +616,6 @@ export default function IndustrialScannerView({
     return '#f59e0b'; // Amarelo como padrão para inatividade
   }, [scanner.state, scanQuality, colors, lastScanStatus, lastScanTime]);
 
-  // Advanced session analytics
-  const sessionAnalytics = useMemo(() => {
-    const totalScans = Object.values(scanner.counts).reduce((a, b) => a + b, 0);
-    const totalTargets = Object.values(maxScans).reduce((a, b) => a + b, 0);
-    const progress = totalTargets > 0 ? (totalScans / totalTargets) * 100 : 0;
-    const elapsed = sessionStartTime ? Date.now() - sessionStartTime : 0;
-    const rate = elapsed > 0 ? (totalScans / (elapsed / 1000 / 60)) : 0; // scans per minute
-    
-    return {
-      totalScans,
-      totalTargets,
-      progress,
-      elapsed,
-      rate: Math.round(rate * 10) / 10,
-      efficiency: scanQuality === 'excellent' ? 95 : scanQuality === 'good' ? 80 : 60,
-    };
-  }, [scanner.counts, maxScans, sessionStartTime, scanQuality]);
-
   // Check if all limits reached
   const allLimitsReached = useMemo(() => {
     return Object.entries(maxScans).every(([type, max]) => 
@@ -781,7 +761,7 @@ export default function IndustrialScannerView({
               fontSize: isTablet ? 10 : 8,
               fontWeight: '500',
             }}>
-              {sessionAnalytics.totalScans}/{sessionAnalytics.totalTargets}
+              {Object.values(scanner.counts).reduce((a, b) => a + b, 0)}/{Object.values(maxScans).reduce((a, b) => a + b, 0)}
             </Text>
           </View>
 
@@ -790,27 +770,6 @@ export default function IndustrialScannerView({
             flexDirection: 'row',
             gap: isTablet ? 12 : 10,
           }}>
-            {/* Analytics Button */}
-            <TouchableOpacity
-              onPress={() => setAnalyticsModalVisible(true)}
-              activeOpacity={0.8}
-              style={{
-                backgroundColor: 'rgba(0,0,0,0.7)',
-                borderRadius: isTablet ? 14 : 12,
-                paddingHorizontal: isTablet ? 16 : 14,
-                paddingVertical: isTablet ? 10 : 8,
-                borderWidth: 1,
-                borderColor: 'rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(10px)',
-              }}
-            >
-              <Ionicons 
-                name="analytics-outline" 
-                size={isTablet ? 20 : 18} 
-                color="#fff" 
-              />
-            </TouchableOpacity>
-
             {/* Enhanced Flash Toggle */}
             {Platform.OS !== 'web' && permission?.granted && (
               <TouchableOpacity
@@ -1462,249 +1421,6 @@ export default function IndustrialScannerView({
               </Text>
             </TouchableOpacity>
           </View>
-        </BlurView>
-      </Modal>
-
-      {/* Professional Analytics Modal */}
-      <Modal visible={analyticsModalVisible} transparent animationType="fade">
-        <BlurView intensity={80} style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: 20,
-        }}>
-          <ScrollView style={{
-            backgroundColor: colors.bg,
-            borderRadius: isTablet ? 24 : 20,
-            padding: isTablet ? 32 : 24,
-            width: '100%',
-            maxWidth: isTablet ? 520 : 400,
-            maxHeight: '80%',
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.1)',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 10 },
-            shadowOpacity: 0.3,
-            shadowRadius: 20,
-            elevation: 10,
-          }}>
-            <View style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: isTablet ? 24 : 20,
-            }}>
-              <Text style={{
-                color: colors.text,
-                fontSize: isTablet ? 24 : 20,
-                fontWeight: '800',
-              }}>
-                Análise da Sessão
-              </Text>
-              <TouchableOpacity
-                onPress={() => setAnalyticsModalVisible(false)}
-                style={{
-                  width: isTablet ? 40 : 32,
-                  height: isTablet ? 40 : 32,
-                  borderRadius: isTablet ? 20 : 16,
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Ionicons name="close" size={isTablet ? 20 : 16} color="rgba(255,255,255,0.6)" />
-              </TouchableOpacity>
-            </View>
-
-            {/* Session Stats */}
-            <View style={{
-              backgroundColor: 'rgba(255,255,255,0.05)',
-              borderRadius: isTablet ? 16 : 12,
-              padding: isTablet ? 20 : 16,
-              marginBottom: isTablet ? 20 : 16,
-            }}>
-              <Text style={{
-                color: colors.textMuted,
-                fontSize: isTablet ? 12 : 10,
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-                marginBottom: isTablet ? 12 : 8,
-              }}>
-                Estatísticas da Sessão
-              </Text>
-              
-              <View style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginBottom: isTablet ? 16 : 12,
-              }}>
-                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: isTablet ? 14 : 12 }}>
-                  Total Escaneado
-                </Text>
-                <Text style={{ 
-                  color: colors.text, 
-                  fontSize: isTablet ? 16 : 14, 
-                  fontWeight: '700' 
-                }}>
-                  {sessionAnalytics.totalScans} / {sessionAnalytics.totalTargets}
-                </Text>
-              </View>
-
-              <View style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginBottom: isTablet ? 16 : 12,
-              }}>
-                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: isTablet ? 14 : 12 }}>
-                  Progresso
-                </Text>
-                <Text style={{ 
-                  color: colors.text, 
-                  fontSize: isTablet ? 16 : 14, 
-                  fontWeight: '700' 
-                }}>
-                  {Math.round(sessionAnalytics.progress)}%
-                </Text>
-              </View>
-
-              <View style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginBottom: isTablet ? 16 : 12,
-              }}>
-                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: isTablet ? 14 : 12 }}>
-                  Taxa de Escaneio
-                </Text>
-                <Text style={{ 
-                  color: colors.text, 
-                  fontSize: isTablet ? 16 : 14, 
-                  fontWeight: '700' 
-                }}>
-                  {sessionAnalytics.rate}/min
-                </Text>
-              </View>
-
-              <View style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}>
-                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: isTablet ? 14 : 12 }}>
-                  Eficiência
-                </Text>
-                <Text style={{ 
-                  color: sessionAnalytics.efficiency >= 90 ? '#10b981' : 
-                         sessionAnalytics.efficiency >= 70 ? '#3b82f6' : '#f59e0b',
-                  fontSize: isTablet ? 16 : 14, 
-                  fontWeight: '700' 
-                }}>
-                  {sessionAnalytics.efficiency}%
-                </Text>
-              </View>
-            </View>
-
-            {/* Scan Quality */}
-            <View style={{
-              backgroundColor: 'rgba(255,255,255,0.05)',
-              borderRadius: isTablet ? 16 : 12,
-              padding: isTablet ? 20 : 16,
-              marginBottom: isTablet ? 20 : 16,
-            }}>
-              <Text style={{
-                color: colors.textMuted,
-                fontSize: isTablet ? 12 : 10,
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-                marginBottom: isTablet ? 12 : 8,
-              }}>
-                Qualidade do Scanner
-              </Text>
-              
-              <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: isTablet ? 12 : 10,
-              }}>
-                <Ionicons 
-                  name={scanQuality === 'excellent' ? 'checkmark-circle' : 
-                         scanQuality === 'good' ? 'checkmark' : 'alert'} 
-                  size={isTablet ? 24 : 20} 
-                  color={scanQuality === 'excellent' ? '#10b981' : 
-                         scanQuality === 'good' ? '#3b82f6' : '#f59e0b'} 
-                />
-                <View>
-                  <Text style={{ 
-                    color: colors.text, 
-                    fontSize: isTablet ? 16 : 14, 
-                    fontWeight: '700' 
-                  }}>
-                    {scanQuality === 'excellent' ? 'Excelente' : 
-                     scanQuality === 'good' ? 'Bom' : 'Regular'}
-                  </Text>
-                  <Text style={{ 
-                    color: 'rgba(255,255,255,0.6)', 
-                    fontSize: isTablet ? 12 : 10, 
-                  }}>
-                    Baseado na velocidade e precisão
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Recent Scans */}
-            {scanHistory.length > 0 && (
-              <View style={{
-                backgroundColor: 'rgba(255,255,255,0.05)',
-                borderRadius: isTablet ? 16 : 12,
-                padding: isTablet ? 20 : 16,
-              }}>
-                <Text style={{
-                  color: colors.textMuted,
-                  fontSize: isTablet ? 12 : 10,
-                  fontWeight: '600',
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.5,
-                  marginBottom: isTablet ? 12 : 8,
-                }}>
-                  Scans Recentes
-                </Text>
-                
-                {scanHistory.slice(-5).reverse().map((scan, index) => (
-                  <View key={index} style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    paddingVertical: isTablet ? 8 : 6,
-                    borderBottomWidth: index < 4 ? 1 : 0,
-                    borderBottomColor: 'rgba(255,255,255,0.1)',
-                  }}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ 
-                        color: colors.text, 
-                        fontSize: isTablet ? 14 : 12, 
-                        fontWeight: '600',
-                      }}>
-                        {scan.code}
-                      </Text>
-                      <Text style={{ 
-                        color: 'rgba(255,255,255,0.6)', 
-                        fontSize: isTablet ? 10 : 8,
-                      }}>
-                        {getPackageTypeLabel(scan.type as any)} • 
-                        {new Date(scan.timestamp).toLocaleTimeString()}
-                      </Text>
-                    </View>
-                    <Ionicons 
-                      name={scan.success ? "checkmark-circle" : "close-circle"} 
-                      size={isTablet ? 16 : 14} 
-                      color={scan.success ? '#10b981' : colors.danger} 
-                    />
-                  </View>
-                ))}
-              </View>
-            )}
-          </ScrollView>
         </BlurView>
       </Modal>
     </View>

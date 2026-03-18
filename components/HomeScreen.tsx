@@ -17,7 +17,6 @@ import {
   Clock,
   Users,
   Play,
-  BarChart3,
   History,
   Camera,
 } from 'lucide-react-native';
@@ -27,14 +26,12 @@ import { useResponsive, useResponsiveTypography, useResponsiveSpacing, useRespon
 interface HomeScreenProps {
   onStartSession: () => void;
   onViewHistory: () => void;
-  onViewAnalytics: () => void;
   onStartScanner: () => void;
 }
 
 export default function HomeScreen({
   onStartSession,
   onViewHistory,
-  onViewAnalytics,
   onStartScanner,
 }: HomeScreenProps) {
   const { colors } = useAppTheme();
@@ -203,16 +200,16 @@ export default function HomeScreen({
         {/* Header */}
         <View style={{ padding: spacing.xl, paddingTop: responsive.isMobile ? spacing.xxxl : spacing.xxl }}>
           <Text style={{ color: colors.text, fontSize: typography.h1, fontWeight: '700', marginBottom: spacing.sm }}>
-            Bem-vindo ao Beep Velozz
+            Beep Velozz
           </Text>
           <Text style={{ color: colors.textMuted, fontSize: typography.body, lineHeight: 22 }}>
-            Sistema de scanner industrial
+            Scanner Industrial
           </Text>
         </View>
-        {/* Stats Section */}
+        {/* Operação Section */}
         <View style={{ marginBottom: spacing.xxl }}>
           <Text style={{ color: colors.text, fontSize: typography.h2, fontWeight: '600', marginBottom: spacing.md, paddingHorizontal: spacing.lg }}>
-            Estatísticas de Hoje
+            Operação de Hoje
           </Text>
           <View style={{ paddingHorizontal: spacing.lg, gap: spacing.sm }}>
           <StatCard
@@ -280,10 +277,10 @@ export default function HomeScreen({
         )}
         </View>
 
-        {/* Actions Section */}
+        {/* Ações Operacionais */}
         <View style={{ marginBottom: spacing.xxl }}>
           <Text style={{ color: colors.text, fontSize: typography.h2, fontWeight: '600', marginBottom: spacing.md, paddingHorizontal: spacing.lg }}>
-            Ações Rápidas
+            Ações Operacionais
           </Text>
           <View style={{ 
             flexDirection: 'row', 
@@ -304,12 +301,6 @@ export default function HomeScreen({
             color={colors.primary}
           />
           <QuickAction
-            icon={BarChart3}
-            title="Analytics"
-            onPress={onViewAnalytics}
-            color={colors.warning}
-          />
-          <QuickAction
             icon={History}
             title="Histórico"
             onPress={onViewHistory}
@@ -318,11 +309,11 @@ export default function HomeScreen({
         </View>
       </View>
 
-        {/* Recent Activity */}
+        {/* Atividade Recente */}
         {sessions.length > 0 && (
           <View style={{ marginBottom: spacing.xxl, paddingHorizontal: spacing.lg }}>
             <Text style={{ color: colors.text, fontSize: typography.h2, fontWeight: '600', marginBottom: spacing.md }}>
-              Atividade Recente
+              Última Conferência
             </Text>
             <View style={{ 
               padding: spacing.lg, 
@@ -354,10 +345,10 @@ export default function HomeScreen({
           </View>
         )}
 
-        {/* Daily Insight */}
+        {/* Status da Operação */}
         <View style={{ marginBottom: spacing.xxxl, paddingHorizontal: spacing.lg }}>
           <Text style={{ color: colors.text, fontSize: typography.h2, fontWeight: '600', marginBottom: spacing.md }}>
-            Insight do dia
+            Status da Operação
           </Text>
           <View style={{ 
             marginTop: spacing.sm,
@@ -375,7 +366,7 @@ export default function HomeScreen({
               textTransform: 'uppercase',
               marginBottom: spacing.sm 
             }}>
-              Operação em tempo real
+              Status em tempo real
             </Text>
             <Text style={{ 
               color: colors.text, 
@@ -384,12 +375,12 @@ export default function HomeScreen({
               fontWeight: '500' 
             }}>
               {todayStats.totalSessions === 0
-                ? 'Comece uma nova conferência para gerar suas primeiras métricas do dia.'
+                ? 'Inicie uma nova conferência para começar a operação.'
                 : todayStats.divergenceRate === 0
-                ? 'Nenhuma divergência registrada hoje. Mantenha esse nível de precisão na conferência.'
+                ? 'Operação normal. Continue com o padrão de qualidade atual.'
                 : todayStats.divergenceRate < 20
-                ? 'Sua taxa de divergência está controlada. Continue acompanhando de perto os volumes mais altos.'
-                : 'A taxa de divergência de hoje está acima do ideal. Priorize sessões com maiores volumes para investigação.'}
+                ? 'Operação estável. Mantenha o foco na qualidade.'
+                : 'Atenção: Verifique os pacotes com divergência para manter a operação em dia.'}
             </Text>
           </View>
         </View>

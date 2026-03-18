@@ -11,20 +11,18 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppTheme } from '@/utils/useAppTheme';
 import { 
-  Package, 
-  BarChart3, 
   History, 
   Settings,
   Home,
   Camera
 } from 'lucide-react-native';
-import { advancedHaptics } from '@/utils/advancedHaptics';
 import { useTabAnimation, useBasicAnimation } from '@/utils/animationUtils';
+import { advancedHaptics } from '@/utils/advancedHaptics';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-export type TabType = 'home' | 'scanner' | 'analytics' | 'history' | 'settings';
+export type TabType = 'home' | 'scanner' | 'history' | 'settings';
 
 interface TabItem {
   id: TabType;
@@ -51,12 +49,6 @@ const tabs: TabItem[] = [
     label: 'Scanner',
     icon: Camera,
     activeIcon: Camera,
-  },
-  {
-    id: 'analytics',
-    label: 'Analytics',
-    icon: BarChart3,
-    activeIcon: BarChart3,
   },
   {
     id: 'history',

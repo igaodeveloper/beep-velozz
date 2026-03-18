@@ -364,7 +364,6 @@ function NotificationSettingsScreen({ onBack }: DetailScreenProps) {
 
 function PrivacySecuritySettingsScreen({ onBack }: DetailScreenProps) {
   const { colors } = useAppTheme();
-  const [analyticsEnabled, setAnalyticsEnabled] = React.useState(true);
   const [anonymizeDrivers, setAnonymizeDrivers] = React.useState(false);
 
   return (
@@ -376,20 +375,6 @@ function PrivacySecuritySettingsScreen({ onBack }: DetailScreenProps) {
       />
 
       <View style={styles.section}>
-        <SettingsItem
-          icon={Shield}
-          title="Enviar métricas anônimas"
-          subtitle="Ajudar a melhorar o produto sem expor dados sensíveis"
-          onPress={() => setAnalyticsEnabled((prev) => !prev)}
-          rightComponent={
-            <Switch
-              value={analyticsEnabled}
-              onValueChange={() => setAnalyticsEnabled((prev) => !prev)}
-              trackColor={{ false: colors.border, true: colors.primary + '40' }}
-              thumbColor={analyticsEnabled ? colors.primary : colors.textFaint}
-            />
-          }
-        />
         <SettingsItem
           icon={Shield}
           title="Anonimizar nomes de motoristas"

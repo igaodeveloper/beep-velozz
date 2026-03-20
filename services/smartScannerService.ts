@@ -40,33 +40,33 @@ class SmartScannerService {
     averageProcessingTime: 0,
   };
 
-  // Scanner com ML e reconhecimento avançado
+  // Scanner otimizado para ultra-rápida bipagem
   async smartScan(rawCode: string): Promise<SmartScanResult> {
     const startTime = performance.now();
     
-    // Pré-processamento do código
-    const processedCode = this.preprocessCode(rawCode);
+    // Pré-processamento otimizado
+    const processedCode = this.fastPreprocessCode(rawCode);
     
-    // Predição usando múltiplos algoritmos
-    const prediction = await this.makePrediction(processedCode);
+    // Predição ultra-rápida com cache
+    const prediction = await this.fastPrediction(processedCode);
     
-    // Criar pacote com dados enriquecidos
+    // Criar pacote otimizado
     const packageData: ScannedPackage = {
-      id: this.generatePackageId(),
+      id: this.fastGeneratePackageId(),
       code: processedCode,
       type: prediction.type,
       value: this.getPackageValue(prediction.type),
       scannedAt: new Date().toISOString(),
     };
     
-    // Gerar insights
-    const insights = this.generateInsights(prediction, processedCode);
-    const warnings = this.generateWarnings(prediction, processedCode);
+    // Insights simplificados
+    const insights = this.fastGenerateInsights(prediction);
+    const warnings = this.fastGenerateWarnings(prediction);
     
-    // Atualizar métricas
+    // Atualizar métricas leves
     this.updateMetrics(prediction, performance.now() - startTime);
     
-    // Armazenar no histórico
+    // Cache rápido
     this.scanHistory.set(processedCode, prediction);
     
     return {
@@ -77,7 +77,33 @@ class SmartScannerService {
     };
   }
 
-  // Pré-processamento avançado do código
+  // Pré-processamento ultra-rápido
+  private fastPreprocessCode(rawCode: string): string {
+    let processed = rawCode.trim();
+    
+    // Extração JSON rápida
+    if (processed.startsWith('{') && processed.endsWith('}')) {
+      try {
+        const obj = JSON.parse(processed);
+        if (obj?.id) processed = obj.id;
+      } catch { /* ignorar */ }
+    }
+    
+    // Limpeza otimizada
+    processed = processed.replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
+    
+    // Remover prefixos rapidamente
+    if (processed.startsWith('ID') && processed.length > 2) {
+      processed = processed.slice(2);
+    }
+    
+    // Correção OCR simplificada
+    processed = this.fastOCRCorrection(processed);
+    
+    return processed;
+  }
+
+  // Pré-processamento legado (mantido para compatibilidade)
   private preprocessCode(rawCode: string): string {
     let processed = rawCode.trim();
     
@@ -92,34 +118,22 @@ class SmartScannerService {
       processed = processed.slice(2);
     }
     
-    // Corrigir erros comuns de OCR
-    processed = this.correctOCRErrors(processed);
+    // Corrigir erros comuns de OCR (legado)
+    processed = this.fastOCRCorrection(processed);
     
     return processed;
   }
 
-  // Correção de erros comuns de OCR
-  private correctOCRErrors(code: string): string {
-    const corrections: { [key: string]: string } = {
-      'O': '0',
-      'I': '1',
-      'S': '5',
-      'Z': '2',
-      'B': '8',
-      'G': '6',
-    };
-    
-    let corrected = code;
-    
-    // Aplicar correções baseadas em contexto
-    for (const [wrong, right] of Object.entries(corrections)) {
-      // Só corrigir se fizer sentido no contexto
-      if (this.shouldCorrect(corrected, wrong, right)) {
-        corrected = corrected.replace(new RegExp(wrong, 'g'), right);
-      }
-    }
-    
-    return corrected;
+  // Correção OCR ultra-rápida
+  private fastOCRCorrection(code: string): string {
+    // Correções diretas sem validações complexas
+    return code
+      .replace(/O/g, '0')
+      .replace(/I/g, '1')
+      .replace(/S/g, '5')
+      .replace(/Z/g, '2')
+      .replace(/B/g, '8')
+      .replace(/G/g, '6');
   }
 
   // Verificar se correção deve ser aplicada
@@ -138,64 +152,122 @@ class SmartScannerService {
     return Math.random() < 0.3; // 30% de chance de correção geral
   }
 
-  // Predição usando ensemble de algoritmos
-  private async makePrediction(code: string): Promise<ScanPrediction> {
+  // Predição ultra-rápida com cache
+  private async fastPrediction(code: string): Promise<ScanPrediction> {
     const startTime = performance.now();
     
-    // Algoritmo 1: Classificação baseada em regras
-    const ruleBasedType = classifyPackage(code);
-    const ruleBasedConfidence = this.calculateRuleBasedConfidence(code, ruleBasedType);
+    // Cache lookup primeiro
+    const cached = this.scanHistory.get(code);
+    if (cached) {
+      return {
+        ...cached,
+        metadata: {
+          ...cached.metadata,
+          processingTime: performance.now() - startTime,
+        },
+      };
+    }
     
-    // Algoritmo 2: Análise estatística
-    const statisticalType = this.analyzeStatisticalPatterns(code);
-    const statisticalConfidence = this.calculateStatisticalConfidence(code, statisticalType);
-    
-    // Algoritmo 3: Histórico de scans
-    const historicalType = this.analyzeHistoricalPatterns(code);
-    const historicalConfidence = this.calculateHistoricalConfidence(code, historicalType);
-    
-    // Ensemble: combinar predições
-    const ensembleResult = this.combinePredictions([
-      { type: ruleBasedType, confidence: ruleBasedConfidence },
-      { type: statisticalType, confidence: statisticalConfidence },
-      { type: historicalType, confidence: historicalConfidence },
-    ]);
+    // Classificação rápida baseada em regras
+    const type = this.fastClassifyCode(code);
+    const confidence = this.fastCalculateConfidence(code, type);
     
     const processingTime = performance.now() - startTime;
     
     return {
       code,
-      type: ensembleResult.type,
-      confidence: ensembleResult.confidence,
-      suggestions: this.generateSuggestions(code, ensembleResult.type),
+      type,
+      confidence,
+      suggestions: this.fastGenerateSuggestions(code, type),
       metadata: {
         scanQuality: this.assessScanQuality(code),
         processingTime,
-        algorithm: 'ensemble-v2',
+        algorithm: 'fast-v1',
       },
     };
   }
 
-  // Análise estatística de padrões
-  private analyzeStatisticalPatterns(code: string): PackageType {
-    // Análise de distribuição de caracteres
-    const digitRatio = (code.match(/\d/g) || []).length / code.length;
-    const letterRatio = (code.match(/[A-Z]/g) || []).length / code.length;
+  // Classificação ultra-rápida
+  private fastClassifyCode(code: string): PackageType {
+    // Shopee BR
+    if (code.startsWith('BR') && code.length >= 8) return 'shopee';
+    if (/^\d{13}$/.test(code)) return 'shopee';
     
-    // Padrões específicos
-    if (code.startsWith('20000') && digitRatio > 0.7) {
-      return 'mercado_livre';
+    // Mercado Livre
+    if (code.startsWith('20000') && code.length >= 5) return 'mercado_livre';
+    if (code.startsWith('466') && code.length >= 11) return 'mercado_livre';
+    
+    // Avulso
+    if (code.startsWith('LM') && code.length >= 4) return 'avulso';
+    if (code.length <= 10 && /[A-Z]/.test(code)) return 'avulso';
+    
+    return 'avulso';
+  }
+
+  // Cálculo de confiança ultra-rápido
+  private fastCalculateConfidence(code: string, type: PackageType): number {
+    switch (type) {
+      case 'shopee':
+        if (code.startsWith('BR')) return 0.95;
+        if (/^\d{13}$/.test(code)) return 0.9;
+        return 0.7;
+      case 'mercado_livre':
+        if (code.startsWith('20000')) return 0.95;
+        if (code.startsWith('466')) return 0.9;
+        return 0.7;
+      case 'avulso':
+        if (code.startsWith('LM')) return 0.85;
+        return 0.6;
+      default:
+        return 0.5;
+    }
+  }
+
+  // Sugestões ultra-rápidas
+  private fastGenerateSuggestions(code: string, type: PackageType): string[] {
+    const suggestions: string[] = [];
+    
+    if (type === 'shopee') {
+      suggestions.push('Código Shopee detectado');
+    } else if (type === 'mercado_livre') {
+      suggestions.push('Código Mercado Livre detectado');
+    } else {
+      suggestions.push('Pacote avulso detectado');
     }
     
-    if (code.startsWith('BR') && digitRatio > 0.8) {
-      return 'shopee';
+    return suggestions;
+  }
+
+  // Insights ultra-rápidos
+  private fastGenerateInsights(prediction: ScanPrediction): string[] {
+    const insights: string[] = [];
+    
+    if (prediction.confidence > 0.9) {
+      insights.push('🎯 Alta confiança');
+    } else if (prediction.confidence < 0.6) {
+      insights.push('⚠️ Baixa confiança');
     }
     
-    if (letterRatio > 0.5 && code.length <= 10) {
-      return 'avulso';
+    return insights;
+  }
+
+  // Warnings ultra-rápidos
+  private fastGenerateWarnings(prediction: ScanPrediction): string[] {
+    const warnings: string[] = [];
+    
+    if (prediction.confidence < 0.5) {
+      warnings.push('Confiança baixa - verificar');
     }
     
-    return 'avulso'; // Default
+    if (prediction.code.length < 5) {
+      warnings.push('Código muito curto');
+    }
+    
+    if (prediction.code.length > 30) {
+      warnings.push('Código muito longo');
+    }
+    
+    return warnings;
   }
 
   // Análise baseada em histórico
@@ -388,7 +460,12 @@ class SmartScannerService {
     return Math.max(0, quality);
   }
 
-  // Gerar ID de pacote
+  // Gerar ID de pacote otimizado
+  private fastGeneratePackageId(): string {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+  }
+
+  // Gerar ID de pacote (legado)
   private generatePackageId(): string {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }

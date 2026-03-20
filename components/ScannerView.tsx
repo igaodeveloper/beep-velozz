@@ -250,7 +250,8 @@ export default function ScannerView({
 
     const now = Date.now();
     const lastAccepted = lastAcceptedRef.current;
-    if (lastAccepted && lastAccepted.code === code && now - lastAccepted.at < 2000) {
+    if (lastAccepted && lastAccepted.code === code && now - lastAccepted.at < 500) {
+      // Reduzido de 2000ms para 500ms - permite bipagens mais rápidas
       return;
     }
 
@@ -312,8 +313,8 @@ export default function ScannerView({
       // Mostrar feedback visual de fora de área
       setShowOutOfAreaWarning(true);
       outOfAreaAnim.value = withSequence(
-        withTiming(1, { duration: 200 }),
-        withTiming(0, { duration: 800 })
+        withTiming(1, { duration: 100 }), // Reduzido de 200ms para 100ms
+        withTiming(0, { duration: 400 }) // Reduzido de 800ms para 400ms
       );
       
       // Feedback tátil e sonoro para fora de área
@@ -325,7 +326,7 @@ export default function ScannerView({
       setTimeout(() => {
         setShowOutOfAreaWarning(false);
         setBarcodeLocked(false);
-      }, 1000);
+      }, 200); // Reduzido de 1000ms para 200ms
       return;
     }
 
@@ -333,7 +334,7 @@ export default function ScannerView({
 
     setTimeout(() => {
       setBarcodeLocked(false);
-    }, 900);
+    }, 100); // Ultra-rápido: redução de 900ms para 100ms
   };
 
   // Função para verificar se o código está dentro da área do reticle

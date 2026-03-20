@@ -188,10 +188,10 @@ export default function IndustrialScannerView({
   const [limitModalMessage, setLimitModalMessage] = useState('');
   const [analyticsModalVisible, setAnalyticsModalVisible] = useState(false);
 
-  // Enhanced scanner hook with intelligent features
+  // Enhanced scanner hook with intelligent features - OTIMIZADO
   const scanner = useIndustrialScanner({
     maxAllowedScans: maxScans,
-    debounceMs: 300, // Faster response
+    debounceMs: 50, // Ultra-rápido: redução de 300ms para 50ms
     onStateChange: (state) => {
       // Enhanced haptic feedback based on state
       if (Platform.OS !== 'web') {
@@ -425,7 +425,7 @@ export default function IndustrialScannerView({
     setManualError(null);
   }, []);
 
-  // Enhanced barcode handler with intelligent processing
+  // Enhanced barcode handler with intelligent processing - OTIMIZADO
   const handleBarcode = useCallback(async (event: any) => {
     console.debug(`[ProfessionalScanner] Barcode scanned: "${event?.data}"`);
     
@@ -465,8 +465,8 @@ export default function IndustrialScannerView({
       
       // Success animation
       successPulseAnim.value = withSequence(
-        withTiming(1.2, { duration: 200 }),
-        withTiming(1, { duration: 200 })
+        withTiming(1.2, { duration: 100 }), // Reduzido de 200ms para 100ms
+        withTiming(1, { duration: 100 })
       );
       
       triggerFeedback('success', 'medium');
@@ -491,19 +491,19 @@ export default function IndustrialScannerView({
       
       // Error animation
       errorShakeAnim.value = withSequence(
-        withTiming(-10, { duration: 100 }),
-        withTiming(10, { duration: 100 }),
-        withTiming(-10, { duration: 100 }),
-        withTiming(10, { duration: 100 }),
-        withTiming(-10, { duration: 100 }),
-        withTiming(0, { duration: 100 })
+        withTiming(-10, { duration: 50 }), // Reduzido de 100ms para 50ms
+        withTiming(10, { duration: 50 }),
+        withTiming(-10, { duration: 50 }),
+        withTiming(10, { duration: 50 }),
+        withTiming(-10, { duration: 50 }),
+        withTiming(0, { duration: 50 })
       );
       
       triggerFeedback('error', 'heavy');
     }
 
     setIsProcessing(false);
-    setTimeout(() => setBarcodeLocked(false), 300); // Faster unlock
+    setTimeout(() => setBarcodeLocked(false), 50); // Ultra-rápido: redução de 300ms para 50ms
   }, [barcodeLocked, scanner.state, isProcessing, triggerFeedback, assessScanQuality, onScanned]);
 
   // Enhanced manual submission with smart validation

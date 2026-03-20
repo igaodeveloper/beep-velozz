@@ -8,6 +8,8 @@
     "scheme": "beepvelozz",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "jsEngine": "hermes",
+    "nodeModulesPath": ".expo",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.igaonamikaze.beepvelozz",
@@ -24,7 +26,8 @@
           "UIInterfaceOrientationLandscapeLeft",
           "UIInterfaceOrientationLandscapeRight"
         ]
-      }
+      },
+      "jsEngine": "hermes"
     },
     "android": {
       "adaptiveIcon": {
@@ -32,10 +35,12 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "CAMERA"
+        "CAMERA",
+        "VIBRATE"
       ],
       "package": "com.igaonamikaze.beepvelozz",
-      "screenOrientation": "user"
+      "screenOrientation": "user",
+      "jsEngine": "hermes"
     },
     "web": {
       "bundler": "metro",
@@ -81,8 +86,12 @@
       "expo-secure-store"
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "turboMode": true
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "extra": {
       "router": {},
       "eas": {

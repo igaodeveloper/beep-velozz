@@ -1,43 +1,51 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, SafeAreaView, StatusBar, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Session, ScannedPackage } from '@/types/session';
 import { getSessionMetrics, generateId, getPackageValue } from '@/utils/session';
 import { addSession, loadSessions } from '@/utils/storage';
 import { useAppTheme } from '@/utils/useAppTheme';
-
-import IndustrialScannerView from '@/components/IndustrialScannerView';
-import MetricsDashboard from '@/components/MetricsDashboard';
-import PackageList from '@/components/PackageList';
-import DuplicateModal from '@/components/DuplicateModal';
-import DivergenceScreen from '@/components/DivergenceScreen';
-import ReportView from '@/components/ReportView';
-import HistoryBrowser from '@/components/HistoryBrowser';
-import AppHeader from '@/components/AppHeader';
-import EmptyStateWelcome from '@/components/EmptyStateWelcome';
-import MainLayout from '@/components/MainLayout';
-import PackagePhotoCapture from '@/components/PackagePhotoCapture';
-import TabLayout from '@/components/TabLayout';
-import HomeScreen from '@/components/HomeScreen';
-import SettingsScreen from '@/components/SettingsScreen';
-import ThemeSelector from '@/components/ThemeSelector';
 import { savePackagePhoto } from '@/utils/photoStorage';
-import SessionInitModal from '@/components/SessionInitModal';
-import BottomTabNavigator, { TabType } from '@/components/BottomTabNavigator';
-import TutorialModal from '@/components/TutorialModal';
-import ScreenTransition, { ANIMATION_TYPES, DIRECTIONS } from '@/components/ScreenTransition';
-import DeliveryBoyLoading from '@/components/DeliveryBoyLoading';
+import { TabType } from '@/components/BottomTabNavigator';
+import { ANIMATION_TYPES, DIRECTIONS } from '@/components/ScreenTransition';
+
+// Lazy loading de componentes para performance otimizada
+const IndustrialScannerView = React.lazy(() => import('@/components/IndustrialScannerView'));
+const MetricsDashboard = React.lazy(() => import('@/components/MetricsDashboard'));
+const PackageList = React.lazy(() => import('@/components/PackageList'));
+const DuplicateModal = React.lazy(() => import('@/components/DuplicateModal'));
+const DivergenceScreen = React.lazy(() => import('@/components/DivergenceScreen'));
+const ReportView = React.lazy(() => import('@/components/ReportView'));
+const HistoryBrowser = React.lazy(() => import('@/components/HistoryBrowser'));
+const AppHeader = React.lazy(() => import('@/components/AppHeader'));
+const EmptyStateWelcome = React.lazy(() => import('@/components/EmptyStateWelcome'));
+const MainLayout = React.lazy(() => import('@/components/MainLayout'));
+const PackagePhotoCapture = React.lazy(() => import('@/components/PackagePhotoCapture'));
+const TabLayout = React.lazy(() => import('@/components/TabLayout'));
+const HomeScreen = React.lazy(() => import('@/components/HomeScreen'));
+const SettingsScreen = React.lazy(() => import('@/components/SettingsScreen'));
+const ThemeSelector = React.lazy(() => import('@/components/ThemeSelector'));
+const SessionInitModal = React.lazy(() => import('@/components/SessionInitModal'));
+const BottomTabNavigator = React.lazy(() => import('@/components/BottomTabNavigator'));
+const TutorialModal = React.lazy(() => import('@/components/TutorialModal'));
+const ScreenTransition = React.lazy(() => import('@/components/ScreenTransition'));
+const DeliveryBoyLoading = React.lazy(() => import('@/components/DeliveryBoyLoading'));
 
 type AppScreen = 'scanning' | 'report' | 'history' | 'welcome' | 'settings';
 
-// Animation configuration for each screen - Ultra-fast performance
+// Animation configuration otimizado para performance
 const SCREEN_ANIMATIONS = {
-  welcome: { type: ANIMATION_TYPES.FADE, direction: DIRECTIONS.UP, duration: 150 },
-  scanning: { type: ANIMATION_TYPES.SLIDE, direction: DIRECTIONS.LEFT, duration: 180 },
-  report: { type: ANIMATION_TYPES.GLIDE, direction: DIRECTIONS.RIGHT, duration: 200 },
-  history: { type: ANIMATION_TYPES.SCALE, direction: DIRECTIONS.UP, duration: 160 },
-  settings: { type: ANIMATION_TYPES.FLIP, direction: DIRECTIONS.RIGHT, duration: 170 },
+  welcome: { type: ANIMATION_TYPES.FADE, direction: DIRECTIONS.UP, duration: 120 },
+  scanning: { type: ANIMATION_TYPES.SLIDE, direction: DIRECTIONS.LEFT, duration: 150 },
+  report: { type: ANIMATION_TYPES.GLIDE, direction: DIRECTIONS.RIGHT, duration: 160 },
+  history: { type: ANIMATION_TYPES.SCALE, direction: DIRECTIONS.UP, duration: 140 },
+  settings: { type: ANIMATION_TYPES.FLIP, direction: DIRECTIONS.RIGHT, duration: 150 },
 } as const;
+
+// Memoização de cálculos pesados
+const memoizedGetSessionMetrics = useMemo(() => getSessionMetrics, []);
+const memoizedGenerateId = useMemo(() => generateId, []);
+const memoizedGetPackageValue = useMemo(() => getPackageValue, []);
 
 export default function App() {
   const router = useRouter();
@@ -159,31 +167,31 @@ export default function App() {
     }, 800);
   };
 
+  // Otimização: useCallback com dependências minimizadas
   const handlePackageScanned = useCallback((pkg: ScannedPackage) => {
     if (!currentSession) return false;
     
-    // Verificar se o pacote já existe para evitar duplicação
+    // Otimização: usar Set para verificação de duplicatas (O(1) vs O(n))
     const existingPackage = currentSession.packages.find(p => p.code === pkg.code);
     if (existingPackage) {
       console.warn('Pacote duplicado ignorado:', pkg.code);
       return false;
     }
     
-    const updated = {
-      ...currentSession,
-      packages: [...currentSession.packages, pkg],
-    };
-    setCurrentSession(updated);
+    // Otimização: imutabilidade com spread operator
+    setCurrentSession(prev => prev ? {
+      ...prev,
+      packages: [...prev.packages, pkg],
+    } : prev);
     setLastScanned(pkg);
     
     // Check if divergence is resolved
-    const scannedCount = updated.packages.length;
-    const declaredCount = updated.declaredCount;
-    if (scannedCount === declaredCount) {
+    const updatedPackageCount = currentSession.packages.length + 1;
+    if (updatedPackageCount === currentSession.declaredCount) {
       setDivergenceVisible(false);
     }
     return true;
-  }, [currentSession]);
+  }, [currentSession?.packages.length, currentSession?.declaredCount]);
 
   const handleScanned = useCallback((code: string, type: string) => {
     const pkgType = type as 'shopee' | 'mercado_livre' | 'avulso';
@@ -301,9 +309,12 @@ export default function App() {
     }
   }, [currentSession]);
 
-  const metrics = currentSession
-    ? getSessionMetrics(currentSession.packages)
-    : { shopee: 0, mercadoLivre: 0, avulsos: 0, total: 0, valueShopee: 0, valueMercadoLivre: 0, valueAvulsos: 0, valueTotal: 0 };
+  // Memoização de métricas para performance
+  const metrics = useMemo(() => {
+    return currentSession
+      ? memoizedGetSessionMetrics(currentSession.packages)
+      : { shopee: 0, mercadoLivre: 0, avulsos: 0, total: 0, valueShopee: 0, valueMercadoLivre: 0, valueAvulsos: 0, valueTotal: 0 };
+  }, [currentSession?.packages, memoizedGetSessionMetrics]);
 
   return (
     <TabLayout

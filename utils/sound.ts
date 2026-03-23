@@ -20,9 +20,9 @@ const SOUND_FILES = {
   error: require('../assets/sounds/error.mp3'),
 };
 
-const MIN_PLAY_INTERVAL_MS = 80; // Intervalo mínimo entre reproduções (80ms)
+const MIN_PLAY_INTERVAL_MS = 20; // Intervalo mínimo entre reproduções (20ms - ultra-rápido)
 const MAX_RETRIES = 2;
-const RETRY_DELAY_MS = 50;
+const RETRY_DELAY_MS = 10; // Reduzido de 50ms para 10ms
 
 /**
  * Inicializa o sistema de áudio

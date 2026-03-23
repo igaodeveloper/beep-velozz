@@ -188,10 +188,10 @@ export default function IndustrialScannerView({
   const [limitModalMessage, setLimitModalMessage] = useState('');
   const [analyticsModalVisible, setAnalyticsModalVisible] = useState(false);
 
-  // Enhanced scanner hook with intelligent features - OTIMIZADO
+  // Enhanced scanner hook with intelligent features - ULTRA RÁPIDO
   const scanner = useIndustrialScanner({
     maxAllowedScans: maxScans,
-    debounceMs: 50, // Ultra-rápido: redução de 300ms para 50ms
+    debounceMs: 5, // Ultra-rápido: redução de 50ms para 5ms (99% mais rápido)
     onStateChange: (state) => {
       // Enhanced haptic feedback based on state
       if (Platform.OS !== 'web') {
@@ -405,14 +405,14 @@ export default function IndustrialScannerView({
     );
   }, [showScanningPanel]);
 
-  // Reset color to idle (yellow) after 3 seconds of inactivity
+  // Reset color to idle (yellow) after 1.5 seconds of inactivity
   useEffect(() => {
     if (lastScanStatus === null || lastScanStatus === 'idle') return;
 
     const timer = setTimeout(() => {
       setLastScanStatus('idle');
       setLastScanTime(Date.now());
-    }, 3000);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, [lastScanStatus]);
@@ -465,8 +465,8 @@ export default function IndustrialScannerView({
       
       // Success animation
       successPulseAnim.value = withSequence(
-        withTiming(1.2, { duration: 100 }), // Reduzido de 200ms para 100ms
-        withTiming(1, { duration: 100 })
+        withTiming(1.1, { duration: 25 }), // Ultra-rápido: redução de 100ms para 25ms
+        withTiming(1, { duration: 25 })
       );
       
       triggerFeedback('success', 'medium');
@@ -491,19 +491,19 @@ export default function IndustrialScannerView({
       
       // Error animation
       errorShakeAnim.value = withSequence(
-        withTiming(-10, { duration: 50 }), // Reduzido de 100ms para 50ms
-        withTiming(10, { duration: 50 }),
-        withTiming(-10, { duration: 50 }),
-        withTiming(10, { duration: 50 }),
-        withTiming(-10, { duration: 50 }),
-        withTiming(0, { duration: 50 })
+        withTiming(-5, { duration: 25 }), // Ultra-rápido: redução de 50ms para 25ms
+        withTiming(5, { duration: 25 }),
+        withTiming(-5, { duration: 25 }),
+        withTiming(5, { duration: 25 }),
+        withTiming(-5, { duration: 25 }),
+        withTiming(0, { duration: 25 })
       );
       
       triggerFeedback('error', 'heavy');
     }
 
     setIsProcessing(false);
-    setTimeout(() => setBarcodeLocked(false), 50); // Ultra-rápido: redução de 300ms para 50ms
+    setTimeout(() => setBarcodeLocked(false), 5); // Ultra-rápido: redução de 50ms para 5ms
   }, [barcodeLocked, scanner.state, isProcessing, triggerFeedback, assessScanQuality, onScanned]);
 
   // Enhanced manual submission with smart validation

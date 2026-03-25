@@ -12,6 +12,7 @@ import {
   FlatList,
   Dimensions,
   Animated,
+  StyleSheet,
 } from 'react-native';
 import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
@@ -440,7 +441,7 @@ export default function GamificationDashboard({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<{ [key: string]: any }>({
   container: {
     flex: 1,
   },
@@ -635,6 +636,10 @@ const styles = StyleSheet.create({
   progressLabel: {
     fontSize: 10,
     marginBottom: 4,
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 4,
   },
   leaderboardList: {
     paddingBottom: 20,

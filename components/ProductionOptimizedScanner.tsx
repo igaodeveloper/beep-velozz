@@ -6,6 +6,7 @@
 
 import React, { useCallback, useMemo, useRef, useEffect } from 'react';
 import { View, FlatList, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { CameraView } from 'expo-camera';
 
 // Imports from new production utilities
 import { validateBarcode } from '@/src/utils/validators';
@@ -158,24 +159,12 @@ export const ProductionOptimizedScanner = React.memo<ProductionOptimizedScannerP
     const debouncedScan: (barcode: string) => void = useDebouncedCallback<(barcode: string) => void>((barcode: string) => processScan(barcode), 150);
 
     /**
-     * Simulate barcode scan (replace with actual camera input)
+     * Handle barcode scan from camera
      */
-    const simulateScan = useCallback(() => {
-      // Teste abrangente para Mercado Livre - todos os padrões
-      const mercadoLivreCodes = [
-        '2200D1241459785',  // Pack ID
-        '4482D247404',      // Envio ID  
-        '20000123456',      // Tradicional
-        '46612345678',      // Código de envio 466
-        '20000987654321',   // Prefixo 20000 longo
-        '123456789',        // Numérico longo (fallback)
-        'ID2000098765',     // Com prefixo ID
-        '20000',            // Mínimo ML
-      ];
-      const randomCode = mercadoLivreCodes[Math.floor(Math.random() * mercadoLivreCodes.length)];
-      if (randomCode) {
-        console.log(`[ProductionOptimizedScanner] 🎯 SIMULANDO MERCADO LIVRE: "${randomCode}"`);
-        debouncedScan(randomCode);
+    const handleBarcodeScanned = useCallback(({ data }: { data: string }) => {
+      if (data && data.trim()) {
+        console.log(`[ProductionOptimizedScanner] 📷 BARCODE DETECTED: "${data}"`);
+        debouncedScan(data.trim());
       }
     }, [debouncedScan]);
 
@@ -310,15 +299,22 @@ export const ProductionOptimizedScanner = React.memo<ProductionOptimizedScannerP
           style={styles.list}
         />
 
+        {/* Camera Scanner */}
+        <View style={styles.cameraContainer}>
+          <CameraView
+            style={styles.camera}
+            barcodeScannerSettings={{
+              barcodeTypes: ['qr', 'code128', 'code39', 'ean13', 'ean8', 'upc_a', 'upc_e'],
+            }}
+            onBarcodeScanned={handleBarcodeScanned}
+          />
+          <View style={styles.cameraOverlay}>
+            <Text style={styles.scannerText}>Aponte para o código de barras</Text>
+          </View>
+        </View>
+
         {/* Actions */}
         <View style={styles.actions}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={simulateScan}
-            disabled={isProcessing}
-          >
-            <Text style={styles.buttonText}>📷 Simular Scan</Text>
-          </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
             onPress={clearScans}
@@ -434,6 +430,32 @@ const styles = StyleSheet.create({
     padding: 24,
     color: '#999',
     fontSize: 14,
+  },
+  cameraContainer: {
+    height: 200,
+    margin: 16,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#000',
+  },
+  camera: {
+    flex: 1,
+  },
+  cameraOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  scannerText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   debugBox: {
     backgroundColor: '#f5f5f5',

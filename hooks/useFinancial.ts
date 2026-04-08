@@ -79,7 +79,7 @@ export function useFinancial({
         roiAnalysis: null,
         financialReport: null,
         revenueProjection: null,
-        kpis: generateMockKPIs(),
+        kpis: [],
         isLoading: false,
         error: null,
       });
@@ -224,52 +224,6 @@ export function useFinancial({
     if (percentage >= 100) return 'good';
     if (percentage >= 80) return 'warning';
     return 'critical';
-  }, []);
-
-  // Gerar KPIs simulados
-  const generateMockKPIs = useCallback((): FinancialKPI[] => {
-    return [
-      {
-        name: 'Receita Mensal',
-        value: 12500,
-        target: 10000,
-        unit: 'R$',
-        trend: 'up',
-        change: 2500,
-        changePercent: 25,
-        status: 'good',
-      },
-      {
-        name: 'Taxa Horária',
-        value: 85,
-        target: 75,
-        unit: 'R$/h',
-        trend: 'up',
-        change: 10,
-        changePercent: 13.3,
-        status: 'good',
-      },
-      {
-        name: 'Eficiência',
-        value: 92,
-        target: 90,
-        unit: 'pac/h',
-        trend: 'stable',
-        change: 0,
-        changePercent: 0,
-        status: 'good',
-      },
-      {
-        name: 'ROI',
-        value: 145,
-        target: 100,
-        unit: '%',
-        trend: 'up',
-        change: 15,
-        changePercent: 11.5,
-        status: 'good',
-      },
-    ];
   }, []);
 
   // Obter insights financeiros

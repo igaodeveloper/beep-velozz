@@ -4,25 +4,35 @@ import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 import { Platform } from 'react-native';
 import { API_CONFIG } from '../config/apiConfig';
 
+// Warn if token is missing
+if (!API_CONFIG.TOKEN) {
+  console.warn('⚠️ WARNING: API_TOKEN is not configured. API requests may fail.');
+}
+
 const axiosClient: AxiosInstance = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT, // 30 segundos
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${API_CONFIG.TOKEN}`,
-    'User-Agent': `BeepVelozz/${Platform.OS}`,
+    'User-Agent': `BeepVelozz/${Platform.OS}/${require('../../package.json').version}`,
   },
 });
 
-// Interceptor de requisição para logs em desenvolvimento
+// Add Authorization header dynamically if token exists
 axiosClient.interceptors.request.use(
   (config) => {
+    // Add token to header if available
+    if (API_CONFIG.TOKEN) {
+      config.headers.Authorization = `Bearer ${API_CONFIG.TOKEN}`;
+    }
+    
     if (__DEV__) {
       console.log('🚀 API Request:', {
         method: config.method?.toUpperCase(),
         url: config.url,
         params: config.params,
         data: config.data,
+        hasAuth: !!API_CONFIG.TOKEN,
       });
     }
     return config;

@@ -1,16 +1,13 @@
 import { PackageType } from '@/types/scanner';
 import { ScannedPackage, Session } from '@/types/session';
+import { packagePricingService, type PackagePricing } from '@/services/packagePricingService';
 
-// Valores de cada pacote por marketplace
-const PACKAGE_VALUES: Record<PackageType, number> = {
-  'shopee': 6,
-  'mercado_livre': 8,
-  'avulso': 8,
-  'unknown': 0,
-};
-
+/**
+ * Get package value from dynamic pricing service
+ * Fallback to service defaults if pricing not loaded
+ */
 export function getPackageValue(type: PackageType): number {
-  return PACKAGE_VALUES[type] || 0;
+  return packagePricingService.getPriceForType(type);
 }
 
 export function classifyPackage(code: string): PackageType {

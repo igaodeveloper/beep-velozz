@@ -1,8 +1,18 @@
 // src/config/apiConfig.ts
+import Constants from 'expo-constants';
+
+// Load from environment variables (.env or build-time config)
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || Constants.expoConfig?.extra?.apiBaseUrl || 'https://app.logmanager.com.br/api';
+const API_TOKEN = process.env.EXPO_PUBLIC_API_TOKEN || Constants.expoConfig?.extra?.apiToken;
+
+// Validate token in production
+if (!API_TOKEN && process.env.NODE_ENV === 'production') {
+  throw new Error('❌ CRITICAL: API_TOKEN is not configured. Set EXPO_PUBLIC_API_TOKEN in your .env file.');
+}
 
 export const API_CONFIG = {
-  BASE_URL: 'https://app.logmanager.com.br/api',
-  TOKEN: 'ciU5BsWP0mPOBhVyxSA6xBw5MOBJua1nCsHUQVuZ6u09NTJwgoJfx2PsI1urZmk9XHjmr5XIabI77CC3POgcTLPrKMBQ5IR1baXc0uaQYxZaJgMxwTj1G2J0LSptSZqSSgphXFBDmLYVpXyKP5LRn4ZPTciV9XQIsr6xAxUQwK2ZGraIuOAHakSBZkr761e1ddedcce8a',
+  BASE_URL: API_BASE_URL,
+  TOKEN: API_TOKEN || '',
   TIMEOUT: 30000,
   RETRY_ATTEMPTS: 3,
   CACHE_DURATION: 5 * 60 * 1000, // 5 minutos

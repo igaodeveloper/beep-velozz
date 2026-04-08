@@ -227,15 +227,18 @@ export default function IndustrialScannerView({
     
     // Pattern recognition from recent scans
     if (recentCodes.length >= 2) {
-      const commonPrefix = recentCodes[0].substring(0, 3);
-      const similarCodes = recentCodes.filter(code => code.startsWith(commonPrefix));
-      
-      if (similarCodes.length >= 2) {
-        suggestions.push({
-          code: commonPrefix + '***',
-          confidence: 0.8,
-          reason: 'Padrão detectado em códigos recentes',
-        });
+      const firstCode = recentCodes[0];
+      if (firstCode) {
+        const commonPrefix = firstCode.substring(0, 3);
+        const similarCodes = recentCodes.filter(code => code.startsWith(commonPrefix));
+        
+        if (similarCodes.length >= 2) {
+          suggestions.push({
+            code: commonPrefix + '***',
+            confidence: 0.8,
+            reason: 'Padrão detectado em códigos recentes',
+          });
+        }
       }
     }
     
@@ -243,19 +246,29 @@ export default function IndustrialScannerView({
     const lastNumbers = recentCodes
       .map(code => {
         const match = code.match(/(\d+)$/);
-        return match ? parseInt(match[1]) : null;
+        return match && match[1] ? parseInt(match[1]) : null;
       })
       .filter(n => n !== null) as number[];
     
     if (lastNumbers.length >= 2) {
-      const diff = lastNumbers[lastNumbers.length - 1] - lastNumbers[lastNumbers.length - 2];
+      const lastNum = lastNumbers[lastNumbers.length - 1]!;
+      const secondLastNum = lastNumbers[lastNumbers.length - 2]!;
+      const diff = lastNum - secondLastNum;
       if (Math.abs(diff) === 1) {
-        const nextNumber = lastNumbers[lastNumbers.length - 1] + diff;
-        suggestions.push({
-          code: recentCodes[recentCodes.length - 1].replace(/\d+$/, String(nextNumber)),
-          confidence: 0.9,
-          reason: 'Padrão sequencial detectado',
+        const nextNumber = lastNum + diff;
+        // Find the corresponding recent code that matches the last number
+        const lastCodeIndex = recentCodes.findIndex(code => {
+          const match = code.match(/(\d+)$/);
+          return match && match[1] ? parseInt(match[1]) === lastNum : false;
         });
+        
+        if (lastCodeIndex !== -1 && recentCodes[lastCodeIndex]) {
+          suggestions.push({
+            code: recentCodes[lastCodeIndex]!.replace(/\d+$/, String(nextNumber)),
+            confidence: 0.9,
+            reason: 'Padrão sequencial detectado',
+          });
+        }
       }
     }
     
@@ -416,6 +429,22 @@ export default function IndustrialScannerView({
 
     return () => clearTimeout(timer);
   }, [lastScanStatus]);
+
+  // Initialize audio system on component mount
+  useEffect(() => {
+    console.log('[IndustrialScannerView] 🎵 Inicializando sistema de áudio...');
+    preloadSounds().catch(err => {
+      console.error('[IndustrialScannerView] ❌ Erro ao carregar sons:', err);
+    });
+
+    // Cleanup audio on unmount
+    return () => {
+      console.log('[IndustrialScannerView] 🎵 Limpando áudio...');
+      unloadSounds().catch(err => {
+        console.error('[IndustrialScannerView] ❌ Erro ao descarregar sons:', err);
+      });
+    };
+  }, []);
 
   // Function to dismiss keyboard and close manual input
   const dismissKeyboardAndCloseInput = useCallback(() => {
@@ -920,8 +949,8 @@ export default function IndustrialScannerView({
             key={corner.position}
             style={{
               position: 'absolute',
-              [corner.position.split('-')[0]]: -spacing.sm,
-              [corner.position.split('-')[1]]: -spacing.sm,
+              [corner.position.split('-')[0] as 'top' | 'bottom']: -spacing.sm,
+              [corner.position.split('-')[1] as 'left' | 'right']: -spacing.sm,
               width: responsiveScale(isTablet ? 32 : 28),
               height: responsiveScale(isTablet ? 32 : 28),
               transform: [{ rotate: `${corner.rotation}deg` }, { scale: cornerPulseAnim }],

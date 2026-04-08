@@ -16,8 +16,8 @@ let isInitialized = false;
 let initPromise: Promise<void> | null = null;
 
 const SOUND_FILES = {
-  beep: require('../assets/sounds/beep.mp3'),
-  error: require('../assets/sounds/error.mp3'),
+  beep: require('@/assets/sounds/beep.mp3'),
+  error: require('@/assets/sounds/error.mp3'),
 };
 
 const MIN_PLAY_INTERVAL_MS = 20; // Intervalo mínimo entre reproduções (20ms - ultra-rápido)

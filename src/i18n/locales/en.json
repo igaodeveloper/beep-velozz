@@ -1,0 +1,75 @@
+{
+  "common": {
+    "appName": "Beep Velozz",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "retry": "Retry",
+    "close": "Close"
+  },
+  "scanner": {
+    "title": "Scanner",
+    "scanning": "Scanning...",
+    "scanCode": "Scan the code",
+    "manualInput": "Manual input",
+    "invalidCode": "Invalid code",
+    "duplicateCode": "Duplicate code",
+    "codeAccepted": "Code accepted",
+    "sessionComplete": "Session complete",
+    "limitReached": "Limit reached",
+    "types": {
+      "shopee": "Shopee",
+      "mercado_livre": "Mercado Livre",
+      "avulso": "Loose"
+    }
+  },
+  "session": {
+    "newSession": "New Session",
+    "startSession": "Start Session",
+    "endSession": "End Session",
+    "sessionActive": "Session active",
+    "sessionEnded": "Session ended",
+    "declaredCount": "Declared count",
+    "scannedCount": "Scanned count",
+    "remainingCount": "Remaining",
+    "divergence": "Divergence",
+    "divergenceMessage": "There is a difference between declared and scanned quantity. Do you want to proceed?"
+  },
+  "history": {
+    "title": "History",
+    "noHistory": "No history found",
+    "totalSessions": "Total sessions",
+    "totalPackages": "Total packages",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "thisMonth": "This month"
+  },
+  "settings": {
+    "title": "Settings",
+    "theme": "Theme",
+    "language": "Language",
+    "notifications": "Notifications",
+    "sound": "Sound",
+    "vibration": "Vibration",
+    "about": "About",
+    "version": "Version",
+    "privacy": "Privacy",
+    "terms": "Terms of use"
+  },
+  "errors": {
+    "cameraPermission": "Camera permission required",
+    "networkError": "Network error",
+    "serverError": "Server error",
+    "unknownError": "Unknown error",
+    "invalidInput": "Invalid input"
+  }
+}

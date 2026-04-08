@@ -24,6 +24,7 @@ export interface PackageIdentification {
   type: PackageType;
   matched: boolean;
   confidence: 'high' | 'medium' | 'low';
+  description?: string;
 }
 
 /**

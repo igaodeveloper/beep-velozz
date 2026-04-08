@@ -306,29 +306,12 @@ export default function ScannerView({
     if (barcodeLocked) return;
     setBarcodeLocked(true);
 
-    // Verificar se o código está dentro da área do reticle
-    if (event?.bounds && !isCodeInReticleArea(event.bounds)) {
-      console.log(`[ScannerView] ❌ Código fora da área do reticle - ignorando`);
-      
-      // Mostrar feedback visual de fora de área
-      setShowOutOfAreaWarning(true);
-      outOfAreaAnim.value = withSequence(
-        withTiming(1, { duration: 100 }), // Reduzido de 200ms para 100ms
-        withTiming(0, { duration: 400 }) // Reduzido de 800ms para 400ms
-      );
-      
-      // Feedback tátil e sonoro para fora de área
-      if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-      }
-      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
-      
-      setTimeout(() => {
-        setShowOutOfAreaWarning(false);
-        setBarcodeLocked(false);
-      }, 200); // Reduzido de 1000ms para 200ms
-      return;
-    }
+    // DESABILITADO: Validação de área do reticle causava rejeição de códigos válidos
+    // Agora aceita qualquer código lido pela câmera
+    // if (event?.bounds && !isCodeInReticleArea(event.bounds)) {
+    //   console.log(`[ScannerView] ❌ Código fora da área do reticle - ignorando`);
+    //   ...
+    // }
 
     handleScannedCode(event?.data);
 
@@ -434,6 +417,21 @@ export default function ScannerView({
     if (Platform.OS !== 'web') {
       StatusBar.setHidden(true, 'fade');
     }
+  }, []);
+
+  // Pré-carregararquivos de som ao montar
+  useEffect(() => {
+    console.log('[ScannerView] 🎵 Inicializando sistema de áudio...');
+    preloadSounds().catch(err => {
+      console.error('[ScannerView] ❌ Erro ao carregar sons:', err);
+    });
+
+    return () => {
+      console.log('[ScannerView] 🎵 Limpando áudio...');
+      unloadSounds().catch(err => {
+        console.error('[ScannerView] ❌ Erro ao descarregar sons:', err);
+      });
+    };
   }, []);
 
   return (

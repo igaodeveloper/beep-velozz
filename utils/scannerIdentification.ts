@@ -26,18 +26,33 @@ import {
  * ORDEM IMPORTA! Mais específicos primeiro
  */
 const PREFIX_PATTERNS = [
-  // Mercado Livre - Prefixo 20000 (único aceito)
+  // Mercado Livre - Prefixo 20000 (aceito)
   {
     prefix: '20000',
-    minLength: 5, // apenas 20000, qualquer comprimento extra é aceito
+    minLength: 5,
     type: 'mercado_livre' as PackageType,
     audioKey: 'beep_b',
     description: 'Mercado Livre (prefixo 20000)',
   },
+  // Mercado Livre - Padrão de envio: começa com digit(s) + letra (ex: 2200D1241459785, 4482D247404)
+  {
+    prefix: '2200D',
+    minLength: 9, // 2200D + 4+ dígitos
+    type: 'mercado_livre' as PackageType,
+    audioKey: 'beep_b',
+    description: 'Mercado Livre (pack ID 2200D)',
+  },
+  {
+    prefix: '4482D',
+    minLength: 9, // 4482D + 3+ dígitos
+    type: 'mercado_livre' as PackageType,
+    audioKey: 'beep_b',
+    description: 'Mercado Livre (código de envio 4482D)',
+  },
   // Mercado Livre - Códigos numéricos longos (envios)
   {
     prefix: '466',
-    minLength: 11, // 466 + 8 dígitos
+    minLength: 11,
     type: 'mercado_livre' as PackageType,
     audioKey: 'beep_b',
     description: 'Mercado Livre (código de envio 466)',
@@ -45,7 +60,7 @@ const PREFIX_PATTERNS = [
   // Avulso - Prefixo LM
   {
     prefix: 'LM',
-    minLength: 4, // LM + 2 caracteres
+    minLength: 4,
     type: 'avulso' as PackageType,
     audioKey: 'beep_c',
     description: 'Avulso (prefixo LM)',
@@ -53,7 +68,7 @@ const PREFIX_PATTERNS = [
   // Avulso - Prefixo 14 (numérico)
   {
     prefix: '14',
-    minLength: 4, // 14 + 2 caracteres/dígitos
+    minLength: 4,
     type: 'avulso' as PackageType,
     audioKey: 'beep_c',
     description: 'Avulso (prefixo 14)',
@@ -61,12 +76,11 @@ const PREFIX_PATTERNS = [
   // Shopee - Prefixo BR
   {
     prefix: 'BR',
-    minLength: 8, // BR + 6 caracteres
+    minLength: 8,
     type: 'shopee' as PackageType,
     audioKey: 'beep_a',
     description: 'Shopee (prefixo BR)',
   },
-  // [REMOVIDO] MLB, ID46, 46 não são mais aceitos para Mercado Livre
 ];
 
 /**
@@ -225,6 +239,7 @@ export function identifyPackage(normalizedCode: string): PackageIdentification {
         type: pattern.type,
         matched: true,
         confidence: 'high',
+        description: pattern.description,
       };
       identificationCache.set(normalizedCode, result);
       return result;
@@ -247,15 +262,22 @@ export function identifyPackage(normalizedCode: string): PackageIdentification {
       };
     } else {
       // Começa com dígito mas não foi capturado por nenhum prefixo.
-      // Pode ocorrer se o código numérico tiver prefixo válido mas o tamanho
-      // era menor que o mínimo antigo. Para evitar falhas, tratamos qualquer
-      // sequência 20000 como Mercado Livre aqui.
-      if (/^20000/.test(normalizedCode)) {
+      // Verificação robusta para Mercado Livre - múltiplos padrões
+      const isMercadoLivre = 
+        /^20000/.test(normalizedCode) ||  // Prefixo 20000
+        /^2200D/.test(normalizedCode) ||  // Pack ID
+        /^4482D/.test(normalizedCode) ||  // Envio ID
+        /^466/.test(normalizedCode) ||    // Código de envio 466
+        /\d{8,}/.test(normalizedCode);   // Qualquer código numérico longo (8+ dígitos)
+
+      if (isMercadoLivre) {
         result = {
           type: 'mercado_livre',
           matched: true,
           confidence: 'high',
+          description: 'Mercado Livre (detectado por padrão numérico)',
         };
+        console.log(`[identifyPackage] 🛡️ MERCADO LIVRE DETECTADO POR FALLBACK: "${normalizedCode}"`);
       } else {
         result = {
           type: 'unknown',
@@ -267,6 +289,33 @@ export function identifyPackage(normalizedCode: string): PackageIdentification {
 
     identificationCache.set(normalizedCode, result);
     return result;
+  }
+
+  // Não passou em nenhuma validação - último fallback para Mercado Livre
+  // Verifica se pode ser um código ML mal formado mas reconhecível
+  if (normalizedCode && normalizedCode.length >= 4) {
+    // Verificação final para padrões ML mesmo sem validação completa
+    const mlPatterns = [
+      /20000/,     // Prefixo clássico
+      /2200D/,     // Pack ID
+      /4482D/,     // Envio ID
+      /466/,       // Código envio
+      /^\d{6,}/    // Código numérico longo
+    ];
+
+    const matchesML = mlPatterns.some(pattern => pattern.test(normalizedCode));
+    
+    if (matchesML) {
+      result = {
+        type: 'mercado_livre',
+        matched: true,
+        confidence: 'medium',
+        description: 'Mercado Livre (fallback emergencial)',
+      };
+      console.log(`[identifyPackage] 🚨 MERCADO LIVRE DETECTADO POR FALLBACK EMERGENCIAL: "${normalizedCode}"`);
+      identificationCache.set(normalizedCode, result);
+      return result;
+    }
   }
 
   // Não passou em nenhuma validação

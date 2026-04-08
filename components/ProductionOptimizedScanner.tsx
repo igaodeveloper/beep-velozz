@@ -4,8 +4,8 @@
  * Demonstrates best practices for performance, security, and reliability
  */
 
-import React, { useCallback, useMemo, useRef } from 'react';
-import { View, FlatList, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useCallback, useMemo, useRef, useEffect } from 'react';
+import { View, FlatList, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 
 // Imports from new production utilities
 import { validateBarcode } from '@/src/utils/validators';
@@ -14,6 +14,9 @@ import { useStableCallback, useDebouncedCallback } from '@/src/utils/memoization
 import { useOptimizedList, createOptimizedFlatListProps } from '@/src/utils/listOptimization';
 import { useProductionCleanup, useAppStateChange } from '@/src/utils/productionBootstrap';
 import { envConfig } from '@/src/config/envConfig';
+import { ScannerAudioService, ScannerAudioType } from '@/utils/scannerAudio';
+import { preloadSounds, unloadSounds } from '@/utils/sound';
+import { identifyPackage } from '@/utils/scannerIdentification';
 
 export interface ScannedPackageItem {
   id: string;
@@ -49,6 +52,7 @@ export const ProductionOptimizedScanner = React.memo<ProductionOptimizedScannerP
 
     // Refs
     const lastScanRef = useRef<{ code: string; time: number } | null>(null);
+    const audioServiceRef = useRef(new ScannerAudioService());
 
     // Cleanup management
     const { registerCleanup } = useProductionCleanup('ProductionOptimizedScanner');
@@ -66,6 +70,8 @@ export const ProductionOptimizedScanner = React.memo<ProductionOptimizedScannerP
         setIsProcessing(true);
         setError(null);
 
+        console.log(`[ProductionOptimizedScanner] 📥 ENTRADA: "${rawBarcode}"`);
+
         // Debounce rapid scans (prevent duplicates within 1s)
         if (lastScanRef.current) {
           const timeSinceLastScan = Date.now() - lastScanRef.current.time;
@@ -79,19 +85,27 @@ export const ProductionOptimizedScanner = React.memo<ProductionOptimizedScannerP
         }
 
         // Validate barcode format
+        console.log(`[ProductionOptimizedScanner] 🔍 VALIDANDO: "${rawBarcode}"`);
         const validation = validateBarcode(rawBarcode);
+        console.log(`[ProductionOptimizedScanner] ✅ VALIDAÇÃO: ${validation.isValid ? 'PASSOU' : 'FALHOU'}`);
         if (!validation.isValid) {
           const errorMsg = validation.errors?.[0] || 'Invalid barcode';
+          console.error(`[ProductionOptimizedScanner] ❌ ERRO VALIDAÇÃO: ${errorMsg}`);
           setError(errorMsg);
           onError?.(new Error(errorMsg));
           return;
         }
 
         const barcode = validation.data!;
+        console.log(`[ProductionOptimizedScanner] 📋 BARCODE NORMALIZADO: "${barcode}"`);
 
-        // Identify package type and get price dynamically
-        const type = identifyPackageType(barcode);
+        // Identify package type using the correct identification function
+        console.log(`[ProductionOptimizedScanner] 🎯 IDENTIFICANDO: "${barcode}"`);
+        const pkgInfo = identifyPackage(barcode);
+        console.log(`[ProductionOptimizedScanner] 📊 RESULTADO: type="${pkgInfo.type}", matched=${pkgInfo.matched}`);
+        const type = pkgInfo.type;
         const price = packagePricingService.getPriceForType(type);
+        console.log(`[ProductionOptimizedScanner] 💰 PREÇO: type="${type}" → price=${price}`);
 
         // Create new package
         const newPackage: ScannedPackageItem = {
@@ -101,6 +115,7 @@ export const ProductionOptimizedScanner = React.memo<ProductionOptimizedScannerP
           price,
           timestamp: Date.now(),
         };
+        console.log(`[ProductionOptimizedScanner] 📦 PACOTE CRIADO:`, newPackage);
 
         // Check limit
         if (packages.length >= maxPackages) {
@@ -111,18 +126,26 @@ export const ProductionOptimizedScanner = React.memo<ProductionOptimizedScannerP
         // Add to list
         setPackages((prev) => [newPackage, ...prev]);
 
+        // Play audio feedback
+        console.log(`[ProductionOptimizedScanner] 🔊 TOCANDO ÁUDIO para type="${type}"`);
+        const audioType = getAudioTypeForPackage(type);
+        console.log(`[ProductionOptimizedScanner] 🎵 AUDIO TYPE: ${audioType}`);
+        audioServiceRef.current.playAudio(audioType).catch((err) => {
+          console.error('[ProductionOptimizedScanner] ❌ ERRO ÁUDIO:', err);
+        });
+
         // Callback
         onPackageScan?.(newPackage);
 
         // Track for duplicate detection
         lastScanRef.current = { code: barcode, time: Date.now() };
 
-        console.log('✅ Package scanned:', newPackage);
+        console.log(`[ProductionOptimizedScanner] ✅ PACOTE PROCESSADO: ${JSON.stringify(newPackage)}`);
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
+        console.error(`[ProductionOptimizedScanner] 💥 ERRO GERAL:`, error);
         setError(error.message);
         onError?.(error);
-        console.error('❌ Scan error:', error);
       } finally {
         setIsProcessing(false);
       }
@@ -132,29 +155,44 @@ export const ProductionOptimizedScanner = React.memo<ProductionOptimizedScannerP
      * Debounced scan handler
      * Prevents overwhelming the processor with rapid events
      */
-    const debouncedScan = useDebouncedCallback(processScan, 150);
+    const debouncedScan: (barcode: string) => void = useDebouncedCallback<(barcode: string) => void>((barcode: string) => processScan(barcode), 150);
 
     /**
      * Simulate barcode scan (replace with actual camera input)
      */
     const simulateScan = useCallback(() => {
-      const testBarcodes = [
-        'BR123456789',
-        '20000123456',
-        'LM999888777',
+      // Teste abrangente para Mercado Livre - todos os padrões
+      const mercadoLivreCodes = [
+        '2200D1241459785',  // Pack ID
+        '4482D247404',      // Envio ID  
+        '20000123456',      // Tradicional
+        '46612345678',      // Código de envio 466
+        '20000987654321',   // Prefixo 20000 longo
+        '123456789',        // Numérico longo (fallback)
+        'ID2000098765',     // Com prefixo ID
+        '20000',            // Mínimo ML
       ];
-      const randomBarcode = testBarcodes[Math.floor(Math.random() * testBarcodes.length)];
-      debouncedScan(randomBarcode);
+      const randomCode = mercadoLivreCodes[Math.floor(Math.random() * mercadoLivreCodes.length)];
+      if (randomCode) {
+        console.log(`[ProductionOptimizedScanner] 🎯 SIMULANDO MERCADO LIVRE: "${randomCode}"`);
+        debouncedScan(randomCode);
+      }
     }, [debouncedScan]);
 
     /**
-     * Identify package type from barcode
+     * Map package type to audio type
      */
-    const identifyPackageType = useCallback((barcode: string): string => {
-      if (barcode.startsWith('BR')) return 'SHOPEE';
-      if (barcode.startsWith('20000')) return 'MERCADO_LIVRE';
-      if (barcode.startsWith('LM')) return 'AVULSO';
-      return 'AVULSO';
+    const getAudioTypeForPackage = useCallback((type: string): ScannerAudioType => {
+      switch (type) {
+        case 'shopee':
+          return ScannerAudioType.BEEP_A;
+        case 'mercado_livre':
+          return ScannerAudioType.BEEP_B;
+        case 'avulso':
+          return ScannerAudioType.BEEP_C;
+        default:
+          return ScannerAudioType.BEEP_ERROR;
+      }
     }, []);
 
     /**
@@ -191,6 +229,23 @@ export const ProductionOptimizedScanner = React.memo<ProductionOptimizedScannerP
         lastScanRef.current = null;
       });
     }, [registerCleanup]);
+
+    /**
+     * Preload sounds on mount, unload on unmount
+     */
+    React.useEffect(() => {
+      console.log('🎵 Preloading scanner sounds');
+      preloadSounds().catch((err) => {
+        console.error('Failed to preload sounds:', err);
+      });
+
+      return () => {
+        console.log('🎵 Unloading scanner sounds');
+        unloadSounds().catch((err) => {
+          console.error('Failed to unload sounds:', err);
+        });
+      };
+    }, []);
 
     /**
      * Calculate metrics
@@ -257,20 +312,20 @@ export const ProductionOptimizedScanner = React.memo<ProductionOptimizedScannerP
 
         {/* Actions */}
         <View style={styles.actions}>
-          <Text
+          <TouchableOpacity
             style={styles.button}
             onPress={simulateScan}
             disabled={isProcessing}
           >
-            📷 Simular Scan
-          </Text>
-          <Text
+            <Text style={styles.buttonText}>📷 Simular Scan</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
             style={styles.button}
             onPress={clearScans}
             disabled={packages.length === 0}
           >
-            🗑️ Limpar
-          </Text>
+            <Text style={styles.buttonText}>🗑️ Limpar</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Debug info (dev only) */}
@@ -367,9 +422,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     backgroundColor: '#007AFF',
+    borderRadius: 8,
+  },
+  buttonText: {
     color: '#fff',
     textAlign: 'center',
-    borderRadius: 8,
     fontWeight: '600',
   },
   emptyText: {

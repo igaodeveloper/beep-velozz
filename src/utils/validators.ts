@@ -28,8 +28,9 @@ export const validateBarcode = (barcode: unknown): ValidationResult<string> => {
     return { isValid: false, errors };
   }
 
-  // Check for valid barcode format (alphanumeric + hyphens)
-  if (!/^[A-Z0-9\-]+$/.test(sanitized)) {
+  // Check for valid barcode format (alphanumeric + hyphens + spaces)
+  // Allow letters for Mercado Livre codes like "2200D1241459785"
+  if (!/^[A-Z0-9\-\s]+$/.test(sanitized)) {
     errors.push('Barcode contém caracteres inválidos');
     return { isValid: false, errors };
   }

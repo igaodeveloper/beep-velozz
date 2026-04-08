@@ -3,7 +3,7 @@
  * Previne execuções excessivas de funções
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -26,17 +26,28 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
   delay: number,
   deps: React.DependencyList = []
 ): T {
-  const [debouncedCallback, setDebouncedCallback] = useState<T>(callback);
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  const debouncedCallback = useCallback(
+    (...args: Parameters<T>) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
+      timeoutRef.current = setTimeout(() => {
+        callback(...args);
+      }, delay);
+    },
+    [callback, delay, ...deps]
+  );
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedCallback(() => callback);
-    }, delay);
-
     return () => {
-      clearTimeout(handler);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
-  }, [callback, delay, ...deps]);
+  }, []);
 
-  return debouncedCallback;
+  return debouncedCallback as T;
 }

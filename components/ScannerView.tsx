@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,9 +12,10 @@ import {
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { ScannedPackage } from '@/types/session';
-import { classifyPackage, packageTypeLabel, packageTypeBadgeColors, generateId } from '@/utils/session';
-import { theme } from '@/utils/theme';
-import { playBeep, playError, preloadSounds, unloadSounds } from '@/utils/sound';
+import { classifyPackage, packageTypeLabel, packageTypeBadgeColors, generateId } from '../utils/session';
+import { theme } from '../utils/theme';
+import { playBeep, playError, preloadSounds, unloadSounds } from '../utils/sound';
+import { TIMING } from '../utils/constants';
 
 interface ScannerViewProps {
   onScan: (pkg: ScannedPackage) => void;
@@ -22,6 +23,7 @@ interface ScannerViewProps {
   packages: ScannedPackage[];
   lastScanned?: ScannedPackage | null;
   onEndSession: () => void;
+  isLoading?: boolean;
 }
 
 export default function ScannerView({
@@ -30,6 +32,7 @@ export default function ScannerView({
   packages,
   lastScanned,
   onEndSession,
+  isLoading = false,
 }: ScannerViewProps) {
   const { width: windowWidth } = useWindowDimensions();
   const [manualCode, setManualCode] = useState('');
@@ -42,6 +45,8 @@ export default function ScannerView({
   const [torchEnabled, setTorchEnabled] = useState(false);
   const [facing, setFacing] = useState<'back' | 'front'>('back');
   const lastAcceptedRef = useRef<{ code: string; at: number } | null>(null);
+
+  const scannedCodes = useMemo(() => new Set(packages.map(p => p.code)), [packages]);
 
   const normalizeCode = (raw: string) => {
     const trimmed = (raw ?? '').trim();
@@ -73,13 +78,13 @@ export default function ScannerView({
       Animated.sequence([
         Animated.timing(pulseAnim, {
           toValue: 1.04,
-          duration: 900,
+          duration: TIMING.DEBOUNCE_DELAY,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 900,
+          duration: TIMING.DEBOUNCE_DELAY,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
@@ -122,7 +127,7 @@ export default function ScannerView({
     if (lastScanned) {
       setShowFeedback(true);
       Animated.sequence([
-        Animated.timing(feedbackAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
+        Animated.timing(feedbackAnim, { toValue: 1, duration: TIMING.MODAL_DURATION, useNativeDriver: true }),
         Animated.timing(feedbackAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
       ]).start(() => setShowFeedback(false));
     }
@@ -140,7 +145,7 @@ export default function ScannerView({
     const code = normalizeCode(manualCode);
     if (!code) return;
 
-    const duplicate = packages.find(p => p.code === code);
+    const duplicate = scannedCodes.has(code);
     if (duplicate) {
       onDuplicate(code);
       playError();
@@ -173,11 +178,11 @@ export default function ScannerView({
 
     const now = Date.now();
     const lastAccepted = lastAcceptedRef.current;
-    if (lastAccepted && lastAccepted.code === code && now - lastAccepted.at < 2000) {
+    if (lastAccepted && lastAccepted.code === code && now - lastAccepted.at < TIMING.SCAN_COOLDOWN) {
       return;
     }
 
-    const duplicate = packages.find(p => p.code === code);
+    const duplicate = scannedCodes.has(code);
     if (duplicate) {
       onDuplicate(code);
       playError();
@@ -211,7 +216,7 @@ export default function ScannerView({
 
     setTimeout(() => {
       setBarcodeLocked(false);
-    }, 900);
+    }, TIMING.DEBOUNCE_DELAY);
   };
 
   const lastBadge = lastScanned ? packageTypeBadgeColors(lastScanned.type) : null;
@@ -556,6 +561,7 @@ export default function ScannerView({
         <TouchableOpacity
           onPress={handleManualSubmit}
           activeOpacity={0.85}
+          accessibilityLabel="Adicionar código manualmente"
           style={{
             backgroundColor: theme.colors.primary,
             borderRadius: 10,
@@ -577,9 +583,11 @@ export default function ScannerView({
       }}>
         <TouchableOpacity
           onPress={onEndSession}
-          activeOpacity={0.85}
+          activeOpacity={isLoading ? 1 : 0.85}
+          disabled={isLoading}
+          accessibilityLabel={isLoading ? "Salvando sessão" : "Encerrar sessão"}
           style={{
-            backgroundColor: '#1e293b',
+            backgroundColor: isLoading ? '#334155' : '#1e293b',
             borderRadius: 10,
             padding: 13,
             alignItems: 'center',
@@ -587,8 +595,8 @@ export default function ScannerView({
             borderColor: '#334155',
           }}
         >
-          <Text style={{ color: theme.colors.primary, fontSize: 14, fontWeight: '700', letterSpacing: 0.5 }}>
-            ⏹ ENCERRAR SESSÃO
+          <Text style={{ color: isLoading ? '#64748b' : theme.colors.primary, fontSize: 14, fontWeight: '700', letterSpacing: 0.5 }}>
+            {isLoading ? '⏳ SALVANDO...' : '⏹ ENCERRAR SESSÃO'}
           </Text>
         </TouchableOpacity>
       </View>

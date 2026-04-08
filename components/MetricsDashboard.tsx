@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text } from 'react-native';
-import { SessionMetrics } from '@/types/session';
-import { theme } from '@/utils/theme';
+import { SessionMetrics } from '../types/session';
+import { theme } from '../utils/theme';
 
 interface MetricCardProps {
   label: string;
@@ -39,9 +39,12 @@ interface MetricsDashboardProps {
 }
 
 export default function MetricsDashboard({ metrics, declaredCount }: MetricsDashboardProps) {
-  const progressPct = declaredCount > 0 ? Math.min((metrics.total / declaredCount) * 100, 100) : 0;
-  const isComplete = metrics.total === declaredCount && declaredCount > 0;
-  const isOver = metrics.total > declaredCount && declaredCount > 0;
+  const { progressPct, isComplete, isOver } = useMemo(() => {
+    const pct = declaredCount > 0 ? Math.min((metrics.total / declaredCount) * 100, 100) : 0;
+    const complete = metrics.total === declaredCount && declaredCount > 0;
+    const over = metrics.total > declaredCount && declaredCount > 0;
+    return { progressPct: pct, isComplete: complete, isOver: over };
+  }, [metrics.total, declaredCount]);
 
   return (
     <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>

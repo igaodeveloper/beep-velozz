@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, Text, SafeAreaView, StatusBar } from 'react-native';
-import { Session, ScannedPackage } from '@/types/session';
-import { getSessionMetrics, generateId } from '@/utils/session';
-import { addSession, loadSessions } from '@/utils/storage';
+import { useSession } from '../contexts/SessionContext';
+import { getSessionMetrics } from '@/utils/session';
 import { theme } from '@/utils/theme';
 
 import SessionInitModal from '@/components/SessionInitModal';
@@ -14,118 +13,31 @@ import DivergenceScreen from '@/components/DivergenceScreen';
 import ReportView from '@/components/ReportView';
 import HistoryBrowser from '@/components/HistoryBrowser';
 
-type AppScreen = 'scanning' | 'report' | 'history';
-
 export default function HomeScreen() {
-  const [screen, setScreen] = useState<AppScreen>('scanning');
-  const [showInitModal, setShowInitModal] = useState(true);
-  const [currentSession, setCurrentSession] = useState<Session | null>(null);
-  const [packageListExpanded, setPackageListExpanded] = useState(false);
-  const [lastScanned, setLastScanned] = useState<ScannedPackage | null>(null);
-
-  // Duplicate modal state
-  const [duplicateVisible, setDuplicateVisible] = useState(false);
-  const [duplicateCode, setDuplicateCode] = useState('');
-  const [duplicateOriginal, setDuplicateOriginal] = useState<ScannedPackage | undefined>();
-
-  // Divergence screen state
-  const [divergenceVisible, setDivergenceVisible] = useState(false);
-
-  // Completed session for report
-  const [completedSession, setCompletedSession] = useState<Session | null>(null);
-
-  // History
-  const [sessions, setSessions] = useState<Session[]>([]);
-
-  useEffect(() => {
-    loadSessions().then(setSessions);
-  }, []);
-
-  const handleStartSession = (operatorName: string, driverName: string, declaredCounts: { shopee: number; mercadoLivre: number; avulso: number }) => {
-    const totalDeclared = declaredCounts.shopee + declaredCounts.mercadoLivre + declaredCounts.avulso;
-    const session: Session = {
-      id: generateId(),
-      operatorName,
-      driverName,
-      declaredCount: totalDeclared,
-      declaredCounts,
-      packages: [],
-      startedAt: new Date().toISOString(),
-      hasDivergence: false,
-    };
-    setCurrentSession(session);
-    setShowInitModal(false);
-    setScreen('scanning');
-    setLastScanned(null);
-    setPackageListExpanded(false);
-  };
-
-  const handleScan = (pkg: ScannedPackage) => {
-    if (!currentSession) return;
-    const updated = {
-      ...currentSession,
-      packages: [...currentSession.packages, pkg],
-    };
-    setCurrentSession(updated);
-    setLastScanned(pkg);
-    
-    // Check if divergence is resolved
-    const scannedCount = updated.packages.length;
-    const declaredCount = updated.declaredCount;
-    if (scannedCount === declaredCount) {
-      setDivergenceVisible(false);
-    }
-  };
-
-  const handleDuplicate = (code: string) => {
-    if (!currentSession) return;
-    const original = currentSession.packages.find(p => p.code === code);
-    setDuplicateCode(code);
-    setDuplicateOriginal(original);
-    setDuplicateVisible(true);
-  };
-
-  const handleEndSession = () => {
-    if (!currentSession) return;
-    const scannedCount = currentSession.packages.length;
-    const declaredCount = currentSession.declaredCount;
-    if (scannedCount !== declaredCount) {
-      setDivergenceVisible(true);
-    } else {
-      finalizeSession(false);
-    }
-  };
-
-  const finalizeSession = async (hasDivergence: boolean) => {
-    if (!currentSession) return;
-    const finalized: Session = {
-      ...currentSession,
-      completedAt: new Date().toISOString(),
-      hasDivergence,
-    };
-    setCompletedSession(finalized);
-    await addSession(finalized);
-    const updated = await loadSessions();
-    setSessions(updated);
-    setDivergenceVisible(false);
-    setScreen('report');
-  };
-
-  const handleDivergenceCancel = () => {
-    setDivergenceVisible(false);
-  };
-
-  const handleNewSession = () => {
-    setCurrentSession(null);
-    setCompletedSession(null);
-    setLastScanned(null);
-    setShowInitModal(true);
-    setScreen('scanning');
-  };
-
-  const handleViewHistory = () => {
-    setScreen('history');
-  };
+  const {
+    screen,
+    showInitModal,
+    currentSession,
+    packageListExpanded,
+    lastScanned,
+    duplicateVisible,
+    duplicateCode,
+    duplicateOriginal,
+    divergenceVisible,
+    completedSession,
+    sessions,
+    isLoading,
+    setScreen,
+    handleStartSession,
+    handleScan,
+    handleDuplicate,
+    handleEndSession,
+    handleDivergenceCancel,
+    handleNewSession,
+    handleViewHistory,
+    setPackageListExpanded,
+    setDuplicateVisible,
+  } = useSession();
 
   const metrics = currentSession
     ? getSessionMetrics(currentSession.packages)
@@ -200,6 +112,7 @@ export default function HomeScreen() {
                 packages={currentSession.packages}
                 lastScanned={lastScanned}
                 onEndSession={handleEndSession}
+                isLoading={isLoading}
               />
             </View>
 
@@ -207,7 +120,7 @@ export default function HomeScreen() {
             <PackageList
               packages={currentSession.packages}
               expanded={packageListExpanded}
-              onToggle={() => setPackageListExpanded(v => !v)}
+              onToggle={() => setPackageListExpanded(!packageListExpanded)}
             />
           </View>
         ) : (

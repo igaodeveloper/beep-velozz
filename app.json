@@ -95,7 +95,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "d3d7357a-62f9-4c38-954c-d145e80970dd"
+        "projectId": "6c8f82da-9e01-4276-a3ee-1d413458d4d4"
       },
       "firebaseApiKey": "AIzaSyAqS_rWdY5yhXwBLXL48Nooc-xfHpi5f5c",
       "firebaseAuthDomain": "beepvelozz.firebaseapp.com",
@@ -105,6 +105,6 @@
       "firebaseAppId": "1:418888118827:web:155021bed2f6cf095c706e",
       "measurementId": "G-PVB66RW3B7"
     },
-    "owner": "flexvelozzs-organization"
+    "owner": "shopiii2025"
   }
 }

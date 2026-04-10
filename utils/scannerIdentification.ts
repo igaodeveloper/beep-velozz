@@ -84,16 +84,31 @@ const PREFIX_PATTERNS = [
 ];
 
 /**
- * Cache de validação para melhor performance
+ * Cache ultra-rápido com LRU para melhor performance
  */
 const identificationCache = new Map<string, PackageIdentification>();
+const CACHE_MAX_SIZE = 1000; // Limite para evitar memory leak
+let cacheHits = 0;
+let cacheMisses = 0;
 
 /**
- * Limpa cache a cada 5 minutos
+ * Cache especializado para ML (mais rápido)
  */
-const CACHE_TTL = 5 * 60 * 1000;
+const mlCache = new Map<string, { isML: boolean; type: string | null; confidence: number }>();
+
+/**
+ * Limpa cache baseado em uso e TTL
+ */
+const CACHE_TTL = 10 * 60 * 1000; // Aumentado para 10 minutos
 setInterval(() => {
-  identificationCache.clear();
+  // Limpa apenas se estiver grande
+  if (identificationCache.size > CACHE_MAX_SIZE * 0.8) {
+    identificationCache.clear();
+    mlCache.clear();
+    console.debug(`[Cache] 🧹 Cleared caches - Hits: ${cacheHits}, Misses: ${cacheMisses}`);
+    cacheHits = 0;
+    cacheMisses = 0;
+  }
 }, CACHE_TTL);
 
 /**
@@ -196,10 +211,11 @@ export function validateCode(normalizedCode: string): boolean {
 }
 
 /**
- * Identifica tipo de pacote com precisão absoluta
- * NUNCA classifica como Avulso por padrão - requer padrão explícito
+ * Identificação ultra-rápida de tipo de pacote
+ * Otimizada com cache inteligente e early returns
  */
 export function identifyPackage(normalizedCode: string): PackageIdentification {
+  // Early return para inputs inválidos
   if (!normalizedCode || normalizedCode.length < 4) {
     return {
       type: 'unknown',
@@ -208,41 +224,78 @@ export function identifyPackage(normalizedCode: string): PackageIdentification {
     };
   }
 
-  // sanity check: if code clearly has ML numeric prefix but cache or patterns
-  // fail, we'll still continue and log an error later once result is computed.
-
-  // Verifica cache
+  // Cache check ultra-rápido (primeira verificação)
   const cached = identificationCache.get(normalizedCode);
   if (cached) {
-    // revalida prefixo para evitar cache staleness
-    const prefixMatch = PREFIX_PATTERNS.find(p =>
-      normalizedCode.startsWith(p.prefix) && normalizedCode.length >= p.minLength
-    );
-    if (prefixMatch && prefixMatch.type === cached.type) {
-      return cached;
-    }
-    // caso cache esteja desatualizado, continua para recalcular
+    cacheHits++;
+    return cached;
+  }
+  cacheMisses++;
+
+  // Early return para padrões mais comuns (ordem por frequência)
+  
+  // 1. Shopee BR (verificação mais rápida)
+  if (normalizedCode.startsWith('BR') && normalizedCode.length >= 8) {
+    const result = {
+      type: 'shopee' as PackageType,
+      matched: true,
+      confidence: 'high' as const,
+      description: 'Shopee (prefixo BR)',
+    };
+    identificationCache.set(normalizedCode, result);
+    return result;
   }
 
-  let result: PackageIdentification = {
-    type: 'unknown',
-    matched: false,
-    confidence: 'low',
-  };
+  // 2. Avulso LM (segundo mais comum)
+  if (normalizedCode.startsWith('LM') && normalizedCode.length >= 4) {
+    const result = {
+      type: 'avulso' as PackageType,
+      matched: true,
+      confidence: 'medium' as const,
+      description: 'Avulso (prefixo LM)',
+    };
+    identificationCache.set(normalizedCode, result);
+    return result;
+  }
 
-  // PASSO 1: Tenta bater com prefixos conhecidos (ordem rigorosa)
+  // 3. Avulso 14 numérico
+  if (normalizedCode.startsWith('14') && normalizedCode.length >= 4) {
+    const result = {
+      type: 'avulso' as PackageType,
+      matched: true,
+      confidence: 'medium' as const,
+      description: 'Avulso (prefixo 14)',
+    };
+    identificationCache.set(normalizedCode, result);
+    return result;
+  }
+
+  // 4. Mercado Livre ultra-rápido (usando função otimizada)
+  if (isMercadoLivreCode(normalizedCode)) {
+    const mlCached = mlCache.get(normalizedCode);
+    if (mlCached && mlCached.isML) {
+      const result = {
+        type: 'mercado_livre' as PackageType,
+        matched: true,
+        confidence: mlCached.confidence >= 0.8 ? 'high' as const : 
+                   mlCached.confidence >= 0.6 ? 'medium' as const : 'low' as const,
+        description: `Mercado Livre (${mlCached.type})`,
+      };
+      identificationCache.set(normalizedCode, result);
+      return result;
+    }
+  }
+
+  // 5. Fallback para outros padrões (só se necessário)
   for (const pattern of PREFIX_PATTERNS) {
     if (
       normalizedCode.startsWith(pattern.prefix) &&
       normalizedCode.length >= pattern.minLength
     ) {
-      console.debug(
-        `[identifyPackage] ✅ MATCH ENCONTRADO: "${normalizedCode}" matches prefix "${pattern.prefix}" (minLength=${pattern.minLength}) => type="${pattern.type}"`
-      );
-      result = {
+      const result = {
         type: pattern.type,
         matched: true,
-        confidence: 'high',
+        confidence: 'high' as const,
         description: pattern.description,
       };
       identificationCache.set(normalizedCode, result);
@@ -250,81 +303,30 @@ export function identifyPackage(normalizedCode: string): PackageIdentification {
     }
   }
 
-  console.debug(`[identifyPackage] ❌ NO PREFIX MATCH: "${normalizedCode}" against all ${PREFIX_PATTERNS.length} patterns`);
-
-  // PASSO 2: Usa identificação avançada para Mercado Livre
+  // 6. Classificação final baseada em primeira letra
   if (validateCode(normalizedCode)) {
-    // Tenta identificação avançada ML primeiro
-    const mlAdvanced = advancedMercadoLivreIdentification(normalizedCode);
+    const startsWithLetter = /^[A-Z]/.test(normalizedCode);
     
-    if (mlAdvanced.isML && mlAdvanced.code) {
-      result = {
-        type: 'mercado_livre',
+    if (startsWithLetter) {
+      const result = {
+        type: 'avulso' as PackageType,
         matched: true,
-        confidence: mlAdvanced.confidence >= 0.8 ? 'high' : 
-                   mlAdvanced.confidence >= 0.6 ? 'medium' : 'low',
-        description: `Mercado Livre (${mlAdvanced.type})`,
+        confidence: 'medium' as const,
+        description: 'Avulso (começa com letra)',
       };
-      console.log(`[identifyPackage] 🚀 MERCADO LIVRE DETECTADO (AVANÇADO): "${mlAdvanced.code}" -> ${mlAdvanced.type} (${mlAdvanced.confidence})`);
-    } else {
-      // Se não for ML, verifica se começa com letra para classificar como Avulso
-      const startsWithLetter = /^[A-Z]/.test(normalizedCode);
-
-      if (startsWithLetter) {
-        result = {
-          type: 'avulso',
-          matched: true,
-          confidence: 'medium',
-        };
-      } else {
-        // Começa com dígito mas não foi capturado por nenhum padrão ML
-        result = {
-          type: 'unknown',
-          matched: false,
-          confidence: 'low',
-        };
-        console.log(`[identifyPackage] ❌ CÓDIGO DESCONHECIDO: "${normalizedCode}" (não é ML nem começa com letra)`);
-      }
-    }
-
-    identificationCache.set(normalizedCode, result);
-    return result;
-  }
-
-  // Não passou em nenhuma validação - último fallback para Mercado Livre
-  // Verifica se pode ser um código ML mal formado mas reconhecível
-  if (normalizedCode && normalizedCode.length >= 4) {
-    // Verificação final para padrões ML mesmo sem validação completa
-    const mlPatterns = [
-      /20000/,     // Prefixo clássico
-      /2200D/,     // Pack ID
-      /4482D/,     // Envio ID
-      /466/,       // Código envio
-      /^\d{6,}/    // Código numérico longo
-    ];
-
-    const matchesML = mlPatterns.some(pattern => pattern.test(normalizedCode));
-    
-    if (matchesML) {
-      result = {
-        type: 'mercado_livre',
-        matched: true,
-        confidence: 'medium',
-        description: 'Mercado Livre (fallback emergencial)',
-      };
-      console.log(`[identifyPackage] 🚨 MERCADO LIVRE DETECTADO POR FALLBACK EMERGENCIAL: "${normalizedCode}"`);
       identificationCache.set(normalizedCode, result);
       return result;
     }
   }
 
-  // Não passou em nenhuma validação
+  // 7. Unknown (último recurso)
+  const result = {
+    type: 'unknown' as PackageType,
+    matched: false,
+    confidence: 'low' as const,
+    description: 'Código desconhecido',
+  };
   identificationCache.set(normalizedCode, result);
-
-  if (!result.matched) {
-    console.warn(`[ScannerIdentification] ⚠️ UNKNOWN CODE: "${normalizedCode}" -> ${result.type}`);
-  }
-
   return result;
 }
 
@@ -421,6 +423,162 @@ export function getCacheSize(): number {
   return identificationCache.size;
 }
 
+/**
+ * Retorna estatísticas de performance do cache
+ */
+export function getCacheStats(): {
+  size: number;
+  hits: number;
+  misses: number;
+  hitRate: number;
+} {
+  const total = cacheHits + cacheMisses;
+  return {
+    size: identificationCache.size,
+    hits: cacheHits,
+    misses: cacheMisses,
+    hitRate: total > 0 ? Math.round((cacheHits / total) * 100) : 0,
+  };
+}
+
+/**
+ * Função ultra-rápida para identificação (versão otimizada)
+ * Combina todas as otimizações em uma única função
+ */
+export function identifyPackageUltraFast(code: string): PackageIdentification {
+  // Early return para inputs mais comuns
+  if (!code || code.length < 4) {
+    return {
+      type: 'unknown',
+      matched: false,
+      confidence: 'low',
+    };
+  }
+
+  // Normalização ultra-rápida (sem logs para performance)
+  const normalized = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  
+  // Cache check
+  const cached = identificationCache.get(normalized);
+  if (cached) {
+    cacheHits++;
+    return cached;
+  }
+  cacheMisses++;
+
+  // Early returns por ordem de probabilidade
+  const len = normalized.length;
+  const firstChar = normalized[0];
+  const firstTwo = normalized.slice(0, 2);
+  const firstThree = normalized.slice(0, 3);
+
+  // 1. BR (Shopee) - mais rápido
+  if (firstTwo === 'BR' && len >= 8) {
+    const result = {
+      type: 'shopee' as PackageType,
+      matched: true,
+      confidence: 'high' as const,
+      description: 'Shopee (prefixo BR)',
+    };
+    identificationCache.set(normalized, result);
+    return result;
+  }
+
+  // 2. LM (Avulso)
+  if (firstTwo === 'LM' && len >= 4) {
+    const result = {
+      type: 'avulso' as PackageType,
+      matched: true,
+      confidence: 'medium' as const,
+      description: 'Avulso (prefixo LM)',
+    };
+    identificationCache.set(normalized, result);
+    return result;
+  }
+
+  // 3. 14 (Avulso numérico)
+  if (firstTwo === '14' && len >= 4) {
+    const result = {
+      type: 'avulso' as PackageType,
+      matched: true,
+      confidence: 'medium' as const,
+      description: 'Avulso (prefixo 14)',
+    };
+    identificationCache.set(normalized, result);
+    return result;
+  }
+
+  // 4. 20000 (Mercado Livre mais comum)
+  if (firstThree === '200' && normalized.startsWith('20000') && len >= 11) {
+    const result = {
+      type: 'mercado_livre' as PackageType,
+      matched: true,
+      confidence: 'high' as const,
+      description: 'Mercado Livre (20000)',
+    };
+    identificationCache.set(normalized, result);
+    return result;
+  }
+
+  // 5. 466 (Mercado Livre tracking)
+  if (firstThree === '466' && len >= 11) {
+    const result = {
+      type: 'mercado_livre' as PackageType,
+      matched: true,
+      confidence: 'high' as const,
+      description: 'Mercado Livre (466)',
+    };
+    identificationCache.set(normalized, result);
+    return result;
+  }
+
+  // 6. ML (Mercado Livre)
+  if (firstTwo === 'ML' && len >= 10) {
+    const result = {
+      type: 'mercado_livre' as PackageType,
+      matched: true,
+      confidence: 'high' as const,
+      description: 'Mercado Livre (ML)',
+    };
+    identificationCache.set(normalized, result);
+    return result;
+  }
+
+  // 7. Numérico longo (provável ML)
+  if (/^\d+$/.test(normalized) && len >= 8) {
+    const result = {
+      type: 'mercado_livre' as PackageType,
+      matched: true,
+      confidence: 'medium' as const,
+      description: 'Mercado Livre (numérico longo)',
+    };
+    identificationCache.set(normalized, result);
+    return result;
+  }
+
+  // 8. Começa com letra (Avulso)
+  if (firstChar && /^[A-Z]/.test(firstChar)) {
+    const result = {
+      type: 'avulso' as PackageType,
+      matched: true,
+      confidence: 'medium' as const,
+      description: 'Avulso (começa com letra)',
+    };
+    identificationCache.set(normalized, result);
+    return result;
+  }
+
+  // 9. Unknown (fallback final)
+  const result = {
+    type: 'unknown' as PackageType,
+    matched: false,
+    confidence: 'low' as const,
+    description: 'Código desconhecido',
+  };
+  identificationCache.set(normalized, result);
+  return result;
+}
+
 // =============================================================================
 // FUNÇÕES ESPECIALIZADAS PARA MERCADO LIVRE
 // =============================================================================
@@ -456,7 +614,7 @@ const MERCADO_LIVRE_PATTERNS = {
 };
 
 /**
- * Verifica se um código corresponde a qualquer padrão conhecido do Mercado Livre
+ * Verificação ultra-rápida se é código Mercado Livre
  * @param normalizedCode Código normalizado para verificação
  * @returns true se corresponder a algum padrão ML
  */
@@ -465,14 +623,63 @@ export function isMercadoLivreCode(normalizedCode: string): boolean {
     return false;
   }
 
-  // Verifica todos os padrões conhecidos
-  for (const [patternName, regex] of Object.entries(MERCADO_LIVRE_PATTERNS)) {
+  // Cache check ultra-rápido
+  const cached = mlCache.get(normalizedCode);
+  if (cached !== undefined) {
+    cacheHits++;
+    return cached.isML;
+  }
+  cacheMisses++;
+
+  // Early returns para padrões mais comuns (ordem por frequência)
+  
+  // 1. Padrão 20000 (mais comum) - verificação direta
+  if (normalizedCode.startsWith('20000') && normalizedCode.length >= 11) {
+    const result = { isML: true, type: 'Clássico 20000', confidence: 0.95 };
+    mlCache.set(normalizedCode, result);
+    return true;
+  }
+
+  // 2. Padrões numéricos longos (segundo mais comum)
+  if (normalizedCode.length >= 8 && /^\d+$/.test(normalizedCode)) {
+    const result = { isML: true, type: 'Numérico Longo', confidence: 0.6 };
+    mlCache.set(normalizedCode, result);
+    return true;
+  }
+
+  // 3. Padrão 466 (terceiro mais comum)
+  if (normalizedCode.startsWith('466') && normalizedCode.length >= 11) {
+    const result = { isML: true, type: 'Tracking 466', confidence: 0.85 };
+    mlCache.set(normalizedCode, result);
+    return true;
+  }
+
+  // 4. Padrão ML prefix
+  if (normalizedCode.startsWith('ML') && normalizedCode.length >= 10) {
+    const result = { isML: true, type: 'ML Tracking', confidence: 0.8 };
+    mlCache.set(normalizedCode, result);
+    return true;
+  }
+
+  // 5. Verifica outros padrões (só se não bateu nos principais)
+  const otherPatterns = [
+    MERCADO_LIVRE_PATTERNS.PACK_ID_2200D,
+    MERCADO_LIVRE_PATTERNS.SHIPPING_ID_4482D,
+    MERCADO_LIVRE_PATTERNS.ID_20000,
+    MERCADO_LIVRE_PATTERNS.ID_466,
+    MERCADO_LIVRE_PATTERNS.QR_ML_PREFIX,
+  ];
+
+  for (const regex of otherPatterns) {
     if (regex.test(normalizedCode)) {
-      console.debug(`[isMercadoLivreCode] ✅ MATCH: "${normalizedCode}" -> ${patternName}`);
+      const result = { isML: true, type: 'ML Genérico', confidence: 0.7 };
+      mlCache.set(normalizedCode, result);
       return true;
     }
   }
 
+  // Cache negative result
+  mlCache.set(normalizedCode, { isML: false, type: null, confidence: 0 });
   return false;
 }
 

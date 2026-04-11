@@ -7,6 +7,7 @@
 ## 📋 Antes vs Depois
 
 ### ❌ Antes (Não Otimizado)
+
 ```typescript
 // ❌ Token hardcoded
 const API_CONFIG = {
@@ -36,6 +37,7 @@ useEffect(() => {
 ```
 
 ### ✅ Depois (Otimizado)
+
 ```typescript
 // ✅ Token de variáveis de ambiente
 import { API_CONFIG } from '@/src/config/envConfig';
@@ -79,6 +81,7 @@ useEffect(() => {
 ## 🔄 Passos de Migração
 
 ### Passo 1: Setup Inicial
+
 ```bash
 # 1. Copiar .env.example para .env
 copy .env.example .env
@@ -93,20 +96,22 @@ npm run environment:check
 ```
 
 ### Passo 2: Remover Token Hardcoded
+
 ```typescript
 // ❌ Remover de: src/api/axiosClient.ts
 // (já foi feito)
 
 // ✅ Usar nova versão
-import { API_CONFIG } from '@/src/config/apiConfig';
+import { API_CONFIG } from "@/src/config/apiConfig";
 // Agora carrega de .env automaticamente
 ```
 
 ### Passo 3: Adicionar Validação
 
 **Em handlers de input:**
+
 ```typescript
-import { validateBarcode, validateOperatorName } from '@/src/utils/validators';
+import { validateBarcode, validateOperatorName } from "@/src/utils/validators";
 
 // Antes
 const handleOperatorChange = (text) => setOperatorName(text);
@@ -125,6 +130,7 @@ const handleOperatorChange = (text) => {
 ### Passo 4: Otimizar Componentes
 
 **Adicionar React.memo:**
+
 ```typescript
 // Antes
 export const PackageItem = ({ item, onPress }) => (
@@ -145,28 +151,30 @@ export const PackageItem = React.memo(({ item, onPress }) => (
 ```
 
 **Usar useCallback:**
+
 ```typescript
 // Antes
 const handlePress = (item) => {
-  navigation.navigate('Detail', { id: item.id });
+  navigation.navigate("Detail", { id: item.id });
 };
 
 // Depois
-import { useStableCallback } from '@/src/utils/memoization';
+import { useStableCallback } from "@/src/utils/memoization";
 
 const handlePress = useStableCallback((item) => {
-  navigation.navigate('Detail', { id: item.id });
+  navigation.navigate("Detail", { id: item.id });
 });
 ```
 
 ### Passo 5: Otimizar Listas
 
 **Converter FlatList:**
+
 ```typescript
-import { 
-  useOptimizedList, 
+import {
+  useOptimizedList,
   createOptimizedFlatListProps,
-  useVisibleItems 
+  useVisibleItems
 } from '@/src/utils/listOptimization';
 
 // Antes
@@ -181,8 +189,8 @@ const MyList = () => {
   const { processedItems, keyExtractor } = useOptimizedList(items, {
     sortBy: (a, b) => b.timestamp - a.timestamp,
   });
-  
-  const { visibleItems, onViewableItemsChanged, viewabilityConfig } = 
+
+  const { visibleItems, onViewableItemsChanged, viewabilityConfig } =
     useVisibleItems(items);
 
   return (
@@ -209,10 +217,10 @@ const MyComponent = () => {
   useEffect(() => {
     // Setup listener
     const unsubscribe = firestore.onSnapshot(handler);
-    
+
     // Register cleanup
     registerCleanup(() => unsubscribe());
-    
+
     // Another cleanup option
     return () => unsubscribe();
   }, [registerCleanup]);
@@ -230,7 +238,7 @@ const MyComponent = () => {
 ### Passo 7: Usar Preços Dinâmicos
 
 ```typescript
-import { packagePricingService } from '@/services/packagePricingService';
+import { packagePricingService } from "@/services/packagePricingService";
 
 // Inicializar na startup
 useEffect(() => {
@@ -248,7 +256,8 @@ const calculateValue = (type) => {
 
 ## 🎯 Checklist de Migração por Arquivo
 
-### [ ] app/_layout.tsx (Root Layout)
+### [ ] app/\_layout.tsx (Root Layout)
+
 - [ ] Chamar `initializeProduction()` no startup
 - [ ] Adicionar erro handler global
 - [ ] Inicializar `packagePricingService`
@@ -261,7 +270,7 @@ export default function RootLayout() {
   useEffect(() => {
     // Initialize production environment
     initializeProduction();
-    
+
     // Initialize pricing service
     packagePricingService.initialize();
   }, []);
@@ -271,26 +280,31 @@ export default function RootLayout() {
 ```
 
 ### [ ] components/LoginScreen.tsx
+
 - [ ] Validar email: `validateEmail()`
 - [ ] Validar password length
 - [ ] Usar `useDebouncedCallback` para submit
 
 ### [ ] components/ScannerView.tsx
+
 - [ ] Usar `validateBarcode()`
 - [ ] Usar `useStableCallback`
 - [ ] Adicionar `useProductionCleanup`
 - [ ] Usar `packagePricingService`
 
 ### [ ] components/HistoryBrowser.tsx
+
 - [ ] Usar `useOptimizedList`
 - [ ] Adicionar virtualization
 - [ ] Usar `useVisibleItems`
 - [ ] Adicionar lazy loading
 
 ### [ ] utils/session.ts
+
 - [ ] ✅ Já atualizado com `packagePricingService`
 
 ### [ ] services/firestore.ts
+
 - [ ] Adicionar `registerCleanup` em listeners
 - [ ] Usar `useProductionCleanup` nos hooks
 
@@ -299,7 +313,9 @@ export default function RootLayout() {
 ## 🐛 Troubleshooting de Migração
 
 ### Problema: "Cannot find module @/src/utils/validators"
+
 **Solução:**
+
 ```bash
 # Limpar cache
 npm run start:clean
@@ -309,7 +325,9 @@ npm run start:clean
 ```
 
 ### Problema: ".env não está sendo carregado"
+
 **Solução:**
+
 ```bash
 # 1. Verificar que .env existe (não .env.example)
 ls -la .env
@@ -318,21 +336,25 @@ ls -la .env
 npm run environment:check
 
 # 3. Limpar cache de metros
-rm -rf .metro-health-check* 
+rm -rf .metro-health-check*
 npm run start:clean
 ```
 
 ### Problema: "Token ainda aparece undefined"
+
 **Solução:**
+
 - Verificar que EXPO_PUBLIC_API_TOKEN está preenchido no `.env`
 - Verificar que não tem espaços: `EXPO_PUBLIC_API_TOKEN=seu_token` (sem quotes)
 - Rodar `npm run environment:check`
 
 ### Problema: Componentes ainda com re-renders
+
 **Solução:**
+
 ```typescript
 // Adicionar display name para debug
-MyComponent.displayName = 'MyComponent';
+MyComponent.displayName = "MyComponent";
 
 // No React DevTools, procurar por re-renders desnecessários
 // Usar React DevTools Profiler tab
@@ -344,14 +366,14 @@ MyComponent.displayName = 'MyComponent';
 
 Após migração completa:
 
-| Métrica | Antes | Depois | Delta |
-|---------|-------|--------|-------|
-| Bundle size | 60MB | 48MB | -20% |
-| Startup time | 8-10s | < 5s | -50% |
-| List scroll FPS | 30-45fps | 55-60fps | +33% |
-| Memory usage | 200MB+ | 120-150MB | -35% |
-| API calls | 100% | 70% | -30% cache hit |
-| Component re-renders | Many unnecessary | Only when needed | Optimized |
+| Métrica              | Antes            | Depois           | Delta          |
+| -------------------- | ---------------- | ---------------- | -------------- |
+| Bundle size          | 60MB             | 48MB             | -20%           |
+| Startup time         | 8-10s            | < 5s             | -50%           |
+| List scroll FPS      | 30-45fps         | 55-60fps         | +33%           |
+| Memory usage         | 200MB+           | 120-150MB        | -35%           |
+| API calls            | 100%             | 70%              | -30% cache hit |
+| Component re-renders | Many unnecessary | Only when needed | Optimized      |
 
 ---
 

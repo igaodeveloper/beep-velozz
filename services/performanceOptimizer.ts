@@ -3,8 +3,8 @@
  * Sistema de otimização para operação crítica com zero delay
  */
 
-import { Platform, InteractionManager } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform, InteractionManager } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface PerformanceMetrics {
   frameRate: number;
@@ -19,7 +19,7 @@ interface PerformanceMetrics {
 interface OperationQueue {
   id: string;
   operation: () => Promise<any>;
-  priority: 'critical' | 'high' | 'medium' | 'low';
+  priority: "critical" | "high" | "medium" | "low";
   timestamp: number;
   timeout: number;
 }
@@ -77,17 +77,17 @@ class PerformanceOptimizer {
   private async initializeOptimizer(): Promise<void> {
     // Inicia monitoramento de FPS
     this.startFrameMonitoring();
-    
+
     // Inicia processamento da fila
     this.startQueueProcessor();
-    
+
     // Preload recursos críticos
     await this.preloadCriticalResources();
-    
+
     // Otimiza garbage collection
     this.optimizeGarbageCollection();
-    
-    console.log('[PerformanceOptimizer] Ultra-fast optimizer initialized');
+
+    console.log("[PerformanceOptimizer] Ultra-fast optimizer initialized");
   }
 
   /**
@@ -95,30 +95,29 @@ class PerformanceOptimizer {
    */
   async executeCritical<T>(
     operation: () => Promise<T>,
-    timeout: number = 100
+    timeout: number = 100,
   ): Promise<T> {
     const startTime = Date.now();
-    
+
     try {
       // Tenta cache ultra-rápido primeiro
       const cacheKey = this.generateCacheKey(operation.toString());
       const cached = this.getFromUltraFastCache<T>(cacheKey);
       if (cached !== null) {
-        this.updateMetrics('cacheHit', Date.now() - startTime);
+        this.updateMetrics("cacheHit", Date.now() - startTime);
         return cached;
       }
 
       // Executa em micro-task para não bloquear UI
       const result = await this.runInMicroTask(operation, timeout);
-      
+
       // Cache para próximas operações
       this.setInUltraFastCache(cacheKey, result, 30000); // 30s TTL
-      
-      this.updateMetrics('operation', Date.now() - startTime);
+
+      this.updateMetrics("operation", Date.now() - startTime);
       return result;
-      
     } catch (error) {
-      console.error('[PerformanceOptimizer] Critical operation failed:', error);
+      console.error("[PerformanceOptimizer] Critical operation failed:", error);
       throw error;
     }
   }
@@ -128,21 +127,21 @@ class PerformanceOptimizer {
    */
   private async runInMicroTask<T>(
     operation: () => Promise<T>,
-    timeout: number
+    timeout: number,
   ): Promise<T> {
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
-        reject(new Error('Operation timeout'));
+        reject(new Error("Operation timeout"));
       }, timeout);
 
       // Usa InteractionManager para executar após animações
       InteractionManager.runAfterInteractions(() => {
         operation()
-          .then(result => {
+          .then((result) => {
             clearTimeout(timeoutId);
             resolve(result);
           })
-          .catch(error => {
+          .catch((error) => {
             clearTimeout(timeoutId);
             reject(error);
           });
@@ -186,7 +185,7 @@ class PerformanceOptimizer {
   }
 
   private evictLeastUsed(): void {
-    let leastUsedKey = '';
+    let leastUsedKey = "";
     let leastScore = Infinity;
 
     for (const [key, entry] of this.ultraFastCache.entries()) {
@@ -207,12 +206,12 @@ class PerformanceOptimizer {
    */
   private async preloadCriticalResources(): Promise<void> {
     const criticalResources = [
-      'scanner-identification',
-      'package-types',
-      'validation-rules',
-      'audio-feedback',
-      'haptic-patterns',
-      'ui-components',
+      "scanner-identification",
+      "package-types",
+      "validation-rules",
+      "audio-feedback",
+      "haptic-patterns",
+      "ui-components",
     ];
 
     const preloadPromises = criticalResources.map(async (resource) => {
@@ -220,34 +219,37 @@ class PerformanceOptimizer {
         // Preload baseado no tipo de recurso
         let data;
         switch (resource) {
-          case 'scanner-identification':
+          case "scanner-identification":
             data = await this.preloadScannerRules();
             break;
-          case 'package-types':
+          case "package-types":
             data = await this.preloadPackageTypes();
             break;
-          case 'validation-rules':
+          case "validation-rules":
             data = await this.preloadValidationRules();
             break;
-          case 'audio-feedback':
+          case "audio-feedback":
             data = await this.preloadAudioAssets();
             break;
-          case 'haptic-patterns':
+          case "haptic-patterns":
             data = await this.preloadHapticPatterns();
             break;
-          case 'ui-components':
+          case "ui-components":
             data = await this.preloadUIComponents();
             break;
         }
 
         this.preloadedResources.set(resource, data);
       } catch (error) {
-        console.warn(`[PerformanceOptimizer] Failed to preload ${resource}:`, error);
+        console.warn(
+          `[PerformanceOptimizer] Failed to preload ${resource}:`,
+          error,
+        );
       }
     });
 
     await Promise.all(preloadPromises);
-    console.log('[PerformanceOptimizer] Critical resources preloaded');
+    console.log("[PerformanceOptimizer] Critical resources preloaded");
   }
 
   private async preloadScannerRules(): Promise<any> {
@@ -262,10 +264,10 @@ class PerformanceOptimizer {
   private async preloadPackageTypes(): Promise<any> {
     // Cache de tipos de pacotes
     return {
-      shopee: { color: '#FF6B35', audio: 'beep_a' },
-      mercado_livre: { color: '#667EEA', audio: 'beep_b' },
-      avulso: { color: '#48BB78', audio: 'beep_c' },
-      unknown: { color: '#718096', audio: 'beep_error' },
+      shopee: { color: "#FF6B35", audio: "beep_a" },
+      mercado_livre: { color: "#667EEA", audio: "beep_b" },
+      avulso: { color: "#48BB78", audio: "beep_c" },
+      unknown: { color: "#718096", audio: "beep_error" },
     };
   }
 
@@ -285,29 +287,29 @@ class PerformanceOptimizer {
   private async preloadAudioAssets(): Promise<any> {
     // Preload de assets de áudio
     return {
-      beep_a: 'preloaded',
-      beep_b: 'preloaded',
-      beep_c: 'preloaded',
-      beep_error: 'preloaded',
+      beep_a: "preloaded",
+      beep_b: "preloaded",
+      beep_c: "preloaded",
+      beep_error: "preloaded",
     };
   }
 
   private async preloadHapticPatterns(): Promise<any> {
     // Preload de padrões hápticos
     return {
-      success: 'light',
-      error: 'heavy',
-      warning: 'medium',
-      scan: 'light',
+      success: "light",
+      error: "heavy",
+      warning: "medium",
+      scan: "light",
     };
   }
 
   private async preloadUIComponents(): Promise<any> {
     // Preload de componentes UI
     return {
-      button: 'preloaded',
-      input: 'preloaded',
-      modal: 'preloaded',
+      button: "preloaded",
+      input: "preloaded",
+      modal: "preloaded",
     };
   }
 
@@ -326,7 +328,7 @@ class PerformanceOptimizer {
       if (currentTime - lastTime >= 1000) {
         const fps = frames;
         this.metrics.frameRate = fps;
-        
+
         // Se FPS cair abaixo de 55, ativa otimizações
         if (fps < 55) {
           this.activatePerformanceBoost();
@@ -344,25 +346,27 @@ class PerformanceOptimizer {
   }
 
   private activatePerformanceBoost(): void {
-    console.log('[PerformanceOptimizer] Activating performance boost');
-    
+    console.log("[PerformanceOptimizer] Activating performance boost");
+
     // Limpa cache não essencial
     this.clearNonEssentialCache();
-    
+
     // Reduz qualidade de animações temporariamente
     this.reduceAnimationQuality();
-    
+
     // Prioriza operações críticas
     this.prioritizeCriticalOperations();
   }
 
   private clearNonEssentialCache(): void {
     // Mantém apenas cache crítico
-    const criticalKeys = Array.from(this.ultraFastCache.keys())
-      .slice(0, this.CRITICAL_CACHE_SIZE);
-    
+    const criticalKeys = Array.from(this.ultraFastCache.keys()).slice(
+      0,
+      this.CRITICAL_CACHE_SIZE,
+    );
+
     this.ultraFastCache.clear();
-    criticalKeys.forEach(key => {
+    criticalKeys.forEach((key) => {
       const entry = this.ultraFastCache.get(key);
       if (entry) {
         this.ultraFastCache.set(key, entry);
@@ -396,26 +400,32 @@ class PerformanceOptimizer {
 
   private async processQueue(): Promise<void> {
     if (this.isProcessingQueue) return;
-    
+
     this.isProcessingQueue = true;
-    
+
     try {
       // Processa em batches para não bloquear
       const batch = this.operationQueue.splice(0, this.QUEUE_BATCH_SIZE);
-      
+
       await Promise.all(
         batch.map(async (item) => {
           try {
             await Promise.race([
               item.operation(),
-              new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Queue timeout')), item.timeout)
-              )
+              new Promise((_, reject) =>
+                setTimeout(
+                  () => reject(new Error("Queue timeout")),
+                  item.timeout,
+                ),
+              ),
             ]);
           } catch (error) {
-            console.error(`[PerformanceOptimizer] Queue operation failed:`, error);
+            console.error(
+              `[PerformanceOptimizer] Queue operation failed:`,
+              error,
+            );
           }
-        })
+        }),
       );
     } finally {
       this.isProcessingQueue = false;
@@ -427,8 +437,8 @@ class PerformanceOptimizer {
    */
   queueOperation<T>(
     operation: () => Promise<T>,
-    priority: 'critical' | 'high' | 'medium' | 'low' = 'medium',
-    timeout: number = 1000
+    priority: "critical" | "high" | "medium" | "low" = "medium",
+    timeout: number = 1000,
   ): void {
     const queueItem: OperationQueue = {
       id: Math.random().toString(36),
@@ -439,9 +449,9 @@ class PerformanceOptimizer {
     };
 
     this.operationQueue.push(queueItem);
-    
+
     // Se for crítico, processa imediatamente
-    if (priority === 'critical') {
+    if (priority === "critical") {
       this.operationQueue.sort((a, b) => {
         const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
         return priorityOrder[a.priority] - priorityOrder[b.priority];
@@ -470,7 +480,7 @@ class PerformanceOptimizer {
 
     // Limpa operações expiradas da fila
     this.operationQueue = this.operationQueue.filter(
-      item => now - item.timestamp < item.timeout
+      (item) => now - item.timestamp < item.timeout,
     );
   }
 
@@ -482,7 +492,7 @@ class PerformanceOptimizer {
     let hash = 0;
     for (let i = 0; i < operation.length; i++) {
       const char = operation.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Converte para 32-bit integer
     }
     return `cache_${Math.abs(hash)}`;
@@ -491,11 +501,11 @@ class PerformanceOptimizer {
   /**
    * Atualiza métricas de performance
    */
-  private updateMetrics(type: 'operation' | 'cacheHit', latency: number): void {
-    if (type === 'operation') {
+  private updateMetrics(type: "operation" | "cacheHit", latency: number): void {
+    if (type === "operation") {
       this.metrics.operationLatency = latency;
     } else {
-      this.metrics.cacheHitRate = 
+      this.metrics.cacheHitRate =
         (this.metrics.cacheHitRate + (100 - latency)) / 2; // Simplificado
     }
   }
@@ -511,28 +521,30 @@ class PerformanceOptimizer {
    * Verifica se está em modo de alta performance
    */
   isHighPerformanceMode(): boolean {
-    return this.metrics.frameRate >= 55 && 
-           this.metrics.operationLatency < 50 &&
-           this.metrics.cacheHitRate > 80;
+    return (
+      this.metrics.frameRate >= 55 &&
+      this.metrics.operationLatency < 50 &&
+      this.metrics.cacheHitRate > 80
+    );
   }
 
   /**
    * Força modo de performance máxima
    */
   forceMaxPerformance(): void {
-    console.log('[PerformanceOptimizer] Forcing maximum performance');
-    
+    console.log("[PerformanceOptimizer] Forcing maximum performance");
+
     // Limpa todo cache não crítico
     this.ultraFastCache.clear();
-    
+
     // Reduz qualidade visual ao mínimo
     this.reduceAnimationQuality();
-    
+
     // Prioriza apenas operações críticas
     this.operationQueue = this.operationQueue.filter(
-      item => item.priority === 'critical' || item.priority === 'high'
+      (item) => item.priority === "critical" || item.priority === "high",
     );
-    
+
     // Ativa monitoramento agressivo
     this.targetFPS = 120;
     this.frameInterval = 1000 / this.targetFPS;
@@ -542,11 +554,11 @@ class PerformanceOptimizer {
    * Restaura modo normal de operação
    */
   restoreNormalMode(): void {
-    console.log('[PerformanceOptimizer] Restoring normal mode');
-    
+    console.log("[PerformanceOptimizer] Restoring normal mode");
+
     this.targetFPS = 60;
     this.frameInterval = 1000 / this.targetFPS;
-    
+
     // Recarrega recursos
     this.preloadCriticalResources();
   }
@@ -565,7 +577,7 @@ class PerformanceOptimizer {
     this.ultraFastCache.clear();
     this.preloadedResources.clear();
     this.operationQueue = [];
-    console.log('[PerformanceOptimizer] All caches cleared');
+    console.log("[PerformanceOptimizer] All caches cleared");
   }
 
   /**
@@ -576,9 +588,9 @@ class PerformanceOptimizer {
       clearTimeout(this.frameTimer);
       this.frameTimer = null;
     }
-    
+
     this.clearAllCaches();
-    console.log('[PerformanceOptimizer] Optimizer destroyed');
+    console.log("[PerformanceOptimizer] Optimizer destroyed");
   }
 }
 

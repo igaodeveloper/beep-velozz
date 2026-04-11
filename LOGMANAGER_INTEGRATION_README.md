@@ -42,7 +42,8 @@ O token está configurado no arquivo `apiConfig.ts`:
 
 ```typescript
 const API_CONFIG = {
-  TOKEN: 'ciU5BsWP0mPOBhVyxSA6xBw5MOBJua1nCsHUQVuZ6u09NTJwgoJfx2PsI1urZmk9XHjmr5XIabI77CC3POgcTLPrKMBQ5IR1baXc0uaQYxZaJgMxwTj1G2J0LSptSZqSSgphXFBDmLYVpXyKP5LRn4ZPTciV9XQIsr6xAxUQwK2ZGraIuOAHakSBZkr761e1ddedcce8a',
+  TOKEN:
+    "ciU5BsWP0mPOBhVyxSA6xBw5MOBJua1nCsHUQVuZ6u09NTJwgoJfx2PsI1urZmk9XHjmr5XIabI77CC3POgcTLPrKMBQ5IR1baXc0uaQYxZaJgMxwTj1G2J0LSptSZqSSgphXFBDmLYVpXyKP5LRn4ZPTciV9XQIsr6xAxUQwK2ZGraIuOAHakSBZkr761e1ddedcce8a",
   // ... outras configurações
 };
 ```
@@ -51,7 +52,7 @@ const API_CONFIG = {
 
 ```typescript
 const API_CONFIG = {
-  BASE_URL: 'https://app.logmanager.com.br/api',
+  BASE_URL: "https://app.logmanager.com.br/api",
   // ...
 };
 ```
@@ -66,17 +67,17 @@ import {
   PedidosService,
   ScannerParser,
   Pedido,
-  PEDIDO_TYPES
-} from '../src';
+  PEDIDO_TYPES,
+} from "../src";
 ```
 
 ### Importações Individuais
 
 ```typescript
-import { usePedidoScanner } from '../src/hooks/usePedidoScanner';
-import { PedidosService } from '../src/services/pedidosService';
-import { ScannerParser } from '../src/utils/scannerParser';
-import type { Pedido } from '../src/types/Pedido';
+import { usePedidoScanner } from "../src/hooks/usePedidoScanner";
+import { PedidosService } from "../src/services/pedidosService";
+import { ScannerParser } from "../src/utils/scannerParser";
+import type { Pedido } from "../src/types/Pedido";
 ```
 
 ### Interfaces Principais
@@ -85,7 +86,7 @@ import type { Pedido } from '../src/types/Pedido';
 interface Pedido {
   id: string;
   codigo: string;
-  tipo: 'SHOPEE' | 'MERCADO_LIVRE' | 'LOGMANAGER' | 'AVULSO';
+  tipo: "SHOPEE" | "MERCADO_LIVRE" | "LOGMANAGER" | "AVULSO";
   cliente: Cliente;
   entrega: Entrega;
   status: StatusPedido;
@@ -121,19 +122,19 @@ O `ScannerParser` identifica automaticamente o tipo de código escaneado:
 ### Padrões Reconhecidos
 
 - **Shopee**: `SPXBR12345678` → `SHOPEE`
-- **Mercado Livre**: 
+- **Mercado Livre**:
   - prefixo tradicional `MLB123456789`
   - códigos numéricos iniciando com `20000...` ou `46...` (ex.: `20000987654321`, `46987654321`)
-  → `MERCADO_LIVRE`
+    → `MERCADO_LIVRE`
 - **LogManager**: `BR1234567890` → `LOGMANAGER`
 - **Avulsos**: Códigos alfanuméricos genéricos → `AVULSO`
 
 ### Exemplo de Uso
 
 ```typescript
-import { ScannerParser } from '../utils/scannerParser';
+import { ScannerParser } from "../utils/scannerParser";
 
-const parsed = ScannerParser.parseCode('SPXBR12345678');
+const parsed = ScannerParser.parseCode("SPXBR12345678");
 console.log(parsed);
 // {
 //   codigo: 'SPXBR12345678',
@@ -170,8 +171,8 @@ const MyComponent = () => {
 
 ```typescript
 const options = {
-  debounceMs: 500,    // Delay para busca automática (padrão: 500ms)
-  autoSearch: true,   // Busca automática ao digitar (padrão: true)
+  debounceMs: 500, // Delay para busca automática (padrão: 500ms)
+  autoSearch: true, // Busca automática ao digitar (padrão: true)
 };
 
 const { manualSearch, clearState } = usePedidoScanner(options);
@@ -192,16 +193,17 @@ Configurado com:
 ### Métodos Disponíveis
 
 ```typescript
-import { PedidosService } from '../services/pedidosService';
+import { PedidosService } from "../services/pedidosService";
 
 // Buscar pedido por código
-const response = await PedidosService.buscarPedidoPorCodigo('SPXBR12345678');
+const response = await PedidosService.buscarPedidoPorCodigo("SPXBR12345678");
 
 // Listar pedidos
 const pedidos = await PedidosService.listarPedidos(1, 50);
 
 // Buscar por status
-const pedidosFiltrados = await PedidosService.buscarPedidosPorStatus('EM_TRANSITO');
+const pedidosFiltrados =
+  await PedidosService.buscarPedidosPorStatus("EM_TRANSITO");
 
 // Cache
 PedidosService.limparCache();
@@ -271,7 +273,7 @@ Para testar a integração:
 ```typescript
 // Verificar estatísticas do cache
 const cacheStats = PedidosService.getCacheStats();
-console.log('Cache hits:', cacheStats.size);
+console.log("Cache hits:", cacheStats.size);
 ```
 
 ## 🔄 Compatibilidade

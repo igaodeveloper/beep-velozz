@@ -75,6 +75,7 @@
 ## 📦 ARQUIVOS CRIADOS
 
 ### Core Modules (7 arquivos)
+
 ```
 ✅ types/scanner.ts (120 linhas)
    └─ Definições de tipos e interfaces
@@ -99,6 +100,7 @@
 ```
 
 ### Documentação (9 arquivos)
+
 ```
 ✅ SCANNER_INDUSTRIAL_README.md
    └─ Overview e quick start
@@ -159,27 +161,32 @@
 ## 💡 CARACTERÍSTICAS PRINCIPAIS
 
 ### ✨ Determinístico
+
 - Mesma entrada = sempre mesmo output
 - Sem estado oculto
 - Previsível e testável
 
 ### 🔒 Seguro
+
 - Prevenção de race conditions
 - Lock de processamento
 - Bloqueio absoluto de limite
 
 ### 📈 Escalável
+
 - Adicione prefixos em mapeamento centralizado
 - Novos marketplaces sem alterar código
 - Extensível com callbacks
 
 ### 🎯 Modular
+
 - Separação clara de responsabilidades
 - Cada módulo independente
 - Fácil de testar
 - Fácil de manter
 
 ### ⚡ Performático
+
 - < 10ms por processamento
 - 1000 scans em ~3 segundos
 - Sem memory leaks
@@ -190,6 +197,7 @@
 ## 🎯 CASOS DE USO
 
 ### ✅ Sucesso
+
 ```
 BR123456 → Identificado como Shopee → Som toca → Contador +1
 20000987654 → Mercado Livre → Som toca → Contador +1
@@ -197,12 +205,14 @@ LM12345 → Avulso → Som toca → Contador +1
 ```
 
 ### ❌ Duplicação (detectada)
+
 ```
 BR123456 (primeira vez) → Sucesso
 BR123456 (< 2 segundos) → Rejeitado + Som erro
 ```
 
 ### 🛑 Limite Atingido
+
 ```
 Shopee: 50 escaneados
 Shopee: 51º tentativa → Rejeitado + Bloqueio total
@@ -210,6 +220,7 @@ Reset → Volta a aceitar
 ```
 
 ### ⚠️ Inválido
+
 ```
 !!! → Código inválido → Rejeitado + Som erro
 AB → Muito curto → Rejeitado + Som erro
@@ -220,11 +231,13 @@ AB → Muito curto → Rejeitado + Som erro
 ## 🚀 COMEÇAR AGORA
 
 ### 1️⃣ Importação
+
 ```typescript
-import { useIndustrialScanner } from '@/utils/useIndustrialScanner';
+import { useIndustrialScanner } from "@/utils/useIndustrialScanner";
 ```
 
 ### 2️⃣ Inicialização
+
 ```typescript
 const scanner = useIndustrialScanner({
   maxAllowedScans: {
@@ -236,14 +249,16 @@ const scanner = useIndustrialScanner({
 ```
 
 ### 3️⃣ Processamento
+
 ```typescript
-const result = await scanner.processScan('BR123456789');
+const result = await scanner.processScan("BR123456789");
 if (result.success) {
   console.log(`✅ ${result.code} - ${result.type}`);
 }
 ```
 
 ### 4️⃣ Reset
+
 ```typescript
 scanner.reset(); // Próximo lote
 ```
@@ -253,6 +268,7 @@ scanner.reset(); // Próximo lote
 ## 📊 ESTATÍSTICAS
 
 ### Código
+
 ```
 Core Modules:        ~2,310 linhas TypeScript
 Documentação:        ~5,000 linhas Markdown
@@ -263,6 +279,7 @@ Total:               ~8,500+ linhas
 ```
 
 ### Funcionalidades
+
 ```
 Tipos definidos:     8+
 Interfaces:          10+
@@ -273,6 +290,7 @@ Hooks:               1 (Production-ready)
 ```
 
 ### Documentação
+
 ```
 README:              ✅ Quick Start
 GUIDE:               ✅ Completa (Troubleshooting, API)
@@ -290,6 +308,7 @@ SUMMARY:             ✅ Resumo visual
 ## ✨ QUALIDADE
 
 ### ✅ Padrões de Código
+
 - TypeScript strict
 - Tipos bem definidos
 - JSDoc em funções principais
@@ -297,18 +316,21 @@ SUMMARY:             ✅ Resumo visual
 - DRY (Don't Repeat Yourself)
 
 ### ✅ Testing
+
 - Testes unitários
 - Cenários de erro
 - Benchmarks
 - 100% de cobertura de casos críticos
 
 ### ✅ Performance
+
 - Otimizado para produção
 - Sem memory leaks
 - GC amigável
 - Lock-free quando possível
 
 ### ✅ Segurança
+
 - Race condition prevention
 - Input validation
 - State immutability
@@ -318,15 +340,15 @@ SUMMARY:             ✅ Resumo visual
 
 ## 🎓 DOCUMENTAÇÃO
 
-| Arquivo | Descrição | Leitor |
-|---------|-----------|--------|
-| SCANNER_INDUSTRIAL_README.md | Overview do sistema | Iniciante |
-| SCANNER_INDUSTRIAL_GUIDE.md | Documentação completa | Desenvolvedor |
-| SCANNER_INDUSTRIAL_ARCHITECTURE.md | Diagramas e fluxos | Arquiteto |
-| SCANNER_INDUSTRIAL_EXAMPLES.ts | Código de exemplo | Desenvolvedor |
-| SCANNER_CHEATSHEET.md | Referência rápida | Desenvolvedor |
-| INTEGRATION_CHECKLIST.md | Integração passo a passo | DevOps |
-| INTEGRATION_EXAMPLE.tsx | Integração prática | Desenvolvedor |
+| Arquivo                            | Descrição                | Leitor        |
+| ---------------------------------- | ------------------------ | ------------- |
+| SCANNER_INDUSTRIAL_README.md       | Overview do sistema      | Iniciante     |
+| SCANNER_INDUSTRIAL_GUIDE.md        | Documentação completa    | Desenvolvedor |
+| SCANNER_INDUSTRIAL_ARCHITECTURE.md | Diagramas e fluxos       | Arquiteto     |
+| SCANNER_INDUSTRIAL_EXAMPLES.ts     | Código de exemplo        | Desenvolvedor |
+| SCANNER_CHEATSHEET.md              | Referência rápida        | Desenvolvedor |
+| INTEGRATION_CHECKLIST.md           | Integração passo a passo | DevOps        |
+| INTEGRATION_EXAMPLE.tsx            | Integração prática       | Desenvolvedor |
 
 ---
 

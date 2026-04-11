@@ -1,6 +1,7 @@
 # 🎯 Padrões de Mercado Livre Identificados
 
 ## Etiqueta Analisada
+
 **Data**: 08 ABR | **Tipo**: FLEX RESIDENCIAL
 
 ---
@@ -8,6 +9,7 @@
 ## Códigos Principais Extraídos
 
 ### 1. **Pack ID** (Principal)
+
 ```
 2200D 1241459785
 → Normalizado: 2200D1241459785
@@ -17,6 +19,7 @@
 ```
 
 ### 2. **Envio ID** (Alternativo)
+
 ```
 4482D24 7404
 → Normalizado: 4482D247404
@@ -26,6 +29,7 @@
 ```
 
 ### 3. **CEP** (Localização)
+
 ```
 02464000
 → Pode começar com 20/02
@@ -36,6 +40,7 @@
 ---
 
 ## Informações de Endereço
+
 - **CEP**: 02464000
 - **Bairro**: Imirim (NORTE 1)
 - **Rua**: Avenida Imirim 702
@@ -46,15 +51,15 @@
 
 ## Padrões Reconhecidos Agora
 
-| Prefixo | Comprimento Mín | Tipo | Status |
-|---------|-----------------|------|--------|
-| `2200D` | 9 | mercado_livre | ✅ NOVO |
-| `4482D` | 9 | mercado_livre | ✅ NOVO |
-| `20000` | 5 | mercado_livre | ✅ EXISTENTE |
-| `466` | 11 | mercado_livre | ✅ EXISTENTE |
-| `BR` | 8 | shopee | ✅ EXISTENTE |
-| `LM` | 4 | avulso | ✅ EXISTENTE |
-| `14` | 4 | avulso | ✅ EXISTENTE |
+| Prefixo | Comprimento Mín | Tipo          | Status       |
+| ------- | --------------- | ------------- | ------------ |
+| `2200D` | 9               | mercado_livre | ✅ NOVO      |
+| `4482D` | 9               | mercado_livre | ✅ NOVO      |
+| `20000` | 5               | mercado_livre | ✅ EXISTENTE |
+| `466`   | 11              | mercado_livre | ✅ EXISTENTE |
+| `BR`    | 8               | shopee        | ✅ EXISTENTE |
+| `LM`    | 4               | avulso        | ✅ EXISTENTE |
+| `14`    | 4               | avulso        | ✅ EXISTENTE |
 
 ---
 
@@ -75,6 +80,7 @@ playAudio() → 🔊 BEEP_B (Mercado Livre)
 ## Validação de Entrada
 
 ### Normalização (sem espaços, maiúsculas)
+
 ```
 "2200D 1241459785"  → remove espaços → "2200D1241459785"
 "4482D247404"       → já normalizado
@@ -82,6 +88,7 @@ playAudio() → 🔊 BEEP_B (Mercado Livre)
 ```
 
 ### Prefixo Matching (ordem importante)
+
 1. Testa `2200D` → ✅ Match → tipo = mercado_livre
 2. Se não, testa `4482D` → ✅ Match → tipo = mercado_livre
 3. Se não, testa `20000` → possível match
@@ -91,6 +98,7 @@ playAudio() → 🔊 BEEP_B (Mercado Livre)
 ---
 
 ## QR Code
+
 - Presente na etiqueta
 - Provavelmente contém o Pack ID: `2200D1241459785` ou similar
 - Quando escaneado, deve ser normalizado e identificado como **mercado_livre**
@@ -102,8 +110,9 @@ playAudio() → 🔊 BEEP_B (Mercado Livre)
 Arquivo: `TEST_ML_PATTERNS.ts`
 
 Testes casos cobertos:
+
 - ✅ Pack ID com/sem espaço
-- ✅ Código de envio 4482D com/sem espaço  
+- ✅ Código de envio 4482D com/sem espaço
 - ✅ CEP
 - ✅ Padrões tradicionais (20000, 466)
 - ✅ Com prefixo ID adicionado por alguns scanners

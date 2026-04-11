@@ -3,22 +3,22 @@
  * Efeito glassmorphism com blur e transparência
  */
 
-import React from 'react';
+import React from "react";
 import {
   View,
   StyleSheet,
   ViewStyle,
   TouchableOpacity,
   TouchableOpacityProps,
-} from 'react-native';
-import { BlurView } from 'expo-blur';
-import { useAppTheme } from '@/utils/useAppTheme';
+} from "react-native";
+import { BlurView } from "expo-blur";
+import { useAppTheme } from "@/utils/useAppTheme";
 
 interface GlassCardProps extends TouchableOpacityProps {
   children: React.ReactNode;
-  variant?: 'light' | 'medium' | 'dark';
-  rounded?: 'small' | 'medium' | 'large';
-  padding?: 'small' | 'medium' | 'large';
+  variant?: "light" | "medium" | "dark";
+  rounded?: "small" | "medium" | "large";
+  padding?: "small" | "medium" | "large";
   style?: ViewStyle;
   onPress?: () => void;
   disabled?: boolean;
@@ -26,9 +26,9 @@ interface GlassCardProps extends TouchableOpacityProps {
 
 export default function GlassCard({
   children,
-  variant = 'medium',
-  rounded = 'medium',
-  padding = 'medium',
+  variant = "medium",
+  rounded = "medium",
+  padding = "medium",
   style,
   onPress,
   disabled = false,
@@ -38,11 +38,11 @@ export default function GlassCard({
 
   const getBlurIntensity = () => {
     switch (variant) {
-      case 'light':
+      case "light":
         return 10;
-      case 'medium':
+      case "medium":
         return 20;
-      case 'dark':
+      case "dark":
         return 30;
       default:
         return 20;
@@ -51,11 +51,11 @@ export default function GlassCard({
 
   const getBorderRadius = () => {
     switch (rounded) {
-      case 'small':
+      case "small":
         return 8;
-      case 'medium':
+      case "medium":
         return 16;
-      case 'large':
+      case "large":
         return 24;
       default:
         return 16;
@@ -64,11 +64,11 @@ export default function GlassCard({
 
   const getPadding = () => {
     switch (padding) {
-      case 'small':
+      case "small":
         return 12;
-      case 'medium':
+      case "medium":
         return 20;
-      case 'large':
+      case "large":
         return 28;
       default:
         return 20;
@@ -76,17 +76,17 @@ export default function GlassCard({
   };
 
   const getBackgroundColor = () => {
-    if (colors.bg === '#ffffff') {
-      return 'rgba(255, 255, 255, 0.7)';
+    if (colors.bg === "#ffffff") {
+      return "rgba(255, 255, 255, 0.7)";
     }
-    return 'rgba(0, 0, 0, 0.3)';
+    return "rgba(0, 0, 0, 0.3)";
   };
 
   const getBorderColor = () => {
-    if (colors.bg === '#ffffff') {
-      return 'rgba(255, 255, 255, 0.2)';
+    if (colors.bg === "#ffffff") {
+      return "rgba(255, 255, 255, 0.2)";
     }
-    return 'rgba(255, 255, 255, 0.1)';
+    return "rgba(255, 255, 255, 0.1)";
   };
 
   const CardComponent = onPress ? TouchableOpacity : View;
@@ -117,7 +117,7 @@ export default function GlassCard({
             borderRadius: getBorderRadius() - 1,
           },
         ]}
-        tint={colors.bg === '#ffffff' ? 'light' : 'dark'}
+        tint={colors.bg === "#ffffff" ? "light" : "dark"}
       >
         {children}
       </BlurView>
@@ -128,7 +128,7 @@ export default function GlassCard({
 const styles = StyleSheet.create({
   container: {
     borderWidth: 1,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   blur: {
     flex: 1,

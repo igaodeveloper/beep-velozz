@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,8 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
+} from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
 
 interface Note {
   id: string;
@@ -20,12 +20,12 @@ interface Note {
   createdAt: Date;
   updatedAt: Date;
   tags?: string[];
-  priority?: 'low' | 'medium' | 'high';
+  priority?: "low" | "medium" | "high";
 }
 
 interface NoteScreenProps {
   note?: Note;
-  onSave?: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onSave?: (note: Omit<Note, "id" | "createdAt" | "updatedAt">) => void;
   onUpdate?: (id: string, note: Partial<Note>) => void;
   onDelete?: (id: string) => void;
   onCancel?: () => void;
@@ -41,28 +41,32 @@ export function NoteScreen({
   onDelete,
   onCancel,
   readOnly = false,
-  placeholder = 'Comece a escrever sua nota...',
+  placeholder = "Comece a escrever sua nota...",
   autoSave = true,
 }: NoteScreenProps) {
   const { colors } = useAppTheme();
-  const [title, setTitle] = useState(note?.title || '');
-  const [content, setContent] = useState(note?.content || '');
+  const [title, setTitle] = useState(note?.title || "");
+  const [content, setContent] = useState(note?.content || "");
   const [isEditing, setIsEditing] = useState(!note);
-  const [dimensions, setDimensions] = useState(Dimensions.get('window'));
+  const [dimensions, setDimensions] = useState(Dimensions.get("window"));
   const contentRef = useRef<TextInput>(null);
   const titleRef = useRef<TextInput>(null);
 
   useEffect(() => {
     const onChange = () => {
-      setDimensions(Dimensions.get('window'));
+      setDimensions(Dimensions.get("window"));
     };
 
-    const subscription = Dimensions.addEventListener('change', onChange);
+    const subscription = Dimensions.addEventListener("change", onChange);
     return () => subscription?.remove();
   }, []);
 
   useEffect(() => {
-    if (autoSave && !isEditing && (title !== note?.title || content !== note?.content)) {
+    if (
+      autoSave &&
+      !isEditing &&
+      (title !== note?.title || content !== note?.content)
+    ) {
       const timeoutId = setTimeout(() => {
         handleSave();
       }, 1000);
@@ -72,7 +76,7 @@ export function NoteScreen({
 
   const handleSave = () => {
     if (!title.trim() && !content.trim()) {
-      Alert.alert('Aviso', 'A nota não pode estar vazia.');
+      Alert.alert("Aviso", "A nota não pode estar vazia.");
       return;
     }
 
@@ -80,7 +84,7 @@ export function NoteScreen({
       title: title.trim(),
       content: content.trim(),
       tags: note?.tags || [],
-      priority: note?.priority || 'medium',
+      priority: note?.priority || "medium",
     };
 
     if (note) {
@@ -94,16 +98,16 @@ export function NoteScreen({
   const handleDelete = () => {
     if (note) {
       Alert.alert(
-        'Confirmar Exclusão',
-        'Tem certeza que deseja excluir esta nota?',
+        "Confirmar Exclusão",
+        "Tem certeza que deseja excluir esta nota?",
         [
-          { text: 'Cancelar', style: 'cancel' },
+          { text: "Cancelar", style: "cancel" },
           {
-            text: 'Excluir',
-            style: 'destructive',
+            text: "Excluir",
+            style: "destructive",
             onPress: () => onDelete?.(note.id),
           },
-        ]
+        ],
       );
     }
   };
@@ -118,7 +122,7 @@ export function NoteScreen({
   };
 
   const getKeyboardBehavior = () => {
-    return Platform.OS === 'ios' ? 'padding' : 'height';
+    return Platform.OS === "ios" ? "padding" : "height";
   };
 
   const isLandscape = dimensions.width > dimensions.height;
@@ -128,7 +132,7 @@ export function NoteScreen({
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: colors.bg }]}
       behavior={getKeyboardBehavior()}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
     >
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <View style={styles.headerLeft}>
@@ -150,9 +154,12 @@ export function NoteScreen({
               {isEditing ? (
                 <TouchableOpacity
                   onPress={handleSave}
-                  style={[styles.saveButton, { backgroundColor: colors.primary }]}
+                  style={[
+                    styles.saveButton,
+                    { backgroundColor: colors.primary },
+                  ]}
                 >
-                  <Text style={[styles.saveButtonText, { color: '#000' }]}>
+                  <Text style={[styles.saveButtonText, { color: "#000" }]}>
                     Salvar
                   </Text>
                 </TouchableOpacity>
@@ -160,18 +167,28 @@ export function NoteScreen({
                 <>
                   <TouchableOpacity
                     onPress={handleEdit}
-                    style={[styles.editButton, { backgroundColor: colors.surface }]}
+                    style={[
+                      styles.editButton,
+                      { backgroundColor: colors.surface },
+                    ]}
                   >
-                    <Text style={[styles.editButtonText, { color: colors.text }]}>
+                    <Text
+                      style={[styles.editButtonText, { color: colors.text }]}
+                    >
                       Editar
                     </Text>
                   </TouchableOpacity>
                   {onDelete && (
                     <TouchableOpacity
                       onPress={handleDelete}
-                      style={[styles.deleteButton, { backgroundColor: colors.danger }]}
+                      style={[
+                        styles.deleteButton,
+                        { backgroundColor: colors.danger },
+                      ]}
                     >
-                      <Text style={[styles.deleteButtonText, { color: '#fff' }]}>
+                      <Text
+                        style={[styles.deleteButtonText, { color: "#fff" }]}
+                      >
                         Excluir
                       </Text>
                     </TouchableOpacity>
@@ -199,7 +216,7 @@ export function NoteScreen({
               styles.titleInput,
               {
                 color: colors.text,
-                borderColor: isEditing ? colors.primary : 'transparent',
+                borderColor: isEditing ? colors.primary : "transparent",
                 backgroundColor: colors.surface,
               },
               !isEditing && styles.titleInputReadOnly,
@@ -219,7 +236,7 @@ export function NoteScreen({
               styles.contentInput,
               {
                 color: colors.text,
-                borderColor: isEditing ? colors.primary : 'transparent',
+                borderColor: isEditing ? colors.primary : "transparent",
                 backgroundColor: colors.surface,
               },
               !isEditing && styles.contentInputReadOnly,
@@ -236,10 +253,11 @@ export function NoteScreen({
           {note && (
             <View style={[styles.metadata, { borderTopColor: colors.border }]}>
               <Text style={[styles.metadataText, { color: colors.textSubtle }]}>
-                Criado: {new Date(note.createdAt).toLocaleDateString('pt-BR')}
+                Criado: {new Date(note.createdAt).toLocaleDateString("pt-BR")}
               </Text>
               <Text style={[styles.metadataText, { color: colors.textSubtle }]}>
-                Atualizado: {new Date(note.updatedAt).toLocaleDateString('pt-BR')}
+                Atualizado:{" "}
+                {new Date(note.updatedAt).toLocaleDateString("pt-BR")}
               </Text>
               {note.tags && note.tags.length > 0 && (
                 <View style={styles.tagsContainer}>
@@ -248,7 +266,7 @@ export function NoteScreen({
                       key={`${note.id}-tag-${index}`}
                       style={[styles.tag, { backgroundColor: colors.primary }]}
                     >
-                      <Text style={[styles.tagText, { color: '#000' }]}>
+                      <Text style={[styles.tagText, { color: "#000" }]}>
                         {tag}
                       </Text>
                     </View>
@@ -268,9 +286,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -280,7 +298,7 @@ const styles = StyleSheet.create({
   },
   headerCenter: {
     flex: 2,
-    alignItems: 'center',
+    alignItems: "center",
   },
   headerButton: {
     paddingHorizontal: 12,
@@ -289,10 +307,10 @@ const styles = StyleSheet.create({
   },
   headerButtonText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   actionButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   saveButton: {
@@ -302,7 +320,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   editButton: {
     paddingHorizontal: 16,
@@ -311,7 +329,7 @@ const styles = StyleSheet.create({
   },
   editButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   deleteButton: {
     paddingHorizontal: 16,
@@ -320,7 +338,7 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   content: {
     flex: 1,
@@ -334,15 +352,15 @@ const styles = StyleSheet.create({
   contentContainerTablet: {
     paddingHorizontal: 48,
     maxWidth: 800,
-    alignSelf: 'center',
-    width: '100%',
+    alignSelf: "center",
+    width: "100%",
   },
   noteContainer: {
     flex: 1,
   },
   titleInput: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     padding: 16,
     borderRadius: 12,
     marginBottom: 16,
@@ -350,7 +368,7 @@ const styles = StyleSheet.create({
   },
   titleInputReadOnly: {
     borderWidth: 0,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     padding: 0,
     marginBottom: 16,
   },
@@ -364,7 +382,7 @@ const styles = StyleSheet.create({
   },
   contentInputReadOnly: {
     borderWidth: 0,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     padding: 0,
     minHeight: 200,
   },
@@ -378,8 +396,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
     marginTop: 8,
   },
@@ -390,7 +408,7 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });
 

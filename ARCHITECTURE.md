@@ -175,9 +175,9 @@ BEEP-VELOZZ (Root)
          ├─ ❌ In source code
          ├─ ❌ In config files commited to git
          └─ ✅ In .env (not commited)
-            
+
             ▼
-         
+
     ┌─────────────────────────┐
     │  .env (Not in Git)       │
     │  ├─ EXPO_PUBLIC_API_TOKEN
@@ -200,7 +200,7 @@ BEEP-VELOZZ (Root)
       build-time
       __DEV__
       flag
-      
+
          Build process:
          -1. Load .env
          -2. Create Constants.expoConfig.extra
@@ -215,11 +215,11 @@ BEEP-VELOZZ (Root)
 
 ```
 BEFORE OPTIMIZATION
-                                    
+
 Component re-renders ──► Expensive computations ──► 30fps lag
      │                         │
      Every state change   Recalculate everything
-     
+
      Causes:
      - Jank on scroll
      - Battery drain
@@ -269,7 +269,7 @@ APP RUNNING
    ├─ Component Mount ──► useProductionCleanup() ──┐
    │  │                                            │
    │  ├─ Setup listeners                           │ Tracking
-   │  ├─ Register callbacks                        │ cleanup  
+   │  ├─ Register callbacks                        │ cleanup
    │  └─ Register cleanup functions ──────────────┘
    │
    ├─ App State Change
@@ -364,7 +364,7 @@ Input Validation
    │
    ├─ ✅ Valid ──────────────────────► Proceed
    │
-   └─ ❌ Invalid ──────────────────────► 
+   └─ ❌ Invalid ──────────────────────►
         │
         ├─ Error message ────────────► User display
         ├─ Error logging ────────────► Monitoring

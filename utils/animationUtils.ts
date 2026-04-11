@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -11,10 +11,10 @@ import Animated, {
   runOnJS,
   cancelAnimation,
   Easing,
-} from 'react-native-reanimated';
-import { Dimensions } from 'react-native';
+} from "react-native-reanimated";
+import { Dimensions } from "react-native";
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 // Configurações de animação
 export const ANIMATION_PRESETS = {
@@ -78,14 +78,14 @@ export function useBasicAnimation() {
       withTiming(10, ANIMATION_PRESETS.snappy),
       withTiming(-10, ANIMATION_PRESETS.snappy),
       withTiming(10, ANIMATION_PRESETS.snappy),
-      withTiming(0, ANIMATION_PRESETS.snappy)
+      withTiming(0, ANIMATION_PRESETS.snappy),
     );
   };
 
   const bounce = () => {
     translateY.value = withSequence(
       withSpring(-20, ANIMATION_PRESETS.bouncy),
-      withSpring(0, ANIMATION_PRESETS.bouncy)
+      withSpring(0, ANIMATION_PRESETS.bouncy),
     );
   };
 
@@ -93,10 +93,10 @@ export function useBasicAnimation() {
     scale.value = withRepeat(
       withSequence(
         withTiming(1.1, ANIMATION_PRESETS.timing),
-        withTiming(1, ANIMATION_PRESETS.timing)
+        withTiming(1, ANIMATION_PRESETS.timing),
       ),
       3,
-      true
+      true,
     );
   };
 
@@ -130,10 +130,7 @@ export function useScreenTransition() {
     const scale = interpolate(progress.value, [0, 1], [0.9, 1]);
 
     return {
-      transform: [
-        { translateY },
-        { scale },
-      ],
+      transform: [{ translateY }, { scale }],
       opacity,
     };
   });
@@ -163,16 +160,16 @@ export function useLoadingAnimation() {
     rotation.value = withRepeat(
       withTiming(Math.PI * 2, { duration: 1000, easing: Easing.linear }),
       -1,
-      false
+      false,
     );
 
     scale.value = withRepeat(
       withSequence(
         withTiming(1.2, ANIMATION_PRESETS.snappy),
-        withTiming(1, ANIMATION_PRESETS.snappy)
+        withTiming(1, ANIMATION_PRESETS.snappy),
       ),
       -1,
-      true
+      true,
     );
   };
 
@@ -184,10 +181,7 @@ export function useLoadingAnimation() {
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { rotate: `${rotation.value}rad` },
-      { scale: scale.value },
-    ],
+    transform: [{ rotate: `${rotation.value}rad` }, { scale: scale.value }],
   }));
 
   return {
@@ -204,10 +198,7 @@ export function useTabAnimation(isActive: boolean = false) {
   const translateY = useSharedValue(isActive ? -4 : 0);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: scale.value },
-      { translateY: translateY.value },
-    ],
+    transform: [{ scale: scale.value }, { translateY: translateY.value }],
     opacity: opacity.value,
   }));
 
@@ -284,10 +275,7 @@ export function useListItemAnimation(index: number, delay: number = 50) {
     const scale = interpolate(progress.value, [0, 1], [0.9, 1]);
 
     return {
-      transform: [
-        { translateY },
-        { scale },
-      ],
+      transform: [{ translateY }, { scale }],
       opacity,
     };
   });
@@ -295,7 +283,7 @@ export function useListItemAnimation(index: number, delay: number = 50) {
   const enter = () => {
     progress.value = withDelay(
       index * delay,
-      withTiming(1, ANIMATION_PRESETS.timing)
+      withTiming(1, ANIMATION_PRESETS.timing),
     );
   };
 
@@ -352,7 +340,7 @@ export function useModalAnimation(isVisible: boolean) {
 export const createStaggeredAnimation = (
   items: any[],
   animation: (item: any, index: number) => void,
-  delay: number = 100
+  delay: number = 100,
 ) => {
   items.forEach((item, index) => {
     setTimeout(() => {
@@ -363,7 +351,7 @@ export const createStaggeredAnimation = (
 
 export const createSequentialAnimation = (
   animations: (() => void)[],
-  delay: number = 200
+  delay: number = 200,
 ) => {
   animations.forEach((animation, index) => {
     setTimeout(() => {
@@ -373,5 +361,5 @@ export const createSequentialAnimation = (
 };
 
 export const createParallelAnimation = (animations: (() => void)[]) => {
-  animations.forEach(animation => animation());
+  animations.forEach((animation) => animation());
 };

@@ -1,7 +1,7 @@
-import * as Notifications from 'expo-notifications';
-import * as TaskManager from 'expo-task-manager';
-import * as BackgroundFetch from 'expo-background-fetch';
-import { captureMessage } from './sentry';
+import * as Notifications from "expo-notifications";
+import * as TaskManager from "expo-task-manager";
+import * as BackgroundFetch from "expo-background-fetch";
+import { captureMessage } from "./sentry";
 
 // Configure notification handler
 Notifications.setNotificationHandler({
@@ -13,21 +13,22 @@ Notifications.setNotificationHandler({
 });
 
 // Background task for notifications
-const BACKGROUND_NOTIFICATION_TASK = 'background-notification-task';
+const BACKGROUND_NOTIFICATION_TASK = "background-notification-task";
 
 TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, async () => {
   try {
     // Handle background notifications
-    const receivedNotifications = await Notifications.getPresentedNotificationsAsync();
+    const receivedNotifications =
+      await Notifications.getPresentedNotificationsAsync();
 
     for (const notification of receivedNotifications) {
       // Process notification data
-      console.log('Background notification:', notification);
+      console.log("Background notification:", notification);
     }
 
     return BackgroundFetch.BackgroundFetchResult.NewData;
   } catch (error) {
-    captureMessage('Background notification task failed', 'error', { error });
+    captureMessage("Background notification task failed", "error", { error });
     return BackgroundFetch.BackgroundFetchResult.Failed;
   }
 });
@@ -42,29 +43,36 @@ BackgroundFetch.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK, {
 export class NotificationService {
   static async requestPermissions() {
     const { status } = await Notifications.requestPermissionsAsync();
-    return status === 'granted';
+    return status === "granted";
   }
 
-  static async scheduleLocalNotification(title: string, body: string, data?: any) {
+  static async scheduleLocalNotification(
+    title: string,
+    body: string,
+    data?: any,
+  ) {
     await Notifications.scheduleNotificationAsync({
       content: {
         title,
         body,
         data: data || {},
-        sound: 'default',
+        sound: "default",
       },
       trigger: null, // Show immediately
     });
   }
 
-  static async scheduleSessionReminder(sessionId: string, minutesFromNow: number = 30) {
+  static async scheduleSessionReminder(
+    sessionId: string,
+    minutesFromNow: number = 30,
+  ) {
     const trigger = new Date(Date.now() + minutesFromNow * 60 * 1000);
 
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: 'Sessão ativa',
-        body: 'Você tem uma sessão de escaneamento em andamento',
-        data: { sessionId, type: 'session_reminder' },
+        title: "Sessão ativa",
+        body: "Você tem uma sessão de escaneamento em andamento",
+        data: { sessionId, type: "session_reminder" },
       },
       trigger,
     });
@@ -83,12 +91,16 @@ export class NotificationService {
   }
 
   // Listen for notification responses
-  static addNotificationResponseListener(callback: (response: Notifications.NotificationResponse) => void) {
+  static addNotificationResponseListener(
+    callback: (response: Notifications.NotificationResponse) => void,
+  ) {
     return Notifications.addNotificationResponseReceivedListener(callback);
   }
 
   // Listen for received notifications
-  static addNotificationReceivedListener(callback: (notification: Notifications.Notification) => void) {
+  static addNotificationReceivedListener(
+    callback: (notification: Notifications.Notification) => void,
+  ) {
     return Notifications.addNotificationReceivedListener(callback);
   }
 }

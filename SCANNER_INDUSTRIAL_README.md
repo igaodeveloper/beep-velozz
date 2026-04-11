@@ -5,30 +5,35 @@
 ## ✨ Características Principais
 
 ### ✅ Identificação Automática por Prefixo
+
 - **Shopee**: Prefixo `BR`
 - **Mercado Livre**: Prefixos `20000`, `46`, `45`
 - **Avulso**: Prefixos `LM`, `14`
 - **Escalável**: Adicione novos marketplaces sem alterar lógica
 
 ### ✅ Controle Absoluto de Limite
+
 - Limite configurável por tipo
 - Bloqueio total após limite atingido
 - Nenhuma leitura processada além do limite
 - Reset manual explícito (nunca automático)
 
 ### ✅ Sistema de Áudio Inteligente
+
 - Som distinto para cada tipo (beep A, B, C, erro)
 - Debounce de 400ms entre bipes
 - Fila inteligente sem sobreposição
 - Nunca repete som para duplicata
 
 ### ✅ Prevenção Robusta de Erros
+
 - Detecção de duplicação temporal (2 segundos)
 - Prevenção de race conditions (lock de processamento)
 - Validação de código
 - Tratamento de todos os cenários de erro
 
 ### ✅ Arquitetura Modular
+
 - Separação clara de responsabilidades
 - Componente UI apenas renderiza e chama controller
 - Nenhuma regra de negócio na UI
@@ -64,6 +69,7 @@ project/
 ## 🚀 Quick Start
 
 ### 1. Instalação (Já Integrado)
+
 Todos os módulos estão na pasta `utils/` e `types/`.
 
 ### 2. Uso Básico com Hook
@@ -132,6 +138,7 @@ Tocar Áudio → Haptics → Retornar Resultado
 ## 🎯 Exemplos de Resultado
 
 ### Sucesso
+
 ```typescript
 {
   success: true,
@@ -143,6 +150,7 @@ Tocar Áudio → Haptics → Retornar Resultado
 ```
 
 ### Duplicata
+
 ```typescript
 {
   success: false,
@@ -154,6 +162,7 @@ Tocar Áudio → Haptics → Retornar Resultado
 ```
 
 ### Limite Atingido
+
 ```typescript
 {
   success: false,
@@ -165,6 +174,7 @@ Tocar Áudio → Haptics → Retornar Resultado
 ```
 
 ### Inválido
+
 ```typescript
 {
   success: false,
@@ -198,6 +208,7 @@ reset() → limpa tudo, volta a [ACTIVE]
 ## 🛡️ Mecanismos de Segurança
 
 ### Race Condition Prevention
+
 ```typescript
 // Processamento sequencial com lock
 if (this.processingLock) return { reason: 'rate_limited' };
@@ -207,14 +218,16 @@ setTimeout(() => processingLock = false, 400ms);
 ```
 
 ### Duplicate Detection
+
 ```typescript
 // Verifica se mesmo código nos últimos 2 segundos
-if (lastCode === currentCode && (now - lastTime) < 2000) {
+if (lastCode === currentCode && now - lastTime < 2000) {
   return DUPLICATED;
 }
 ```
 
 ### Audio Debouncing
+
 ```typescript
 // Fila inteligente com gap mínimo
 if (now - lastAudioTime < 400ms) {
@@ -224,10 +237,11 @@ if (now - lastAudioTime < 400ms) {
 ```
 
 ### Absolute Limit Blocking
+
 ```typescript
 // Uma vez atingido, bloqueia permanentemente
 if (hasLimitReached(type)) {
-  return { reason: 'limit_reached' };
+  return { reason: "limit_reached" };
 }
 ```
 
@@ -246,7 +260,7 @@ if (hasLimitReached(type)) {
 Execute os testes para validar o sistema:
 
 ```typescript
-import { runAllTests, benchmarkTests } from '@/SCANNER_INDUSTRIAL_TESTS';
+import { runAllTests, benchmarkTests } from "@/SCANNER_INDUSTRIAL_TESTS";
 
 // Testes unitários
 await runAllTests();
@@ -260,21 +274,24 @@ await benchmarkTests();
 ## 🎯 Casos de Uso
 
 ### Casos de Sucesso
+
 ✅ Código válido dentro do limite → Aceito + Áudio  
 ✅ Tipo identificado corretamente → Áudio específico  
-✅ Código diferente após duplicata → Aceito novamente  
+✅ Código diferente após duplicata → Aceito novamente
 
 ### Casos de Erro
+
 ❌ Código duplicado (< 2s) → Rejeitado + Erro  
 ❌ Limite atingido → Rejeitado + Bloqueio total  
 ❌ Código inválido → Rejeitado + Erro  
-❌ Processamento simultâneo → Rate limited  
+❌ Processamento simultâneo → Rate limited
 
 ---
 
 ## 📈 Migração do Sistema Antigo
 
 ### Antes (ScannerView.tsx antigo)
+
 ```typescript
 const checkLimit = (type) => {...};
 const forceTypeByPrefix = (code) => {...};
@@ -283,6 +300,7 @@ const classifyPackage = (code) => {...};
 ```
 
 ### Depois (Novo Sistema)
+
 ```typescript
 const scanner = useIndustrialScanner({ maxAllowedScans: {...} });
 const result = await scanner.processScan(code);
@@ -301,10 +319,10 @@ const scanner = useIndustrialScanner({
     mercado_livre: 30,
     avulso: 20,
   },
-  
+
   // Debounce em ms (default: 400)
   debounceMs: 400,
-  
+
   // Callbacks (opcionais)
   onStateChange: (state) => console.log(state),
   onStatsUpdate: (stats) => console.log(stats),
@@ -360,6 +378,7 @@ scanner.resume(): void
 ## 🎓 Aprenda com Exemplos
 
 Consulte [SCANNER_INDUSTRIAL_EXAMPLES.ts](SCANNER_INDUSTRIAL_EXAMPLES.ts) para:
+
 - Uso básico com hook
 - Controller direto
 - Identificação de pacotes
@@ -372,15 +391,15 @@ Consulte [SCANNER_INDUSTRIAL_EXAMPLES.ts](SCANNER_INDUSTRIAL_EXAMPLES.ts) para:
 
 ## 🚦 Status e Garantias
 
-| Garantia | Status | Detalhe |
-|----------|--------|---------|
-| ✅ Determinístico | ✅ Implementado | Mesma entrada = mesmo output |
-| ✅ Seguro | ✅ Implementado | Race conditions prevenidas |
-| ✅ Escalável | ✅ Implementado | Adicione prefixos facilmente |
-| ✅ Modular | ✅ Implementado | Cada responsabilidade separada |
-| ✅ Imune a duplicação | ✅ Implementado | Detecção temporal |
-| ✅ Imune a ultrapassar limite | ✅ Implementado | Bloqueio absoluto |
-| ✅ Industrial | ✅ Implementado | Simula scanner profissional |
+| Garantia                      | Status          | Detalhe                        |
+| ----------------------------- | --------------- | ------------------------------ |
+| ✅ Determinístico             | ✅ Implementado | Mesma entrada = mesmo output   |
+| ✅ Seguro                     | ✅ Implementado | Race conditions prevenidas     |
+| ✅ Escalável                  | ✅ Implementado | Adicione prefixos facilmente   |
+| ✅ Modular                    | ✅ Implementado | Cada responsabilidade separada |
+| ✅ Imune a duplicação         | ✅ Implementado | Detecção temporal              |
+| ✅ Imune a ultrapassar limite | ✅ Implementado | Bloqueio absoluto              |
+| ✅ Industrial                 | ✅ Implementado | Simula scanner profissional    |
 
 ---
 

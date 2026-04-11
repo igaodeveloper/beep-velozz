@@ -1,18 +1,21 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
-import { useResponsive } from '@/utils/useResponsive';
-import { Session } from '@/types/session';
+import React from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
+import { useResponsive } from "@/utils/useResponsive";
+import { Session } from "@/types/session";
 
 interface AppHeaderProps {
   currentSession?: Session | null;
   onOpenTutorial?: () => void;
 }
 
-export default function AppHeader({ currentSession, onOpenTutorial }: AppHeaderProps) {
+export default function AppHeader({
+  currentSession,
+  onOpenTutorial,
+}: AppHeaderProps) {
   const { colors } = useAppTheme();
   const responsive = useResponsive();
-  
+
   return (
     <View
       style={{
@@ -25,15 +28,21 @@ export default function AppHeader({ currentSession, onOpenTutorial }: AppHeaderP
     >
       <View style={{ gap: responsive.spacing.sm }}>
         {/* Logo + Title + Tutorial */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: responsive.spacing.md }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: responsive.spacing.md,
+          }}
+        >
           <View
             style={{
               width: responsive.isTablet ? 48 : 40,
               height: responsive.isTablet ? 48 : 40,
               borderRadius: responsive.borderRadius.lg,
               backgroundColor: colors.primary,
-              alignItems: 'center',
-              justifyContent: 'center',
+              alignItems: "center",
+              justifyContent: "center",
               shadowColor: colors.primary,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.25,
@@ -48,7 +57,7 @@ export default function AppHeader({ currentSession, onOpenTutorial }: AppHeaderP
               style={{
                 color: colors.text,
                 fontSize: responsive.fontSize.xl,
-                fontWeight: '700',
+                fontWeight: "700",
                 letterSpacing: 0.3,
               }}
             >
@@ -58,7 +67,7 @@ export default function AppHeader({ currentSession, onOpenTutorial }: AppHeaderP
               style={{
                 color: colors.textMuted,
                 fontSize: responsive.fontSize.sm,
-                fontWeight: '400',
+                fontWeight: "400",
                 marginTop: 2,
               }}
             >
@@ -82,7 +91,7 @@ export default function AppHeader({ currentSession, onOpenTutorial }: AppHeaderP
                 style={{
                   color: colors.primary,
                   fontSize: responsive.fontSize.xs,
-                  fontWeight: '700',
+                  fontWeight: "700",
                 }}
               >
                 ? Tutorial
@@ -96,7 +105,7 @@ export default function AppHeader({ currentSession, onOpenTutorial }: AppHeaderP
               height: responsive.isTablet ? 16 : 12,
               borderRadius: responsive.isTablet ? 8 : 6,
               backgroundColor: currentSession ? colors.primary : colors.border2,
-              shadowColor: currentSession ? colors.primary : 'transparent',
+              shadowColor: currentSession ? colors.primary : "transparent",
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: currentSession ? 0.5 : 0,
               shadowRadius: 3,
@@ -113,20 +122,26 @@ export default function AppHeader({ currentSession, onOpenTutorial }: AppHeaderP
               paddingVertical: responsive.spacing.xs,
               borderRadius: responsive.borderRadius.md,
               backgroundColor: colors.surface,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
             <View>
-              <Text style={{ color: colors.textMuted, fontSize: responsive.fontSize.xs, fontWeight: '500' }}>
+              <Text
+                style={{
+                  color: colors.textMuted,
+                  fontSize: responsive.fontSize.xs,
+                  fontWeight: "500",
+                }}
+              >
                 Sessão Atual
               </Text>
               <Text
                 style={{
                   color: colors.text,
                   fontSize: responsive.fontSize.sm,
-                  fontWeight: '600',
+                  fontWeight: "600",
                   marginTop: 2,
                 }}
               >
@@ -143,10 +158,10 @@ export default function AppHeader({ currentSession, onOpenTutorial }: AppHeaderP
             >
               <Text
                 style={{
-                  color: '#ffffff',
+                  color: "#ffffff",
                   fontSize: responsive.fontSize.xs,
-                  fontWeight: '600',
-              }}
+                  fontWeight: "600",
+                }}
               >
                 Ativa
               </Text>

@@ -3,6 +3,7 @@
 ## 📊 O que foi implementado
 
 ### 1. **Motor de Detecção Avançado** (`advancedScanner.ts`)
+
 - ✅ **Validação de Checksum**: EAN-13, UPC-A, Módulo 10 (Shopee BR)
 - ✅ **Múltiplos Padrões**: Suporte a 10+ formatos de código
 - ✅ **Análise de Confiança**: Score 0-100% baseado em validação
@@ -10,7 +11,9 @@
 - ✅ **Logging Estruturado**: Análise raw com 6 campos de debug
 
 ### 2. **Interface Visual Profissional** (`AdvancedScannerDisplay.tsx`)
+
 Componente React Native que exibe:
+
 - 🎯 **Tipo de Pacote** com código colorido (Shopee/ML/Avulso)
 - 💚 **Grau de Confiança** com ícone e percentual
 - 🔍 **Padrão Detectado** (ex: "Shopee BR Standard")
@@ -19,6 +22,7 @@ Componente React Native que exibe:
 - 📋 **Análise Detalhada** (opcional) com comprimento, padrão, etc.
 
 ### 3. **Componentes de Suporte**
+
 - **Input Manual**: Campo para testar códigos manualmente
 - **Loading State**: Indicador visual durante análise
 - **Feedback Profissional**: Cores, ícones, animações integrados
@@ -30,10 +34,10 @@ Componente React Native que exibe:
 ### Uso Básico
 
 ```typescript
-import { analyzeCodeAdvanced, detectAnomalies } from '@/utils/advancedScanner';
+import { analyzeCodeAdvanced, detectAnomalies } from "@/utils/advancedScanner";
 
 // Analisar um código
-const result = analyzeCodeAdvanced('BR1234567890ABC');
+const result = analyzeCodeAdvanced("BR1234567890ABC");
 
 console.log(result);
 // {
@@ -54,27 +58,27 @@ console.log(result);
 ### Uso com Contexto (Detecção de Anomalias)
 
 ```typescript
-const analysis = analyzeCodeAdvanced('BR1234567890ABC');
+const analysis = analyzeCodeAdvanced("BR1234567890ABC");
 
 const withContext = detectAnomalies(analysis, {
-  expectedType: 'shopee', // tipo esperado para este motoboy
-  recentCodes: ['BR1234567890ABC', 'BR9876543210XYZ'], // últimos códigos
-  driverId: 'driver123'
+  expectedType: "shopee", // tipo esperado para este motoboy
+  recentCodes: ["BR1234567890ABC", "BR9876543210XYZ"], // últimos códigos
+  driverId: "driver123",
 });
 
 if (withContext.is_suspicious) {
-  console.warn('⚠️ Código suspeito!', withContext.anomaly_flags);
+  console.warn("⚠️ Código suspeito!", withContext.anomaly_flags);
 }
 ```
 
 ### Integração em Componente
 
 ```tsx
-import AdvancedScannerDisplay from '@/components/AdvancedScannerDisplay';
-import { analyzeCodeAdvanced } from '@/utils/advancedScanner';
+import AdvancedScannerDisplay from "@/components/AdvancedScannerDisplay";
+import { analyzeCodeAdvanced } from "@/utils/advancedScanner";
 
 export default function MyScanner() {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [analysis, setAnalysis] = useState(null);
 
   const handleInput = (code: string) => {
@@ -96,23 +100,25 @@ export default function MyScanner() {
 
 ## 📈 Métricas de Confiança
 
-| Nível | Score | Significado | Ação |
-|-------|-------|-------------|------|
-| **CRITICAL** 🟢 | 90-100% | Código válido, checksum correto | ✅ Aceitar imediatamente |
-| **HIGH** 🔵 | 75-89% | Padrão conhecido, validação passada | ✅ Aceitar |
-| **MEDIUM** 🟠 | 50-74% | Matches ambíguo ou sem checksum | ⚠️ Pedir confirmação |
-| **LOW** 🔴 | 30-49% | Checksum falhado ou padrão fraco | ❌ Rejeitar |
-| **REJECTED** ⚫ | 0-29% | Nenhum padrão reconhecido | ❌ Bloquear |
+| Nível           | Score   | Significado                         | Ação                     |
+| --------------- | ------- | ----------------------------------- | ------------------------ |
+| **CRITICAL** 🟢 | 90-100% | Código válido, checksum correto     | ✅ Aceitar imediatamente |
+| **HIGH** 🔵     | 75-89%  | Padrão conhecido, validação passada | ✅ Aceitar               |
+| **MEDIUM** 🟠   | 50-74%  | Matches ambíguo ou sem checksum     | ⚠️ Pedir confirmação     |
+| **LOW** 🔴      | 30-49%  | Checksum falhado ou padrão fraco    | ❌ Rejeitar              |
+| **REJECTED** ⚫ | 0-29%   | Nenhum padrão reconhecido           | ❌ Bloquear              |
 
 ---
 
 ## 🎯 Padrões Suportados
 
 ### Shopee
+
 - `BR[0-9A-Z]{6,}` - Padrão standard com validação Módulo 10
 - `[0-9]{13}` - EAN-13 com validação de checksum
 
 ### Mercado Livre
+
 - `20000[0-9]{6,}` - Prefixo 20000 + EAN-13 (aceito mesmo com checksum inválido)
 
 > **Nota**: a validação de checksum EAN-13 foi removida para Mercado Livre para evitar
@@ -124,11 +130,13 @@ export default function MyScanner() {
 > uma URL inteira.
 
 ### Funções Auxiliares
+
 - `normalizeMercadoLivreCode(raw)` – normaliza e assegura o prefixo exigido.
 - `analyzeMercadoLivreCode(raw)` – análise avançada com checksum e flags;
   retorna `confidence='rejected'` para entradas fora de 20000.
 
 ### Avulso
+
 - `LM[0-9A-Z]{2,}` - Códigos internos (máxima prioridade)
 - `[A-Z0-9]{4,}` - Alfanumérico genérico
 
@@ -136,15 +144,15 @@ export default function MyScanner() {
 
 ## 🔍 Bandeiras de Anomalia
 
-| Flag | Significado |
-|------|-------------|
-| `código_vazio` | Nenhum caractere |
-| `contém_caracteres_especiais_não_normalizados` | Caracteres inválidos |
-| `checksum_inválido` | Validação de integridade falhou |
-| `ambigüidade_padrão` | Múltiplas correspondências |
-| `nenhum_padrão_conhecido` | Não corresponde a nenhum marketplace |
-| `tipo_inesperado_esperava_X` | Tipo diferente do esperado (com contexto) |
-| `escanneado_recentemente` | Possível rescan acidental |
+| Flag                                           | Significado                               |
+| ---------------------------------------------- | ----------------------------------------- |
+| `código_vazio`                                 | Nenhum caractere                          |
+| `contém_caracteres_especiais_não_normalizados` | Caracteres inválidos                      |
+| `checksum_inválido`                            | Validação de integridade falhou           |
+| `ambigüidade_padrão`                           | Múltiplas correspondências                |
+| `nenhum_padrão_conhecido`                      | Não corresponde a nenhum marketplace      |
+| `tipo_inesperado_esperava_X`                   | Tipo diferente do esperado (com contexto) |
+| `escanneado_recentemente`                      | Possível rescan acidental                 |
 
 ---
 
@@ -194,13 +202,16 @@ const ChecksumValidators = {
 ## 🚨 Segurança
 
 ### Prevenção de Fraude
+
 ✅ Validação de checksum impede códigos modificados
 ✅ Contexto do motorista detecta acessos cruzados
 ✅ Histórico de recentes previne duplicação acidental
 ✅ Anomaly flags permite lógica de negócio complexa
 
 ### Auditoria
+
 Todos os scans incluem:
+
 - Código original
 - Normalizado
 - Tipo detectado
@@ -213,6 +224,7 @@ Todos os scans incluem:
 ## 📝 Exemplos de Casos de Uso
 
 ### Caso 1: Aceitar apenas códigos de alta confiança
+
 ```typescript
 if (analysis.confidence_score >= 80) {
   acceptPackage(analysis);
@@ -220,27 +232,30 @@ if (analysis.confidence_score >= 80) {
 ```
 
 ### Caso 2: Rejeitar checksum inválido
+
 ```typescript
 if (analysis.checksum_valid === false) {
-  rejectWithWarning('Código adulterado ou corrompido');
+  rejectWithWarning("Código adulterado ou corrompido");
 }
 ```
 
 ### Caso 3: Alertar sobre ambigüidade
+
 ```typescript
-if (analysis.confidence === 'medium') {
+if (analysis.confidence === "medium") {
   askUserForConfirmation(analysis.anomaly_flags);
 }
 ```
 
 ### Caso 4: Bloquear escaneamento cruzado
+
 ```typescript
 const contextAnalysis = detectAnomalies(analysis, {
   expectedType: currentDriver.expectedType,
 });
 
-if (contextAnalysis.anomaly_flags.includes('tipo_inesperado_esperava_shopee')) {
-  alert('⚠️ Este pacote é Mercado Livre, não Shopee!');
+if (contextAnalysis.anomaly_flags.includes("tipo_inesperado_esperava_shopee")) {
+  alert("⚠️ Este pacote é Mercado Livre, não Shopee!");
 }
 ```
 

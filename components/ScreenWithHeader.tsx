@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
-import { Animated } from 'react-native';
-import MainLayout from './MainLayout';
-import { HeaderVariant, HeaderSize } from './HeaderNavigation';
+import React, { useRef } from "react";
+import { Animated } from "react-native";
+import MainLayout from "./MainLayout";
+import { HeaderVariant, HeaderSize } from "./HeaderNavigation";
 
 interface ScreenWithHeaderProps {
   children: React.ReactNode;
@@ -33,8 +33,8 @@ export default function ScreenWithHeader({
   children,
   title,
   subtitle,
-  variant = 'default',
-  size = 'md',
+  variant = "default",
+  size = "md",
   showBackButton = false,
   showMenuButton = false,
   showSearchButton = false,
@@ -82,7 +82,7 @@ export default function ScreenWithHeader({
         contentContainerStyle={{ paddingBottom: 32 }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
+          { useNativeDriver: false },
         )}
         scrollEventThrottle={16}
       >
@@ -93,7 +93,11 @@ export default function ScreenWithHeader({
 }
 
 // Exemplos de uso:
-export const HomeHeaderExample = ({ children }: { children: React.ReactNode }) => (
+export const HomeHeaderExample = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => (
   <ScreenWithHeader
     title="Beep Velozz"
     subtitle="Sistema de scanner industrial"
@@ -109,7 +113,11 @@ export const HomeHeaderExample = ({ children }: { children: React.ReactNode }) =
   </ScreenWithHeader>
 );
 
-export const SettingsHeaderExample = ({ children }: { children: React.ReactNode }) => (
+export const SettingsHeaderExample = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => (
   <ScreenWithHeader
     title="Configurações"
     subtitle="Personalize sua experiência"
@@ -124,7 +132,11 @@ export const SettingsHeaderExample = ({ children }: { children: React.ReactNode 
   </ScreenWithHeader>
 );
 
-export const ScannerHeaderExample = ({ children }: { children: React.ReactNode }) => (
+export const ScannerHeaderExample = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => (
   <ScreenWithHeader
     title="Scanner"
     subtitle="Aponte para a câmera"
@@ -140,7 +152,11 @@ export const ScannerHeaderExample = ({ children }: { children: React.ReactNode }
   </ScreenWithHeader>
 );
 
-export const ProfileHeaderExample = ({ children }: { children: React.ReactNode }) => (
+export const ProfileHeaderExample = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => (
   <ScreenWithHeader
     title="Perfil"
     subtitle="Suas informações"
@@ -155,7 +171,11 @@ export const ProfileHeaderExample = ({ children }: { children: React.ReactNode }
   </ScreenWithHeader>
 );
 
-export const SearchHeaderExample = ({ children }: { children: React.ReactNode }) => (
+export const SearchHeaderExample = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => (
   <ScreenWithHeader
     title="Buscar"
     subtitle="Encontre pacotes rapidamente"

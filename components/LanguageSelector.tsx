@@ -3,7 +3,7 @@
  * Componente para seleção de idioma com suporte RTL
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -12,13 +12,13 @@ import {
   FlatList,
   StyleSheet,
   Dimensions,
-} from 'react-native';
-import { BlurView } from 'expo-blur';
-import { useAppTheme } from '@/utils/useAppTheme';
-import { useLocalization } from '@/hooks/useLocalization';
-import { Language } from '@/types/localization';
+} from "react-native";
+import { BlurView } from "expo-blur";
+import { useAppTheme } from "@/utils/useAppTheme";
+import { useLocalization } from "@/hooks/useLocalization";
+import { Language } from "@/types/localization";
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 interface LanguageSelectorProps {
   visible: boolean;
@@ -33,8 +33,10 @@ export default function LanguageSelector({
 }: LanguageSelectorProps) {
   const { colors } = useAppTheme();
   const localization = useLocalization();
-  
-  const [selectedLanguage, setSelectedLanguage] = useState(localization.currentLanguage);
+
+  const [selectedLanguage, setSelectedLanguage] = useState(
+    localization.currentLanguage,
+  );
 
   // Handle language selection
   const handleLanguageSelect = (language: Language) => {
@@ -48,7 +50,7 @@ export default function LanguageSelector({
   const renderLanguageItem = ({ item }: { item: Language }) => {
     const isSelected = item.code === selectedLanguage;
     const isRTL = localization.isRTL();
-    
+
     return (
       <TouchableOpacity
         style={[
@@ -56,20 +58,20 @@ export default function LanguageSelector({
           {
             backgroundColor: isSelected ? colors.primary : colors.card,
             borderColor: isSelected ? colors.primary : colors.border,
-            flexDirection: localization.isRTL() ? 'row-reverse' : 'row',
+            flexDirection: localization.isRTL() ? "row-reverse" : "row",
           },
         ]}
         onPress={() => handleLanguageSelect(item)}
       >
         <Text style={styles.languageFlag}>{item.flag}</Text>
-        
+
         <View style={styles.languageInfo}>
           <Text
             style={[
               styles.languageName,
               {
-                color: isSelected ? 'white' : colors.text,
-                textAlign: isRTL ? 'right' : 'left',
+                color: isSelected ? "white" : colors.text,
+                textAlign: isRTL ? "right" : "left",
               },
             ]}
           >
@@ -79,18 +81,16 @@ export default function LanguageSelector({
             style={[
               styles.languageEnglishName,
               {
-                color: isSelected ? 'white' : colors.textSecondary,
-                textAlign: isRTL ? 'right' : 'left',
+                color: isSelected ? "white" : colors.textSecondary,
+                textAlign: isRTL ? "right" : "left",
               },
             ]}
           >
             {item.name}
           </Text>
         </View>
-        
-        {isSelected && (
-          <Text style={styles.selectedIcon}>✓</Text>
-        )}
+
+        {isSelected && <Text style={styles.selectedIcon}>✓</Text>}
       </TouchableOpacity>
     );
   };
@@ -103,15 +103,19 @@ export default function LanguageSelector({
       onRequestClose={onClose}
     >
       <BlurView intensity={100} style={styles.modalOverlay}>
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View
+          style={[styles.container, { backgroundColor: colors.background }]}
+        >
           {/* Header */}
           <View style={[styles.header, { borderBottomColor: colors.border }]}>
             <Text style={[styles.headerTitle, { color: colors.text }]}>
               🌐 Selecionar Idioma
             </Text>
-            
+
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Text style={[styles.closeButtonText, { color: colors.text }]}>✕</Text>
+              <Text style={[styles.closeButtonText, { color: colors.text }]}>
+                ✕
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -139,45 +143,45 @@ export default function LanguageSelector({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   container: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: screenHeight * 0.7,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   closeButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f3f4f6',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f3f4f6",
   },
   closeButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   languageList: {
     padding: 20,
     paddingBottom: 10,
   },
   languageItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
@@ -192,7 +196,7 @@ const styles = StyleSheet.create({
   },
   languageName: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 2,
   },
   languageEnglishName: {
@@ -200,8 +204,8 @@ const styles = StyleSheet.create({
   },
   selectedIcon: {
     fontSize: 18,
-    fontWeight: '600',
-    color: 'white',
+    fontWeight: "600",
+    color: "white",
   },
   footer: {
     paddingHorizontal: 20,
@@ -210,7 +214,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    textAlign: 'center',
-    fontStyle: 'italic',
+    textAlign: "center",
+    fontStyle: "italic",
   },
 });

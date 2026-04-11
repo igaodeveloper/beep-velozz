@@ -7,6 +7,7 @@ A interface de seleção de motoristas foi completamente redesenhada com um desi
 ### Componentes Visuais:
 
 #### 1. **Card Principal de Seleção**
+
 ```
 ┌─────────────────────────────────────────────┐
 │ 🚗  Selecionado                         ▼   │
@@ -14,12 +15,14 @@ A interface de seleção de motoristas foi completamente redesenhada com um desi
 │      João Silva                             │
 └─────────────────────────────────────────────┘
 ```
+
 - Card destacado com cor primária
 - Mostra nome do motorista selecionado
 - Sombra e efeito visual profissional
 - Clique para expandir/colapsar lista
 
 #### 2. **Lista Expandida de Motoristas**
+
 ```
 ┌─────────────────────────────────────────────┐
 │ ☑ João Silva                          🗑️   │
@@ -31,22 +34,26 @@ A interface de seleção de motoristas foi completamente redesenhada com um desi
 │ ☐ Ana Rocha                           🗑️   │
 └─────────────────────────────────────────────┘
 ```
+
 - Checkbox visual para seleção
 - Ícone de delete em cada item
 - Scroll automático quando há muitos motoristas
 - Animação suave ao entrar/sair
 
 #### 3. **Botão de Novo Motorista**
+
 ```
 ┌──────────────────────────────────────────────┐
 │  ⊕ Novo Motorista                            │
 └──────────────────────────────────────────────┘
 ```
+
 - Border dashed (estilo moderno)
 - Ícone + intuitivo
 - Feedback ao clicar
 
 #### 4. **Formulário de Adição**
+
 ```
 ┌──────────────────────────────────────────────┐
 │ Nome do Motorista                            │
@@ -59,6 +66,7 @@ A interface de seleção de motoristas foi completamente redesenhada com um desi
 │ └──────────────┴──────────────────────────┘   │
 └──────────────────────────────────────────────┘
 ```
+
 - Input limpo e profissional
 - Botões de ação lado a lado
 - Submit disabled quando vazio
@@ -66,6 +74,7 @@ A interface de seleção de motoristas foi completamente redesenhada com um desi
 ## 🎯 Funcionalidades
 
 ### ✅ Remover Motorista
+
 - Clique no ícone de lixeira 🗑️
 - Confirmação de alerta com nome do motorista
 - Soft delete seguro
@@ -73,12 +82,14 @@ A interface de seleção de motoristas foi completamente redesenhada com um desi
 - Se era selecionado, desseleciona
 
 ### ✅ Scroll Inteligente
+
 - Lista scrollável quando > 5 motoristas
 - Animações suaves ao expandir
 - Otimizado para performance
 - Responsivo em diferentes tamanhos
 
 ### ✅ Interface Profissional
+
 - Tipografia clara (UPPERCASE labels)
 - Cores consistentes com tema
 - Ícones intuitivos (MaterialIcons)
@@ -87,15 +98,15 @@ A interface de seleção de motoristas foi completamente redesenhada com um desi
 
 ## 🎨 Design System
 
-| Elemento | Aspecto |
-|----------|--------|
-| **Card Principal** | Cor primária, sombra, 12px border-radius |
-| **Lista Items** | Background alternado, 70% opacity ao pressionar |
-| **Botões** | Primary fill, Secondary text, 8-12px padding |
-| **Inputs** | Surface2 background, border-radius 10px |
-| **Checkboxes** | 24x24px, 6px border-radius, animated |
-| **Ícones** | 16-24px, cores semânticas (delete=danger) |
-| **Spacing** | 8-16px gaps, consistent padding |
+| Elemento           | Aspecto                                         |
+| ------------------ | ----------------------------------------------- |
+| **Card Principal** | Cor primária, sombra, 12px border-radius        |
+| **Lista Items**    | Background alternado, 70% opacity ao pressionar |
+| **Botões**         | Primary fill, Secondary text, 8-12px padding    |
+| **Inputs**         | Surface2 background, border-radius 10px         |
+| **Checkboxes**     | 24x24px, 6px border-radius, animated            |
+| **Ícones**         | 16-24px, cores semânticas (delete=danger)       |
+| **Spacing**        | 8-16px gaps, consistent padding                 |
 
 ## 🔄 Fluxo de Uso
 
@@ -108,11 +119,13 @@ A interface de seleção de motoristas foi completamente redesenhada com um desi
 ## 🔧 Integração Técnica
 
 ### Imports Necessários:
+
 ```typescript
-import DriversSelector from '@/components/DriversSelector';
+import DriversSelector from "@/components/DriversSelector";
 ```
 
 ### Props:
+
 ```typescript
 interface DriversSelectorProps {
   drivers: Driver[];
@@ -125,6 +138,7 @@ interface DriversSelectorProps {
 ```
 
 ### No SessionInitModal:
+
 ```jsx
 <DriversSelector
   drivers={drivers}

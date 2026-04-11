@@ -12,7 +12,10 @@ import { Dimensions } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import "../global.css";
-import { ThemeProvider as CustomThemeProvider, useTheme } from "../utils/themeContext";
+import {
+  ThemeProvider as CustomThemeProvider,
+  useTheme,
+} from "../utils/themeContext";
 import { lightTheme, darkTheme } from "../utils/theme";
 import { getDeviceInfo } from "../utils/orientationUtils";
 import { SplashScreen as CustomSplashScreen } from "../components/SplashScreen";
@@ -24,11 +27,11 @@ SplashScreen.preventAutoHideAsync();
 function RootLayoutContent() {
   const { isDark } = useTheme();
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
   const [deviceInfo, setDeviceInfo] = useState(getDeviceInfo());
   const [appReady, setAppReady] = useState(false);
-  
+
   // Toggle this to use animated splash (true) or fast splash (false)
   const useAnimatedSplash = false;
 
@@ -42,18 +45,19 @@ function RootLayoutContent() {
   }, [loaded]);
 
   useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', () => {
+    const subscription = Dimensions.addEventListener("change", () => {
       setDeviceInfo(getDeviceInfo());
     });
     return () => subscription?.remove();
   }, []);
 
-
   // Show splash screen while app is loading
   if (!appReady) {
-    return useAnimatedSplash 
-      ? <CustomSplashScreen onAnimationComplete={() => {}} />
-      : <FastSplashScreen onAnimationComplete={() => {}} />;
+    return useAnimatedSplash ? (
+      <CustomSplashScreen onAnimationComplete={() => {}} />
+    ) : (
+      <FastSplashScreen onAnimationComplete={() => {}} />
+    );
   }
 
   const navTheme = isDark

@@ -3,7 +3,7 @@
  * Interface de comandos de voz com feedback visual e auditivo
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -13,27 +13,27 @@ import {
   Alert,
   Vibration,
   Dimensions,
-} from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
-import { useVoiceCommands, VoiceCommandResult } from '@/utils/voiceCommands';
-import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { shouldAnimate } from '@/utils/performanceOptimizer';
+} from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
+import { useVoiceCommands, VoiceCommandResult } from "@/utils/voiceCommands";
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { shouldAnimate } from "@/utils/performanceOptimizer";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 interface VoiceCommandInterfaceProps {
   onCommand?: (result: VoiceCommandResult) => void;
-  position?: 'bottom' | 'top' | 'center';
-  size?: 'small' | 'medium' | 'large';
+  position?: "bottom" | "top" | "center";
+  size?: "small" | "medium" | "large";
   showFeedback?: boolean;
   autoStart?: boolean;
 }
 
 const VoiceCommandInterface: React.FC<VoiceCommandInterfaceProps> = ({
   onCommand,
-  position = 'bottom',
-  size = 'medium',
+  position = "bottom",
+  size = "medium",
   showFeedback = true,
   autoStart = false,
 }) => {
@@ -48,7 +48,7 @@ const VoiceCommandInterface: React.FC<VoiceCommandInterfaceProps> = ({
     simulateCommand,
   } = useVoiceCommands();
 
-  const [feedbackMessage, setFeedbackMessage] = useState<string>('');
+  const [feedbackMessage, setFeedbackMessage] = useState<string>("");
   const [showHelp, setShowHelp] = useState(false);
   const pulseAnimation = useRef(new Animated.Value(1)).current;
   const slideAnimation = useRef(new Animated.Value(0)).current;
@@ -78,7 +78,7 @@ const VoiceCommandInterface: React.FC<VoiceCommandInterfaceProps> = ({
             duration: 800,
             useNativeDriver: true,
           }),
-        ])
+        ]),
       );
       pulse.start();
       return () => pulse.stop();
@@ -90,8 +90,8 @@ const VoiceCommandInterface: React.FC<VoiceCommandInterfaceProps> = ({
   // Feedback visual de comandos
   useEffect(() => {
     if (lastResult && showFeedback) {
-      setFeedbackMessage(lastResult.response || (lastResult.error || ''));
-      
+      setFeedbackMessage(lastResult.response || lastResult.error || "");
+
       if (shouldAnimate()) {
         Animated.sequence([
           Animated.timing(feedbackAnimation, {
@@ -154,32 +154,35 @@ const VoiceCommandInterface: React.FC<VoiceCommandInterfaceProps> = ({
   }, [showHelp]);
 
   // Simula comando para teste
-  const handleSimulateCommand = useCallback((command: string) => {
-    const result = simulateCommand(command);
-    setFeedbackMessage(result.response || (result.error || ''));
-    onCommand?.(result);
-  }, [simulateCommand, onCommand]);
+  const handleSimulateCommand = useCallback(
+    (command: string) => {
+      const result = simulateCommand(command);
+      setFeedbackMessage(result.response || result.error || "");
+      onCommand?.(result);
+    },
+    [simulateCommand, onCommand],
+  );
 
   // Estilos dinâmicos baseados na posição
   const getPositionStyles = () => {
     switch (position) {
-      case 'top':
+      case "top":
         return {
-          position: 'absolute' as const,
+          position: "absolute" as const,
           top: 20,
           left: SCREEN_WIDTH / 2 - config.buttonSize / 2,
         };
-      case 'center':
+      case "center":
         return {
-          position: 'absolute' as const,
-          top: '50%' as const,
+          position: "absolute" as const,
+          top: "50%" as const,
           left: SCREEN_WIDTH / 2 - config.buttonSize / 2,
           marginTop: -config.buttonSize / 2,
         };
-      case 'bottom':
+      case "bottom":
       default:
         return {
-          position: 'absolute' as const,
+          position: "absolute" as const,
           bottom: 30,
           left: SCREEN_WIDTH / 2 - config.buttonSize / 2,
         };
@@ -204,7 +207,7 @@ const VoiceCommandInterface: React.FC<VoiceCommandInterfaceProps> = ({
     styles.voiceIcon,
     {
       fontSize: config.iconSize,
-      color: isListening ? '#fff' : colors.text,
+      color: isListening ? "#fff" : colors.text,
     },
   ];
 
@@ -226,10 +229,7 @@ const VoiceCommandInterface: React.FC<VoiceCommandInterfaceProps> = ({
     },
   ];
 
-  const feedbackTextStyle = [
-    styles.feedbackText,
-    { color: colors.text },
-  ];
+  const feedbackTextStyle = [styles.feedbackText, { color: colors.text }];
 
   // Se não for suportado, mostra mensagem
   if (!isSupported) {
@@ -252,7 +252,7 @@ const VoiceCommandInterface: React.FC<VoiceCommandInterfaceProps> = ({
           activeOpacity={0.8}
         >
           <Ionicons
-            name={isListening ? 'mic' : 'mic-outline'}
+            name={isListening ? "mic" : "mic-outline"}
             style={iconStyle}
           />
         </TouchableOpacity>
@@ -286,11 +286,7 @@ const VoiceCommandInterface: React.FC<VoiceCommandInterfaceProps> = ({
           ]}
           onPress={handleShowHelp}
         >
-          <Ionicons
-            name="help-outline"
-            size={20}
-            color={colors.secondary}
-          />
+          <Ionicons name="help-outline" size={20} color={colors.secondary} />
         </TouchableOpacity>
       </View>
 
@@ -302,18 +298,20 @@ const VoiceCommandInterface: React.FC<VoiceCommandInterfaceProps> = ({
               🎤 Comandos de Voz
             </Text>
             <View style={styles.commandsList}>
-              {getAvailableCommands().slice(0, 8).map((command, index) => (
-                <Text
-                  key={`command-${command}-${index}`}
-                  style={[styles.commandItem, { color: colors.secondary }]}
-                  onPress={() => {
-                    handleSimulateCommand(command);
-                    setShowHelp(false);
-                  }}
-                >
-                  • {command}
-                </Text>
-              ))}
+              {getAvailableCommands()
+                .slice(0, 8)
+                .map((command, index) => (
+                  <Text
+                    key={`command-${command}-${index}`}
+                    style={[styles.commandItem, { color: colors.secondary }]}
+                    onPress={() => {
+                      handleSimulateCommand(command);
+                      setShowHelp(false);
+                    }}
+                  >
+                    • {command}
+                  </Text>
+                ))}
             </View>
             <TouchableOpacity
               style={[styles.helpClose, { backgroundColor: colors.primary }]}
@@ -328,7 +326,7 @@ const VoiceCommandInterface: React.FC<VoiceCommandInterfaceProps> = ({
       {/* Botões de teste (development only) */}
       {__DEV__ && (
         <View style={styles.testButtons}>
-          {['iniciar sessão', 'escanear', 'relatório', 'ajuda'].map((cmd) => (
+          {["iniciar sessão", "escanear", "relatório", "ajuda"].map((cmd) => (
             <TouchableOpacity
               key={cmd}
               style={[
@@ -355,30 +353,30 @@ const styles = StyleSheet.create({
   voiceButton: {
     borderRadius: 50,
     borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
   voiceIcon: {
-    fontWeight: '600',
+    fontWeight: "600",
   },
   listeningIndicator: {
     marginTop: 5,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
   },
   listeningText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   feedbackContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 120,
     left: 20,
     right: 20,
@@ -386,51 +384,51 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     elevation: 3,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
   feedbackText: {
     fontSize: 14,
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: "500",
+    textAlign: "center",
   },
   helpButton: {
-    position: 'absolute',
+    position: "absolute",
     width: 30,
     height: 30,
     borderRadius: 15,
     borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 2,
   },
   helpOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   helpModal: {
     margin: 20,
     padding: 20,
     borderRadius: 16,
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
   },
   helpTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   commandsList: {
     marginBottom: 20,
@@ -440,33 +438,33 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     padding: 8,
     borderRadius: 6,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    backgroundColor: "rgba(0, 0, 0, 0.05)",
   },
   helpClose: {
     padding: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   helpCloseText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: "#fff",
+    fontWeight: "600",
   },
   notSupportedContainer: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+    backgroundColor: "rgba(255, 0, 0, 0.1)",
   },
   notSupportedText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   testButtons: {
-    position: 'absolute',
+    position: "absolute",
     top: 100,
     left: 10,
     right: 10,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
   },
   testButton: {
@@ -474,11 +472,11 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 1,
     minWidth: 80,
-    alignItems: 'center',
+    alignItems: "center",
   },
   testButtonText: {
     fontSize: 10,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });
 

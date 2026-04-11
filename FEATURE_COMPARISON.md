@@ -22,6 +22,7 @@
 ```
 
 **Limitações:**
+
 - Interface genérica do Picker
 - Não permite deletar motoristas
 - Sem feedback visual
@@ -68,6 +69,7 @@
 ```
 
 **Melhorias:**
+
 - ✨ Design visual atraente e profissional
 - 🗑️ Deletar motorista com confirmação
 - 📜 Scroll automático e responsivo
@@ -81,37 +83,41 @@
 
 ## 📈 Comparativo de Features
 
-| Feature | Antes | Depois |
-|---------|-------|--------|
-| Seleção de Motorista | ✓ Picker básico | ✓✓ Card + Lista |
-| Adicionar Motorista | ✓ Botão simples | ✓✓ Button dashed + Form |
-| Remover Motorista | ✗ Não existe | ✓✓ Com confirmação |
-| Visual | ⭐⭐ | ⭐⭐⭐⭐⭐ |
-| Scroll Automático | ✗ | ✓ Inteligente |
-| Animações | ✗ | ✓✓ Reanimated |
-| Feedback Visual | ✓ Mínimo | ✓✓ Completo |
-| UX | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| Responsivo | ✓ | ✓✓ Otimizado |
+| Feature              | Antes           | Depois                  |
+| -------------------- | --------------- | ----------------------- |
+| Seleção de Motorista | ✓ Picker básico | ✓✓ Card + Lista         |
+| Adicionar Motorista  | ✓ Botão simples | ✓✓ Button dashed + Form |
+| Remover Motorista    | ✗ Não existe    | ✓✓ Com confirmação      |
+| Visual               | ⭐⭐            | ⭐⭐⭐⭐⭐              |
+| Scroll Automático    | ✗               | ✓ Inteligente           |
+| Animações            | ✗               | ✓✓ Reanimated           |
+| Feedback Visual      | ✓ Mínimo        | ✓✓ Completo             |
+| UX                   | ⭐⭐⭐          | ⭐⭐⭐⭐⭐              |
+| Responsivo           | ✓               | ✓✓ Otimizado            |
 
 ---
 
 ## 🎯 Ganhos Principais
 
 ### 1. **Funcionalidade**
+
 - Novo poder de remover motoristas
 - Gerenciamento completo do ciclo de vida
 
 ### 2. **Visual**
+
 - Design moderno e premium
 - Cores, ícones e animações profissionais
 - Feedback visual claro
 
 ### 3. **Usabilidade**
+
 - Mais intuitivo e descobrível
 - Fluxo claro e obvio
 - Sem necessidade de tutorial
 
 ### 4. **Escalabilidade**
+
 - Suporta listas grandes com scroll
 - Performance otimizada
 - Componente reutilizável

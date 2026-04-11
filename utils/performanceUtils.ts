@@ -3,7 +3,7 @@
  * Cache, memoização e otimizações para o Beep Velozz
  */
 
-import { Session, ScannedPackage } from '@/types/session';
+import { Session, ScannedPackage } from "@/types/session";
 
 // Interface para cache genérico
 interface CacheItem<T> {
@@ -20,7 +20,7 @@ class PerformanceCache {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
-      ttl
+      ttl,
     });
   }
 
@@ -59,27 +59,35 @@ const performanceCache = new PerformanceCache();
 export const memoizedCalculations = {
   // Cache para métricas de sessão
   sessionMetrics: new Map<string, any>(),
-  
+
   // Função memoizada para calcular métricas
   getSessionMetrics: (packages: ScannedPackage[]) => {
-    const cacheKey = packages.map(p => p.id).sort().join('|');
-    
+    const cacheKey = packages
+      .map((p) => p.id)
+      .sort()
+      .join("|");
+
     if (memoizedCalculations.sessionMetrics.has(cacheKey)) {
       return memoizedCalculations.sessionMetrics.get(cacheKey);
     }
 
     // Calcular métricas (implementação otimizada)
-    const shopeePackages = packages.filter(p => p.type === 'shopee');
-    const mercadoLivrePackages = packages.filter(p => p.type === 'mercado_livre');
-    const avulsoPackages = packages.filter(p => p.type === 'avulso');
-    
+    const shopeePackages = packages.filter((p) => p.type === "shopee");
+    const mercadoLivrePackages = packages.filter(
+      (p) => p.type === "mercado_livre",
+    );
+    const avulsoPackages = packages.filter((p) => p.type === "avulso");
+
     const metrics = {
       shopee: shopeePackages.length,
       mercadoLivre: mercadoLivrePackages.length,
       avulsos: avulsoPackages.length,
       total: packages.length,
       valueShopee: shopeePackages.reduce((acc, p) => acc + (p.value || 6), 0),
-      valueMercadoLivre: mercadoLivrePackages.reduce((acc, p) => acc + (p.value || 8), 0),
+      valueMercadoLivre: mercadoLivrePackages.reduce(
+        (acc, p) => acc + (p.value || 8),
+        0,
+      ),
       valueAvulsos: avulsoPackages.reduce((acc, p) => acc + (p.value || 8), 0),
       valueTotal: packages.reduce((acc, p) => acc + (p.value || 0), 0),
     };
@@ -91,7 +99,7 @@ export const memoizedCalculations = {
   // Limpar cache de métricas
   clearSessionMetricsCache: () => {
     memoizedCalculations.sessionMetrics.clear();
-  }
+  },
 };
 
 // Otimização de renderização
@@ -99,10 +107,10 @@ export const renderOptimizations = {
   // Debounce para inputs
   debounce: <T extends (...args: any[]) => any>(
     func: T,
-    delay: number
+    delay: number,
   ): ((...args: Parameters<T>) => void) => {
     let timeoutId: NodeJS.Timeout;
-    
+
     return (...args: Parameters<T>) => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => func(...args), delay);
@@ -112,27 +120,24 @@ export const renderOptimizations = {
   // Throttle para eventos frequentes
   throttle: <T extends (...args: any[]) => any>(
     func: T,
-    limit: number
+    limit: number,
   ): ((...args: Parameters<T>) => void) => {
     let inThrottle: boolean;
-    
+
     return (...args: Parameters<T>) => {
       if (!inThrottle) {
         func(...args);
         inThrottle = true;
-        setTimeout(() => inThrottle = false, limit);
+        setTimeout(() => (inThrottle = false), limit);
       }
     };
-  }
+  },
 };
 
 // Otimizações de storage
 export const storageOptimizations = {
   // Batch operations
-  batchUpdate: async <T>(
-    key: string,
-    updates: Partial<T>[]
-  ): Promise<void> => {
+  batchUpdate: async <T>(key: string, updates: Partial<T>[]): Promise<void> => {
     // Implementação para atualizações em lote
     // Reduz número de operações de I/O
   },
@@ -145,20 +150,17 @@ export const storageOptimizations = {
   // Descompressão de dados do storage
   decompressData: <T>(compressed: string): T => {
     return JSON.parse(compressed);
-  }
+  },
 };
 
 // Monitoramento de performance
 export const performanceMonitor = {
   // Medir tempo de execução
-  measureTime: <T>(
-    name: string,
-    fn: () => T
-  ): T => {
+  measureTime: <T>(name: string, fn: () => T): T => {
     const start = performance.now();
     const result = fn();
     const end = performance.now();
-    
+
     console.log(`[Performance] ${name}: ${(end - start).toFixed(2)}ms`);
     return result;
   },
@@ -172,15 +174,21 @@ export const performanceMonitor = {
       if (global.nativePerformance?.memory) {
         // @ts-ignore
         const memory = global.nativePerformance.memory;
-        console.log('[Memory] Used:', `${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`);
-        console.log('[Memory] Total:', `${(memory.totalJSHeapSize / 1024 / 1024).toFixed(2)}MB`);
+        console.log(
+          "[Memory] Used:",
+          `${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`,
+        );
+        console.log(
+          "[Memory] Total:",
+          `${(memory.totalJSHeapSize / 1024 / 1024).toFixed(2)}MB`,
+        );
       } else {
-        console.log('[Memory] Memory tracking não disponível nesta plataforma');
+        console.log("[Memory] Memory tracking não disponível nesta plataforma");
       }
     } catch (error) {
-      console.log('[Memory] Erro ao track memory usage:', error);
+      console.log("[Memory] Erro ao track memory usage:", error);
     }
-  }
+  },
 };
 
 // Limpeza automática de cache

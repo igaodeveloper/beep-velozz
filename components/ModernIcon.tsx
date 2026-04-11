@@ -1,11 +1,18 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, View, StyleSheet, TouchableOpacity } from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
-import * as Haptics from 'expo-haptics';
+import React, { useEffect, useRef } from "react";
+import { Animated, View, StyleSheet, TouchableOpacity } from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
+import * as Haptics from "expo-haptics";
 
-export type IconVariant = 'solid' | 'outline' | 'duotone' | 'light';
-export type IconAnimation = 'none' | 'pulse' | 'bounce' | 'rotate' | 'shake' | 'fade' | 'scale';
-export type IconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+export type IconVariant = "solid" | "outline" | "duotone" | "light";
+export type IconAnimation =
+  | "none"
+  | "pulse"
+  | "bounce"
+  | "rotate"
+  | "shake"
+  | "fade"
+  | "scale";
+export type IconSize = "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
 
 interface ModernIconProps {
   icon: React.ReactNode;
@@ -23,10 +30,10 @@ interface ModernIconProps {
 
 export default function ModernIcon({
   icon,
-  size = 'md',
+  size = "md",
   color,
-  variant = 'solid',
-  animation = 'none',
+  variant = "solid",
+  animation = "none",
   animated = true,
   onPress,
   onLongPress,
@@ -41,7 +48,7 @@ export default function ModernIcon({
   const translateXAnim = useRef(new Animated.Value(0)).current;
 
   const iconColor = color || colors.text;
-  
+
   const getIconSize = (sizeType: IconSize): number => {
     const sizeMap = {
       xs: 12,
@@ -49,33 +56,33 @@ export default function ModernIcon({
       md: 20,
       lg: 24,
       xl: 28,
-      '2xl': 32,
+      "2xl": 32,
     };
     return sizeMap[sizeType];
   };
-  
+
   const iconSize = getIconSize(size);
 
   useEffect(() => {
     if (!animated || disabled) return;
 
     switch (animation) {
-      case 'pulse':
+      case "pulse":
         startPulseAnimation();
         break;
-      case 'bounce':
+      case "bounce":
         startBounceAnimation();
         break;
-      case 'rotate':
+      case "rotate":
         startRotateAnimation();
         break;
-      case 'shake':
+      case "shake":
         startShakeAnimation();
         break;
-      case 'fade':
+      case "fade":
         startFadeAnimation();
         break;
-      case 'scale':
+      case "scale":
         startScaleAnimation();
         break;
       default:
@@ -96,7 +103,7 @@ export default function ModernIcon({
           duration: 1000,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   };
 
@@ -114,7 +121,7 @@ export default function ModernIcon({
           friction: 8,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   };
 
@@ -124,7 +131,7 @@ export default function ModernIcon({
         toValue: 1,
         duration: 2000,
         useNativeDriver: true,
-      })
+      }),
     ).start();
   };
 
@@ -146,7 +153,7 @@ export default function ModernIcon({
           duration: 100,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   };
 
@@ -163,7 +170,7 @@ export default function ModernIcon({
           duration: 1000,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   };
 
@@ -181,17 +188,17 @@ export default function ModernIcon({
           friction: 8,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   };
 
   const handlePressIn = () => {
     if (disabled) return;
-    
+
     if (hapticFeedback) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    
+
     Animated.spring(scaleAnim, {
       toValue: 0.9,
       tension: 100,
@@ -202,7 +209,7 @@ export default function ModernIcon({
 
   const handlePressOut = () => {
     if (disabled) return;
-    
+
     Animated.spring(scaleAnim, {
       toValue: 1,
       tension: 100,
@@ -213,18 +220,18 @@ export default function ModernIcon({
 
   const getVariantStyle = () => {
     switch (variant) {
-      case 'outline':
+      case "outline":
         return {
           borderWidth: 2,
           borderColor: iconColor,
           borderRadius: iconSize / 2,
         };
-      case 'duotone':
+      case "duotone":
         return {
-          backgroundColor: iconColor + '20',
+          backgroundColor: iconColor + "20",
           borderRadius: iconSize / 2,
         };
-      case 'light':
+      case "light":
         return {
           opacity: 0.6,
         };
@@ -237,10 +244,12 @@ export default function ModernIcon({
     ? {
         transform: [
           { scale: scaleAnim },
-          { rotate: rotateAnim.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['0deg', '360deg'],
-          }) },
+          {
+            rotate: rotateAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: ["0deg", "360deg"],
+            }),
+          },
           { translateX: translateXAnim },
         ],
         opacity: opacityAnim,
@@ -251,10 +260,7 @@ export default function ModernIcon({
     width: iconSize,
     height: iconSize,
     color: iconColor,
-    style: [
-      { opacity: disabled ? 0.5 : 1 },
-      getVariantStyle(),
-    ],
+    style: [{ opacity: disabled ? 0.5 : 1 }, getVariantStyle()],
   });
 
   if (!onPress && !onLongPress) {
@@ -293,12 +299,12 @@ export default function ModernIcon({
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   touchableArea: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 8,
     borderRadius: 20,
   },
@@ -310,15 +316,15 @@ export const IconSizes = {
   md: 20,
   lg: 24,
   xl: 28,
-  '2xl': 32,
+  "2xl": 32,
 } as const;
 
 export const IconAnimations = {
-  none: 'none',
-  pulse: 'pulse',
-  bounce: 'bounce',
-  rotate: 'rotate',
-  shake: 'shake',
-  fade: 'fade',
-  scale: 'scale',
+  none: "none",
+  pulse: "pulse",
+  bounce: "bounce",
+  rotate: "rotate",
+  shake: "shake",
+  fade: "fade",
+  scale: "scale",
 } as const;

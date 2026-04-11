@@ -9,6 +9,7 @@
 ## 📋 Checklist Pré-Deployment
 
 ### 1. Variáveis de Ambiente
+
 - [ ] Copiar `.env.example` para `.env`
 - [ ] Preencher **TODAS** as variáveis (não deixar valores de exemplo)
 - [ ] Rodar `npm run environment:check`
@@ -25,6 +26,7 @@ npm run environment:check
 ```
 
 ### 2. Build & Bundling
+
 - [ ] Limpar cache: `npm run start:clean`
 - [ ] Usar config de produção: `copy metro.config.production.cjs metro.config.cjs`
 - [ ] Minification habilitado (strip console logs)
@@ -32,6 +34,7 @@ npm run environment:check
 - [ ] Tree-shaking verificado
 
 ### 3. Segurança
+
 - [ ] ✅ Token de API em variável de ambiente (NÃO hardcoded)
 - [ ] ✅ Senhas/chaves Firebase em `.env` (não em código)
 - [ ] ✅ Console.log removido em produção
@@ -39,6 +42,7 @@ npm run environment:check
 - [ ] ✅ Network headers com User-Agent correto
 
 ### 4. Performance
+
 - [ ] ✅ React.memo aplicado em componentes críticos
 - [ ] ✅ FlatList com virtualization ativada
 - [ ] ✅ Cleanup de listeners de Firebase
@@ -46,18 +50,21 @@ npm run environment:check
 - [ ] ✅ Bundle size < 50MB (descomprimido)
 
 ### 5. Testes
+
 - [ ] Lint sem erros: `npm run lint`
 - [ ] TypeScript sem erros: `npm run type-check`
 - [ ] Testes de integração passam
 - [ ] Teste manual com dados reais de produção
 
 ### 6. Monitoring
+
 - [ ] Sentry/LogRocket configurado
 - [ ] Crash reporting ativo
 - [ ] Error tracking ativo
 - [ ] Analytics inicializado
 
 ### 7. Documentação
+
 - [ ] README.md atualizado
 - [ ] CHANGELOG.md atualizado
 - [ ] API documentation current
@@ -123,13 +130,16 @@ npm run build:web-production
 ## 🔐 Variáveis de Ambiente Obrigatórias
 
 ### API LogManager
+
 ```env
 EXPO_PUBLIC_API_BASE_URL=https://app.logmanager.com.br/api
 EXPO_PUBLIC_API_TOKEN=seu_token_aqui
 ```
+
 **Obter token em:** https://app.logmanager.com.br/admin/api-tokens
 
 ### Firebase
+
 ```env
 EXPO_PUBLIC_FIREBASE_API_KEY=AIzaSy...
 EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=beepvelozz.firebaseapp.com
@@ -138,9 +148,11 @@ EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=beepvelozz.appspot.com
 EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
 EXPO_PUBLIC_FIREBASE_APP_ID=1:123456789:android:abc123def456
 ```
+
 **Obter em:** Firebase Console > Project Settings
 
 ### Environment
+
 ```env
 EXPO_PUBLIC_ENVIRONMENT=production
 ```
@@ -166,6 +178,7 @@ minifierConfig: {
 ```
 
 **Resultado esperado:**
+
 - Bundle inicial: ~45-50MB
 - Bundle gzipped: ~10-15MB
 - Startup time: < 5s (dispositivo moderno)
@@ -199,18 +212,21 @@ git checkout main
 ## 📈 Monitoramento Pós-Deploy
 
 ### Primeiro Dia
+
 - ✅ Monitorar crash reports a cada 30min
 - ✅ Verificar taxas de erro < 1%
 - ✅ Validar API responses < 500ms
 - ✅ Confirmar users conseguem fazer login
 
 ### Primeira Semana
+
 - ✅ Monitorar performance metrics
 - ✅ Verificar battery usage < 5%/hora
 - ✅ Validar data sync
 - ✅ Check user feedback
 
 ### Ongoing
+
 - ✅ Weekly analytics review
 - ✅ Monthly performance report
 - ✅ Quarterly security audit
@@ -220,6 +236,7 @@ git checkout main
 ## 🐛 Troubleshooting Comum
 
 ### App não carrega
+
 ```bash
 # 1. Verificar .env está correto
 npm run environment:check
@@ -235,6 +252,7 @@ npm run start:clean
 ```
 
 ### Performance lenta
+
 ```bash
 # 1. Perfil startup time
 # Use: metro bundler analytics
@@ -250,6 +268,7 @@ npm run start:clean
 ```
 
 ### API errors
+
 ```bash
 # 1. Validar token
 echo $EXPO_PUBLIC_API_TOKEN
@@ -269,13 +288,13 @@ curl -H "Authorization: Bearer $TOKEN" \
 
 ## 📞 Support & Escalation
 
-| Issue | Contact | Priority |
-|-------|---------|----------|
+| Issue            | Contact            | Priority    |
+| ---------------- | ------------------ | ----------- |
 | API token issues | LogManager support | 🔴 Critical |
-| Firebase auth | Firebase console | 🔴 Critical |
-| App crashes | Sentry dashboard | 🔴 Critical |
-| Performance | Team review | 🟡 High |
-| UI bugs | Development team | 🟢 Medium |
+| Firebase auth    | Firebase console   | 🔴 Critical |
+| App crashes      | Sentry dashboard   | 🔴 Critical |
+| Performance      | Team review        | 🟡 High     |
+| UI bugs          | Development team   | 🟢 Medium   |
 
 ---
 

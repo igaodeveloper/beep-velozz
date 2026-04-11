@@ -3,25 +3,28 @@
 ## ⚡ Quick Reference
 
 ### Importações Essenciais
+
 ```typescript
-import { useIndustrialScanner } from '@/utils/useIndustrialScanner';
-import IndustrialScannerView from '@/components/IndustrialScannerView';
-import { IndustrialScannerController } from '@/utils/scannerController';
+import { useIndustrialScanner } from "@/utils/useIndustrialScanner";
+import IndustrialScannerView from "@/components/IndustrialScannerView";
+import { IndustrialScannerController } from "@/utils/scannerController";
 ```
 
 ### Hook (Recomendado)
+
 ```typescript
 const scanner = useIndustrialScanner({
-  maxAllowedScans: { shopee: 50, mercado_livre: 30, avulso: 20 }
+  maxAllowedScans: { shopee: 50, mercado_livre: 30, avulso: 20 },
 });
 
-const result = await scanner.processScan('BR123456');
+const result = await scanner.processScan("BR123456");
 if (result.success) console.log(result.type);
 
 scanner.reset();
 ```
 
 ### Componente Pronto
+
 ```typescript
 <IndustrialScannerView
   maxScans={{ shopee: 50, mercado_livre: 30, avulso: 20 }}
@@ -32,12 +35,13 @@ scanner.reset();
 ```
 
 ### Controller Direto
+
 ```typescript
 const controller = new IndustrialScannerController({
-  maxAllowedScans: { shopee: 50, mercado_livre: 30, avulso: 20 }
+  maxAllowedScans: { shopee: 50, mercado_livre: 30, avulso: 20 },
 });
 
-const result = await controller.processScan('BR123456');
+const result = await controller.processScan("BR123456");
 controller.reset();
 ```
 
@@ -45,14 +49,14 @@ controller.reset();
 
 ## 📊 Prefixos Suportados
 
-| Marketplace | Prefixos | Áudio |
-|-------------|----------|-------|
-| Shopee | BR | beep_a |
-| Mercado Livre | 20000 | beep_b |
-| Avulso | LM, 14 | beep_c |
+| Marketplace   | Prefixos | Áudio  |
+| ------------- | -------- | ------ |
+| Shopee        | BR       | beep_a |
+| Mercado Livre | 20000    | beep_b |
+| Avulso        | LM, 14   | beep_c |
 
-> *normalizeCode usa regex ancoradas para evitar capturar prefixos dentro do código.*
-| Desconhecido | Qualquer outro | beep_error |
+> _normalizeCode usa regex ancoradas para evitar capturar prefixos dentro do código._
+> | Desconhecido | Qualquer outro | beep_error |
 
 ---
 
@@ -84,19 +88,19 @@ PAUSED          → Suspenso
 ## 🎯 Scanner Properties
 
 ```typescript
-scanner.state              // ScannerState atual
-scanner.counts             // { shopee: 0, mercado_livre: 0, avulso: 0, unknown: 0 }
-scanner.limits             // Limites configurados
-scanner.progress           // Percentual (0-100) por tipo
-scanner.stats              // Estatísticas completas
-scanner.lastScan           // Última leitura válida
-scanner.isLimitReached     // boolean
-scanner.isProcessing       // boolean
+scanner.state; // ScannerState atual
+scanner.counts; // { shopee: 0, mercado_livre: 0, avulso: 0, unknown: 0 }
+scanner.limits; // Limites configurados
+scanner.progress; // Percentual (0-100) por tipo
+scanner.stats; // Estatísticas completas
+scanner.lastScan; // Última leitura válida
+scanner.isLimitReached; // boolean
+scanner.isProcessing; // boolean
 
-await scanner.processScan(code)
-scanner.reset()
-scanner.pause()
-scanner.resume()
+await scanner.processScan(code);
+scanner.reset();
+scanner.pause();
+scanner.resume();
 ```
 
 ---
@@ -121,40 +125,44 @@ scanner.resume()
 ## 🎯 Cenários Comuns
 
 ### Sucesso ✅
+
 ```typescript
-const result = await scanner.processScan('BR123456');
+const result = await scanner.processScan("BR123456");
 if (result.success) {
   console.log(`${result.code} - ${result.type}`);
 }
 ```
 
 ### Limite Atingido ⛔
+
 ```typescript
 if (scanner.isLimitReached) {
-  console.log('Limite atingido!');
+  console.log("Limite atingido!");
   scanner.reset(); // Para novo lote
 }
 ```
 
 ### Duplicação 🔁
+
 ```typescript
 if (result.isDuplicate) {
-  console.log('Código já foi escaneado');
+  console.log("Código já foi escaneado");
 }
 ```
 
 ### Erro ❌
+
 ```typescript
 if (!result.success) {
   switch (result.reason) {
-    case 'invalid':
-      console.log('Código inválido');
+    case "invalid":
+      console.log("Código inválido");
       break;
-    case 'duplicate':
-      console.log('Duplicação');
+    case "duplicate":
+      console.log("Duplicação");
       break;
-    case 'limit_reached':
-      console.log('Limite atingido');
+    case "limit_reached":
+      console.log("Limite atingido");
       break;
   }
 }
@@ -175,7 +183,7 @@ function MyScanner() {
       {/* Status */}
       <Text>Shopee: {scanner.counts.shopee}</Text>
       <Text>Estado: {scanner.state}</Text>
-      
+
       {/* Botões */}
       <Button onPress={() => scanner.reset()}>Reset</Button>
       <Button onPress={() => scanner.pause()}>Pausar</Button>
@@ -189,21 +197,22 @@ function MyScanner() {
 ## 🧪 Testes
 
 ```typescript
+
 ```
 
 ---
 
 ## 📚 Documentação
 
-| Doc | Conteúdo |
-|-----|----------|
-| [README.md](SCANNER_INDUSTRIAL_README.md) | Overview |
-| [GUIDE.md](SCANNER_INDUSTRIAL_GUIDE.md) | Detalhado |
-| [ARCHITECTURE.md](SCANNER_INDUSTRIAL_ARCHITECTURE.md) | Diagramas |
-| [EXAMPLES.ts](SCANNER_INDUSTRIAL_EXAMPLES.ts) | 7 exemplos |
-| [TESTS.ts](SCANNER_INDUSTRIAL_TESTS.ts) | Testes |
-| [CHECKLIST.md](INTEGRATION_CHECKLIST.md) | Integração |
-| [EXAMPLE.tsx](INTEGRATION_EXAMPLE.tsx) | Integração prática |
+| Doc                                                   | Conteúdo           |
+| ----------------------------------------------------- | ------------------ |
+| [README.md](SCANNER_INDUSTRIAL_README.md)             | Overview           |
+| [GUIDE.md](SCANNER_INDUSTRIAL_GUIDE.md)               | Detalhado          |
+| [ARCHITECTURE.md](SCANNER_INDUSTRIAL_ARCHITECTURE.md) | Diagramas          |
+| [EXAMPLES.ts](SCANNER_INDUSTRIAL_EXAMPLES.ts)         | 7 exemplos         |
+| [TESTS.ts](SCANNER_INDUSTRIAL_TESTS.ts)               | Testes             |
+| [CHECKLIST.md](INTEGRATION_CHECKLIST.md)              | Integração         |
+| [EXAMPLE.tsx](INTEGRATION_EXAMPLE.tsx)                | Integração prática |
 
 ---
 
@@ -224,7 +233,7 @@ function MyScanner() {
 ✅ Escalável (adicione prefixos)  
 ✅ Imune a duplicação (2s temporal)  
 ✅ Imune a ultrapassar limite (bloqueio)  
-✅ Modular (fácil manutenção)  
+✅ Modular (fácil manutenção)
 
 ---
 
@@ -258,7 +267,7 @@ if (result.success) {
   // Success
 } else if (result.isDuplicate) {
   // Duplicate
-} else if (result.reason === 'limit_reached') {
+} else if (result.reason === "limit_reached") {
   // Limit
 } else {
   // Error

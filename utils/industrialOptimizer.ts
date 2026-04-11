@@ -3,9 +3,9 @@
  * Sistema de otimização para ambiente operacional industrial
  */
 
-import { Platform, InteractionManager, Dimensions } from 'react-native';
-import { performanceMonitor, animationManager } from './performanceOptimizer';
-import { industrialCache } from './industrialCache';
+import { Platform, InteractionManager, Dimensions } from "react-native";
+import { performanceMonitor, animationManager } from "./performanceOptimizer";
+import { industrialCache } from "./industrialCache";
 
 interface OptimizationConfig {
   enableMemoryOptimization: boolean;
@@ -29,7 +29,8 @@ interface PerformanceMetrics {
 class IndustrialOptimizer {
   private config: OptimizationConfig;
   private metrics: PerformanceMetrics;
-  private optimizationCallbacks: Array<(metrics: PerformanceMetrics) => void> = [];
+  private optimizationCallbacks: Array<(metrics: PerformanceMetrics) => void> =
+    [];
   private isOptimizing = false;
   private optimizationTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -59,10 +60,10 @@ class IndustrialOptimizer {
   private initialize(): void {
     // Iniciar monitoramento contínuo
     this.startContinuousOptimization();
-    
+
     // Otimizações iniciais
     this.performInitialOptimizations();
-    
+
     // Configurar listeners de performance
     this.setupPerformanceListeners();
   }
@@ -73,10 +74,10 @@ class IndustrialOptimizer {
   private performInitialOptimizations(): void {
     // Pre-critical components
     this.preloadCriticalComponents();
-    
+
     // Limpar cache antigo
     this.cleanupOldCache();
-    
+
     // Otimizar animações iniciais
     this.optimizeInitialAnimations();
   }
@@ -86,14 +87,14 @@ class IndustrialOptimizer {
    */
   private preloadCriticalComponents(): void {
     const criticalComponents = [
-      'scanner-data',
-      'session-state',
-      'user-preferences',
-      'theme-settings',
-      'audio-sounds',
+      "scanner-data",
+      "session-state",
+      "user-preferences",
+      "theme-settings",
+      "audio-sounds",
     ];
 
-    criticalComponents.forEach(key => {
+    criticalComponents.forEach((key) => {
       industrialCache.get(key); // Trigger cache load
     });
   }
@@ -107,10 +108,12 @@ class IndustrialOptimizer {
 
     industrialCache.invalidate((key) => {
       // Remover itens mais antigos que 1 hora que não sejam críticos
-      const isCritical = ['scanner-data', 'session-state', 'user-preferences'].some(critical => 
-        key.includes(critical)
-      );
-      
+      const isCritical = [
+        "scanner-data",
+        "session-state",
+        "user-preferences",
+      ].some((critical) => key.includes(critical));
+
       return !isCritical;
     });
   }
@@ -139,24 +142,23 @@ class IndustrialOptimizer {
    */
   private performOptimizationCycle(): void {
     if (this.isOptimizing) return;
-    
+
     this.isOptimizing = true;
 
     try {
       // Coletar métricas
       this.collectMetrics();
-      
+
       // Analisar performance
       this.analyzePerformance();
-      
+
       // Aplicar otimizações necessárias
       this.applyOptimizations();
-      
+
       // Notificar callbacks
       this.notifyOptimizationCallbacks();
-      
     } catch (error) {
-      console.warn('Optimization cycle failed:', error);
+      console.warn("Optimization cycle failed:", error);
     } finally {
       this.isOptimizing = false;
     }
@@ -168,16 +170,16 @@ class IndustrialOptimizer {
   private collectMetrics(): void {
     // FPS do performance monitor
     this.metrics.fps = performanceMonitor.getCurrentFPS();
-    
+
     // Cache hit rate
     const cacheStats = industrialCache.getStats();
     this.metrics.cacheHitRate = cacheStats.hitRate;
-    
+
     // Memory usage (simulado para React Native)
     this.metrics.memoryUsage = cacheStats.memoryUsage / (1024 * 1024); // MB
-    
+
     // Battery level (se disponível)
-    if (Platform.OS === 'web' && 'getBattery' in navigator) {
+    if (Platform.OS === "web" && "getBattery" in navigator) {
       (navigator as any).getBattery().then((battery: any) => {
         this.metrics.batteryLevel = battery.level;
       });
@@ -192,27 +194,27 @@ class IndustrialOptimizer {
 
     // Análise de FPS
     if (this.metrics.fps < this.config.targetFPS * 0.8) {
-      issues.push('Low FPS detected');
+      issues.push("Low FPS detected");
     }
 
     // Análise de memória
     if (this.metrics.memoryUsage > this.config.memoryThreshold) {
-      issues.push('High memory usage');
+      issues.push("High memory usage");
     }
 
     // Análise de cache
     if (this.metrics.cacheHitRate < 70) {
-      issues.push('Low cache hit rate');
+      issues.push("Low cache hit rate");
     }
 
     // Análise de bateria
     if (this.metrics.batteryLevel && this.metrics.batteryLevel < 0.2) {
-      issues.push('Low battery');
+      issues.push("Low battery");
     }
 
     // Log de problemas para debugging
     if (issues.length > 0) {
-      console.warn('Performance issues detected:', issues);
+      console.warn("Performance issues detected:", issues);
     }
   }
 
@@ -248,9 +250,11 @@ class IndustrialOptimizer {
         // Limpeza seletiva
         industrialCache.invalidate((key) => {
           // Manter dados críticos
-          const isCritical = ['scanner-data', 'session-state', 'user-preferences'].some(critical => 
-            key.includes(critical)
-          );
+          const isCritical = [
+            "scanner-data",
+            "session-state",
+            "user-preferences",
+          ].some((critical) => key.includes(critical));
           return !isCritical;
         });
       }
@@ -264,10 +268,10 @@ class IndustrialOptimizer {
     if (this.metrics.fps < this.config.targetFPS) {
       // Reduzir complexidade de animações
       animationManager.clearAll();
-      
+
       // Desabilitar animações complexas em dispositivos lentos
       if (this.metrics.fps < 30) {
-        console.warn('Disabling complex animations due to low performance');
+        console.warn("Disabling complex animations due to low performance");
       }
     }
   }
@@ -277,7 +281,7 @@ class IndustrialOptimizer {
    */
   private optimizeRendering(): void {
     // Forçar garbage collection se disponível
-    if (Platform.OS === 'web' && 'gc' in window) {
+    if (Platform.OS === "web" && "gc" in window) {
       (window as any).gc();
     }
 
@@ -294,7 +298,7 @@ class IndustrialOptimizer {
     // Listener de FPS
     performanceMonitor.onFPSUpdate((fps) => {
       this.metrics.fps = fps;
-      
+
       // Otimização reativa
       if (fps < this.config.targetFPS * 0.6) {
         this.performEmergencyOptimization();
@@ -302,7 +306,7 @@ class IndustrialOptimizer {
     });
 
     // Listener de mudança de dimensões
-    Dimensions.addEventListener('change', () => {
+    Dimensions.addEventListener("change", () => {
       // Otimizar para nova orientação/tamanho
       this.optimizeForScreenChange();
     });
@@ -312,19 +316,19 @@ class IndustrialOptimizer {
    * Otimização de emergência para performance crítica
    */
   private performEmergencyOptimization(): void {
-    console.warn('Emergency optimization triggered!');
-    
+    console.warn("Emergency optimization triggered!");
+
     // Limpar tudo não essencial
     animationManager.clearAll();
-    
+
     // Limpar cache agressivamente
     industrialCache.invalidate((key) => {
-      const isCritical = ['scanner-data', 'session-state'].some(critical => 
-        key.includes(critical)
+      const isCritical = ["scanner-data", "session-state"].some((critical) =>
+        key.includes(critical),
       );
       return !isCritical;
     });
-    
+
     // Reduzir qualidade de animações
     this.config.enableAnimationOptimization = false;
   }
@@ -334,19 +338,19 @@ class IndustrialOptimizer {
    */
   private optimizeForScreenChange(): void {
     // Preparar cache para novas dimensões
-    industrialCache.invalidate('layout-cache');
-    industrialCache.invalidate('responsive-dimensions');
+    industrialCache.invalidate("layout-cache");
+    industrialCache.invalidate("responsive-dimensions");
   }
 
   /**
    * Notificar callbacks de otimização
    */
   private notifyOptimizationCallbacks(): void {
-    this.optimizationCallbacks.forEach(callback => {
+    this.optimizationCallbacks.forEach((callback) => {
       try {
         callback(this.metrics);
       } catch (error) {
-        console.warn('Optimization callback failed:', error);
+        console.warn("Optimization callback failed:", error);
       }
     });
   }
@@ -356,7 +360,7 @@ class IndustrialOptimizer {
    */
   onOptimization(callback: (metrics: PerformanceMetrics) => void): () => void {
     this.optimizationCallbacks.push(callback);
-    
+
     return () => {
       const index = this.optimizationCallbacks.indexOf(callback);
       if (index > -1) {
@@ -394,7 +398,7 @@ class IndustrialOptimizer {
       clearInterval(this.optimizationTimer);
       this.optimizationTimer = null;
     }
-    
+
     this.optimizationCallbacks = [];
   }
 }
@@ -415,9 +419,9 @@ export function useIndustrialOptimizer() {
   return {
     metrics: industrialOptimizer.getMetrics(),
     forceOptimization: () => industrialOptimizer.forceOptimization(),
-    onOptimization: (callback: (metrics: PerformanceMetrics) => void) => 
+    onOptimization: (callback: (metrics: PerformanceMetrics) => void) =>
       industrialOptimizer.onOptimization(callback),
-    configure: (config: Partial<OptimizationConfig>) => 
+    configure: (config: Partial<OptimizationConfig>) =>
       industrialOptimizer.configure(config),
   };
 }

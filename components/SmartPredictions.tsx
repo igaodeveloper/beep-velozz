@@ -1,8 +1,11 @@
-import React, { useMemo, useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
-import { Session, ScannedPackage } from '@/types/session';
-import { useAppTheme } from '@/utils/useAppTheme';
-import { estimateCompletionTime, calculateOperatorStats } from '@/utils/analytics';
+import React, { useMemo, useEffect, useState } from "react";
+import { View, Text } from "react-native";
+import { Session, ScannedPackage } from "@/types/session";
+import { useAppTheme } from "@/utils/useAppTheme";
+import {
+  estimateCompletionTime,
+  calculateOperatorStats,
+} from "@/utils/analytics";
 
 interface SmartPredictionsProps {
   packages: ScannedPackage[];
@@ -31,13 +34,20 @@ export default function SmartPredictions({
 
   const predictions = useMemo(() => {
     const remaining = Math.max(0, declaredCount - packages.length);
-    const estimatedMinutes = estimateCompletionTime(packages.length, remaining, historicalSessions);
+    const estimatedMinutes = estimateCompletionTime(
+      packages.length,
+      remaining,
+      historicalSessions,
+    );
     const elapsedMinutes = elapsedSeconds / 60;
-    const ratePerMinute = elapsedMinutes > 0 ? packages.length / elapsedMinutes : 0;
+    const ratePerMinute =
+      elapsedMinutes > 0 ? packages.length / elapsedMinutes : 0;
 
     // Calcular velocidade do operador
     const operatorStats = calculateOperatorStats(historicalSessions);
-    const operatorData = operatorStats.find((stat) => stat.name === currentOperator);
+    const operatorData = operatorStats.find(
+      (stat) => stat.name === currentOperator,
+    );
     const historicalRate = operatorData?.avgRatePerMinute || 10;
 
     // Estimativa em minutos
@@ -48,11 +58,11 @@ export default function SmartPredictions({
 
     // Velocidade atual vs esperada
     const velocityDiff = ratePerMinute - historicalRate;
-    const velocityPercentage = historicalRate > 0 ? (velocityDiff / historicalRate) * 100 : 0;
+    const velocityPercentage =
+      historicalRate > 0 ? (velocityDiff / historicalRate) * 100 : 0;
 
     // Acurácia esperada
-    const expectedAccuracy =
-      operatorData?.accuracyScore || 85;
+    const expectedAccuracy = operatorData?.accuracyScore || 85;
 
     return {
       remaining,
@@ -66,7 +76,13 @@ export default function SmartPredictions({
       expectedAccuracy,
       elapsedMinutes: Math.round(elapsedMinutes * 10) / 10,
     };
-  }, [packages, declaredCount, historicalSessions, currentOperator, elapsedSeconds]);
+  }, [
+    packages,
+    declaredCount,
+    historicalSessions,
+    currentOperator,
+    elapsedSeconds,
+  ]);
 
   if (declaredCount === 0) {
     return null;
@@ -74,7 +90,11 @@ export default function SmartPredictions({
 
   const progressPercent = (packages.length / declaredCount) * 100;
   const statusColor =
-    progressPercent >= 90 ? colors.success : progressPercent >= 70 ? colors.primary : colors.warning;
+    progressPercent >= 90
+      ? colors.success
+      : progressPercent >= 70
+        ? colors.primary
+        : colors.warning;
 
   return (
     <View
@@ -89,15 +109,35 @@ export default function SmartPredictions({
     >
       {/* Progress Bar */}
       <View style={{ marginBottom: 12 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
-          <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '600', letterSpacing: 0.5 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 6,
+          }}
+        >
+          <Text
+            style={{
+              color: colors.textMuted,
+              fontSize: 11,
+              fontWeight: "600",
+              letterSpacing: 0.5,
+            }}
+          >
             PROGRESSO
           </Text>
-          <Text style={{ color: statusColor, fontSize: 11, fontWeight: '700' }}>
+          <Text style={{ color: statusColor, fontSize: 11, fontWeight: "700" }}>
             {packages.length} / {declaredCount} ({progressPercent.toFixed(0)}%)
           </Text>
         </View>
-        <View style={{ height: 6, backgroundColor: colors.surface2, borderRadius: 3, overflow: 'hidden' }}>
+        <View
+          style={{
+            height: 6,
+            backgroundColor: colors.surface2,
+            borderRadius: 3,
+            overflow: "hidden",
+          }}
+        >
           <View
             style={{
               height: 6,
@@ -122,7 +162,7 @@ export default function SmartPredictions({
 
         {/* Velocidade */}
         <PredictionRow
-          icon={predictions.isAheadOfSchedule ? '⚡' : '🐢'}
+          icon={predictions.isAheadOfSchedule ? "⚡" : "🐢"}
           label="Velocidade"
           value={`${predictions.ratePerMinute} pkg/min`}
           subtitle={
@@ -131,7 +171,9 @@ export default function SmartPredictions({
               : `${predictions.velocityPercentage.toFixed(0)}% abaixo da média`
           }
           colors={colors}
-          subtitleColor={predictions.isAheadOfSchedule ? colors.success : colors.warning}
+          subtitleColor={
+            predictions.isAheadOfSchedule ? colors.success : colors.warning
+          }
         />
 
         {/* Tempo Decorrido */}
@@ -150,10 +192,10 @@ export default function SmartPredictions({
           value={`${predictions.expectedAccuracy.toFixed(1)}%`}
           subtitle={
             predictions.expectedAccuracy > 95
-              ? 'Excelente desempenho'
+              ? "Excelente desempenho"
               : predictions.expectedAccuracy > 85
-                ? 'Bom desempenho'
-                : 'Atenção necessária'
+                ? "Bom desempenho"
+                : "Atenção necessária"
           }
           colors={colors}
           subtitleColor={
@@ -179,8 +221,13 @@ export default function SmartPredictions({
             borderLeftColor: colors.primary,
           }}
         >
-          <Text style={{ color: colors.text, fontSize: 12, fontWeight: '600' }}>
-            💡 {getSmartTip(predictions.remaining, predictions.estimatedTime, predictions.expectedAccuracy)}
+          <Text style={{ color: colors.text, fontSize: 12, fontWeight: "600" }}>
+            💡{" "}
+            {getSmartTip(
+              predictions.remaining,
+              predictions.estimatedTime,
+              predictions.expectedAccuracy,
+            )}
           </Text>
         </View>
       )}
@@ -197,21 +244,51 @@ interface PredictionRowProps {
   subtitleColor?: string;
 }
 
-function PredictionRow({ icon, label, value, subtitle, colors, subtitleColor }: PredictionRowProps) {
+function PredictionRow({
+  icon,
+  label,
+  value,
+  subtitle,
+  colors,
+  subtitleColor,
+}: PredictionRowProps) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6 }}>
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        paddingVertical: 6,
+      }}
+    >
       <Text style={{ fontSize: 16 }}>{icon}</Text>
       <View style={{ flex: 1 }}>
-        <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '600', letterSpacing: 0.5 }}>
+        <Text
+          style={{
+            color: colors.textMuted,
+            fontSize: 10,
+            fontWeight: "600",
+            letterSpacing: 0.5,
+          }}
+        >
           {label}
         </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 }}>
-          <Text style={{ color: colors.text, fontSize: 14, fontWeight: '700' }}>{value}</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+            marginTop: 2,
+          }}
+        >
+          <Text style={{ color: colors.text, fontSize: 14, fontWeight: "700" }}>
+            {value}
+          </Text>
           <Text
             style={{
               color: subtitleColor || colors.textMuted,
               fontSize: 10,
-              fontWeight: '500',
+              fontWeight: "500",
               flex: 1,
             }}
           >
@@ -226,13 +303,17 @@ function PredictionRow({ icon, label, value, subtitle, colors, subtitleColor }: 
 /**
  * Gera dicas inteligentes baseado na situação atual
  */
-function getSmartTip(remaining: number, estimatedTime: string, expectedAccuracy: number): string {
+function getSmartTip(
+  remaining: number,
+  estimatedTime: string,
+  expectedAccuracy: number,
+): string {
   if (remaining === 0) {
-    return 'Parabéns! Todas as conferências foram completadas. Revise antes de finalizar.';
+    return "Parabéns! Todas as conferências foram completadas. Revise antes de finalizar.";
   }
 
   if (expectedAccuracy < 80) {
-    return 'Atenção: Sua acurácia está abaixo da média. Verifique cada código cuidadosamente.';
+    return "Atenção: Sua acurácia está abaixo da média. Verifique cada código cuidadosamente.";
   }
 
   if (remaining > 20) {

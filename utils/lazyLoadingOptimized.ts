@@ -3,9 +3,9 @@
  * Sistema de lazy loading otimizado para ambiente industrial
  */
 
-import React, { Suspense, lazy, ComponentType, useCallback } from 'react';
-import { View, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
-import { useAppTheme } from './useAppTheme';
+import React, { Suspense, lazy, ComponentType, useCallback } from "react";
+import { View, ActivityIndicator, Text, TouchableOpacity } from "react-native";
+import { useAppTheme } from "./useAppTheme";
 
 interface LazyComponentProps {
   fallback?: ComponentType<any>;
@@ -24,80 +24,108 @@ interface LazyLoadOptions {
  */
 const DefaultFallback: ComponentType = () => {
   const { colors } = useAppTheme();
-  
-  return React.createElement(View, {
-    style: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.bg,
-    }
-  }, [
-    React.createElement(ActivityIndicator, { 
-      size: 'large', 
-      color: colors.primary,
-      key: 'indicator'
-    }),
-    React.createElement(Text, {
+
+  return React.createElement(
+    View,
+    {
       style: {
-        color: colors.text,
-        marginTop: 10,
-        fontSize: 14,
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: colors.bg,
       },
-      key: 'text'
-    }, 'Carregando...')
-  ]);
+    },
+    [
+      React.createElement(ActivityIndicator, {
+        size: "large",
+        color: colors.primary,
+        key: "indicator",
+      }),
+      React.createElement(
+        Text,
+        {
+          style: {
+            color: colors.text,
+            marginTop: 10,
+            fontSize: 14,
+          },
+          key: "text",
+        },
+        "Carregando...",
+      ),
+    ],
+  );
 };
 
 /**
  * Componente de erro otimizado
  */
-const DefaultErrorFallback: ComponentType<{ error: Error; retry: () => void }> = ({ 
-  error, 
-  retry 
-}) => {
+const DefaultErrorFallback: ComponentType<{
+  error: Error;
+  retry: () => void;
+}> = ({ error, retry }) => {
   const { colors } = useAppTheme();
-  
-  return React.createElement(View, {
-    style: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.bg,
-      padding: 20,
-    }
-  }, [
-    React.createElement(Text, {
+
+  return React.createElement(
+    View,
+    {
       style: {
-        color: colors.danger,
-        fontSize: 16,
-        textAlign: 'center',
-        marginBottom: 20,
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: colors.bg,
+        padding: 20,
       },
-      key: 'error-title'
-    }, 'Erro ao carregar componente'),
-    React.createElement(Text, {
-      style: {
-        color: colors.textMuted,
-        fontSize: 12,
-        textAlign: 'center',
-        marginBottom: 20,
-      },
-      key: 'error-message'
-    }, error.message),
-    React.createElement(TouchableOpacity, {
-      onPress: retry,
-      style: {
-        backgroundColor: colors.primary,
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 8,
-      },
-      key: 'retry-button'
-    }, React.createElement(Text, {
-      style: { color: 'white', fontSize: 14 }
-    }, 'Tentar Novamente'))
-  ]);
+    },
+    [
+      React.createElement(
+        Text,
+        {
+          style: {
+            color: colors.danger,
+            fontSize: 16,
+            textAlign: "center",
+            marginBottom: 20,
+          },
+          key: "error-title",
+        },
+        "Erro ao carregar componente",
+      ),
+      React.createElement(
+        Text,
+        {
+          style: {
+            color: colors.textMuted,
+            fontSize: 12,
+            textAlign: "center",
+            marginBottom: 20,
+          },
+          key: "error-message",
+        },
+        error.message,
+      ),
+      React.createElement(
+        TouchableOpacity,
+        {
+          onPress: retry,
+          style: {
+            backgroundColor: colors.primary,
+            paddingHorizontal: 20,
+            paddingVertical: 10,
+            borderRadius: 8,
+          },
+          key: "retry-button",
+        },
+        React.createElement(
+          Text,
+          {
+            style: { color: "white", fontSize: 14 },
+          },
+          "Tentar Novamente",
+        ),
+      ),
+    ],
+  );
 };
 
 /**
@@ -105,7 +133,7 @@ const DefaultErrorFallback: ComponentType<{ error: Error; retry: () => void }> =
  */
 export function createLazyComponent<T extends ComponentType<any>>(
   importFunc: () => Promise<{ default: T }>,
-  options: LazyLoadOptions & LazyComponentProps = {}
+  options: LazyLoadOptions & LazyComponentProps = {},
 ): ComponentType<T> {
   const {
     timeout = 10000,
@@ -120,28 +148,34 @@ export function createLazyComponent<T extends ComponentType<any>>(
   const LazyComponent = lazy(() => {
     return new Promise<{ default: T }>((resolve, reject) => {
       let attempts = 0;
-      
+
       const attemptLoad = async () => {
         try {
           const timeoutPromise = new Promise<never>((_, timeoutReject) => {
-            setTimeout(() => timeoutReject(new Error('Component loading timeout')), timeout);
+            setTimeout(
+              () => timeoutReject(new Error("Component loading timeout")),
+              timeout,
+            );
           });
-          
+
           const loadPromise = importFunc();
           const result = await Promise.race([loadPromise, timeoutPromise]);
           resolve(result);
         } catch (error) {
           attempts++;
-          
+
           if (attempts < retryCount) {
-            console.warn(`Component load failed, retrying (${attempts}/${retryCount}):`, error);
+            console.warn(
+              `Component load failed, retrying (${attempts}/${retryCount}):`,
+              error,
+            );
             setTimeout(attemptLoad, retryDelay * attempts);
           } else {
             reject(error);
           }
         }
       };
-      
+
       attemptLoad();
     });
   });
@@ -153,11 +187,19 @@ export function createLazyComponent<T extends ComponentType<any>>(
 
   // Componente com Suspense e tratamento de erro
   return function LazyWrapper(props: T) {
-    return React.createElement(ErrorBoundary, { 
-      fallback: ErrorFallback 
-    }, React.createElement(Suspense, { 
-      fallback: React.createElement(Fallback) 
-    }, React.createElement(LazyComponent, props)));
+    return React.createElement(
+      ErrorBoundary,
+      {
+        fallback: ErrorFallback,
+      },
+      React.createElement(
+        Suspense,
+        {
+          fallback: React.createElement(Fallback),
+        },
+        React.createElement(LazyComponent, props),
+      ),
+    );
   };
 }
 
@@ -165,7 +207,7 @@ export function createLazyComponent<T extends ComponentType<any>>(
  * Error Boundary para lazy loading
  */
 class ErrorBoundary extends React.Component<
-  { 
+  {
     children: React.ReactNode;
     fallback: ComponentType<{ error: Error; retry: () => void }>;
   },
@@ -181,7 +223,7 @@ class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Lazy component error:', error, errorInfo);
+    console.error("Lazy component error:", error, errorInfo);
   }
 
   render() {
@@ -189,7 +231,7 @@ class ErrorBoundary extends React.Component<
       const Fallback = this.props.fallback;
       return React.createElement(Fallback, {
         error: this.state.error,
-        retry: () => this.setState({ hasError: false, error: null })
+        retry: () => this.setState({ hasError: false, error: null }),
       });
     }
 
@@ -203,76 +245,78 @@ class ErrorBoundary extends React.Component<
 export const LazyComponents = {
   // Scanner (crítico para operação)
   IndustrialScanner: createLazyComponent(
-    () => import('@/components/OptimizedIndustrialScanner'),
-    { 
+    () => import("@/components/OptimizedIndustrialScanner"),
+    {
       preload: true,
       timeout: 5000,
-      fallback: () => React.createElement(View, {
-        style: { flex: 1, justifyContent: 'center', alignItems: 'center' }
-      }, React.createElement(Text, {}, 'Iniciando Scanner...')),
-    }
+      fallback: () =>
+        React.createElement(
+          View,
+          {
+            style: { flex: 1, justifyContent: "center", alignItems: "center" },
+          },
+          React.createElement(Text, {}, "Iniciando Scanner..."),
+        ),
+    },
   ),
 
   // Dashboard (usado frequentemente)
   Dashboard: createLazyComponent(
-    () => import('@/components/MetricsDashboard'),
-    { 
+    () => import("@/components/MetricsDashboard"),
+    {
       preload: true,
       timeout: 8000,
-    }
+    },
   ),
 
   // Histórico (usado com menos frequência)
   HistoryBrowser: createLazyComponent(
-    () => import('@/components/HistoryBrowser'),
-    { 
+    () => import("@/components/HistoryBrowser"),
+    {
       preload: false,
       timeout: 10000,
-    }
+    },
   ),
 
   // Relatórios (usado esporadicamente)
-  ReportView: createLazyComponent(
-    () => import('@/components/ReportView'),
-    { 
-      preload: false,
-      timeout: 15000,
-    }
-  ),
+  ReportView: createLazyComponent(() => import("@/components/ReportView"), {
+    preload: false,
+    timeout: 15000,
+  }),
 
   // Configurações (usado ocasionalmente)
   SettingsScreen: createLazyComponent(
-    () => import('@/components/SettingsScreen'),
-    { 
+    () => import("@/components/SettingsScreen"),
+    {
       preload: false,
       timeout: 10000,
-    }
+    },
   ),
 
   // Modais (carregados sob demanda)
   SessionInitModal: createLazyComponent(
-    () => import('@/components/SessionInitModal'),
-    { 
+    () => import("@/components/SessionInitModal"),
+    {
       preload: false,
       timeout: 5000,
-    }
+    },
   ),
 
   ThemeSelector: createLazyComponent(
-    () => import('@/components/ThemeSelector'),
-    { 
+    () => import("@/components/ThemeSelector"),
+    {
       preload: false,
       timeout: 5000,
-    }
+    },
   ),
 
   // Componentes de mídia (pesados)
   PackagePhotoCapture: createLazyComponent(
-    () => import('@/components/PackagePhotoCapture'),
-    { 
+    () => import("@/components/PackagePhotoCapture"),
+    {
       preload: false,
       timeout: 15000,
-    }
+    },
   ),
 };
 
@@ -281,7 +325,7 @@ export const LazyComponents = {
  */
 export function useIntelligentPreload() {
   const preloadCritical = useCallback(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const preloadOnInteraction = () => {
         LazyComponents.IndustrialScanner;
         LazyComponents.Dashboard;
@@ -290,9 +334,12 @@ export function useIntelligentPreload() {
     }
   }, []);
 
-  const preloadOnDemand = useCallback((componentName: keyof typeof LazyComponents) => {
-    LazyComponents[componentName];
-  }, []);
+  const preloadOnDemand = useCallback(
+    (componentName: keyof typeof LazyComponents) => {
+      LazyComponents[componentName];
+    },
+    [],
+  );
 
   return {
     preloadCritical,
@@ -339,7 +386,7 @@ export class PrefetchManager {
   }
 
   prefetchAll(): void {
-    Object.keys(LazyComponents).forEach(key => {
+    Object.keys(LazyComponents).forEach((key) => {
       this.prefetch(key as keyof typeof LazyComponents);
     });
   }

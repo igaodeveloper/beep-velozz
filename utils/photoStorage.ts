@@ -1,10 +1,11 @@
-import * as FileSystem from 'expo-file-system/legacy';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from "expo-file-system/legacy";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Usa o diretório de documentos quando disponível, senão cai para o cache
-const BASE_DIR = FileSystem.documentDirectory ?? FileSystem.cacheDirectory ?? '';
+const BASE_DIR =
+  FileSystem.documentDirectory ?? FileSystem.cacheDirectory ?? "";
 const PHOTOS_DIR = `${BASE_DIR}package-photos/`;
-const PHOTO_INDEX_KEY = 'photo_index';
+const PHOTO_INDEX_KEY = "photo_index";
 
 /**
  * Inicializa o diretório de fotos
@@ -19,7 +20,7 @@ export async function initPhotoStorage(): Promise<void> {
       });
     }
   } catch (error) {
-    console.error('Erro ao inicializar storage de fotos:', error);
+    console.error("Erro ao inicializar storage de fotos:", error);
   }
 }
 
@@ -29,7 +30,7 @@ export async function initPhotoStorage(): Promise<void> {
 export async function savePackagePhoto(
   photoUri: string,
   packageCode: string,
-  sessionId: string
+  sessionId: string,
 ): Promise<string> {
   try {
     await initPhotoStorage();
@@ -45,7 +46,7 @@ export async function savePackagePhoto(
 
     return targetPath;
   } catch (error) {
-    console.error('Erro ao salvar foto:', error);
+    console.error("Erro ao salvar foto:", error);
     throw error;
   }
 }
@@ -53,9 +54,7 @@ export async function savePackagePhoto(
 /**
  * Lista fotos da sessão
  */
-export async function getSessionPhotos(
-  sessionId: string
-): Promise<
+export async function getSessionPhotos(sessionId: string): Promise<
   Array<{
     uri: string;
     packageCode: string;
@@ -70,7 +69,7 @@ export async function getSessionPhotos(
     return files
       .filter((file) => file.startsWith(sessionId))
       .map((file) => {
-        const [_, code, timestamp] = file.replace('.jpg', '').split('_');
+        const [_, code, timestamp] = file.replace(".jpg", "").split("_");
 
         return {
           uri: `${PHOTOS_DIR}${file}`,
@@ -80,7 +79,7 @@ export async function getSessionPhotos(
       })
       .sort((a, b) => a.timestamp - b.timestamp);
   } catch (error) {
-    console.error('Erro ao obter fotos da sessão:', error);
+    console.error("Erro ao obter fotos da sessão:", error);
     return [];
   }
 }
@@ -90,13 +89,13 @@ export async function getSessionPhotos(
  */
 export async function getPackagePhoto(
   sessionId: string,
-  packageCode: string
+  packageCode: string,
 ): Promise<string | null> {
   try {
     const photos = await getSessionPhotos(sessionId);
     return photos.find((p) => p.packageCode === packageCode)?.uri ?? null;
   } catch (error) {
-    console.error('Erro ao obter foto do pacote:', error);
+    console.error("Erro ao obter foto do pacote:", error);
     return null;
   }
 }
@@ -108,16 +107,14 @@ export async function deletePackagePhoto(photoUri: string): Promise<void> {
   try {
     await FileSystem.deleteAsync(photoUri, { idempotent: true });
   } catch (error) {
-    console.error('Erro ao deletar foto:', error);
+    console.error("Erro ao deletar foto:", error);
   }
 }
 
 /**
  * Delete todas fotos da sessão
  */
-export async function deleteSessionPhotos(
-  sessionId: string
-): Promise<void> {
+export async function deleteSessionPhotos(sessionId: string): Promise<void> {
   try {
     const photos = await getSessionPhotos(sessionId);
 
@@ -125,24 +122,22 @@ export async function deleteSessionPhotos(
       await deletePackagePhoto(photo.uri);
     }
   } catch (error) {
-    console.error('Erro ao deletar fotos da sessão:', error);
+    console.error("Erro ao deletar fotos da sessão:", error);
   }
 }
 
 /**
  * Converte para base64
  */
-export async function photoToBase64(
-  photoUri: string
-): Promise<string> {
+export async function photoToBase64(photoUri: string): Promise<string> {
   try {
     const base64 = await FileSystem.readAsStringAsync(photoUri, {
-      encoding: 'base64',
+      encoding: "base64",
     });
 
     return base64;
   } catch (error) {
-    console.error('Erro ao converter foto:', error);
+    console.error("Erro ao converter foto:", error);
     throw error;
   }
 }
@@ -150,9 +145,7 @@ export async function photoToBase64(
 /**
  * Tamanho total
  */
-export async function getSessionPhotosSize(
-  sessionId: string
-): Promise<number> {
+export async function getSessionPhotosSize(sessionId: string): Promise<number> {
   try {
     const photos = await getSessionPhotos(sessionId);
     let totalSize = 0;
@@ -166,7 +159,7 @@ export async function getSessionPhotosSize(
 
     return totalSize;
   } catch (error) {
-    console.error('Erro ao calcular tamanho:', error);
+    console.error("Erro ao calcular tamanho:", error);
     return 0;
   }
 }
@@ -175,30 +168,24 @@ export async function getSessionPhotosSize(
  * Formata bytes
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B';
+  if (bytes === 0) return "0 B";
 
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return (
-    Math.round((bytes / Math.pow(k, i)) * 100) / 100 +
-    ' ' +
-    sizes[i]
-  );
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 }
 
 /**
  * Conta fotos
  */
-export async function countSessionPhotos(
-  sessionId: string
-): Promise<number> {
+export async function countSessionPhotos(sessionId: string): Promise<number> {
   try {
     const photos = await getSessionPhotos(sessionId);
     return photos.length;
   } catch (error) {
-    console.error('Erro ao contar fotos:', error);
+    console.error("Erro ao contar fotos:", error);
     return 0;
   }
 }

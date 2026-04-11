@@ -4,7 +4,7 @@
  * Provides memoization helpers and best practices
  */
 
-import React, { useMemo, useCallback, useRef } from 'react';
+import React, { useMemo, useCallback, useRef } from "react";
 
 /**
  * Custom hook for shallow comparison memoization
@@ -12,14 +12,15 @@ import React, { useMemo, useCallback, useRef } from 'react';
  */
 export const useShallowMemo = <T extends Record<string, any>>(
   value: T,
-  deps: React.DependencyList
+  deps: React.DependencyList,
 ): T => {
   const ref = useRef<T>(value);
   const prevDepsRef = useRef<React.DependencyList>(deps);
 
   // Compare dependencies
   const depsChanged =
-    !prevDepsRef.current || prevDepsRef.current.length !== deps.length ||
+    !prevDepsRef.current ||
+    prevDepsRef.current.length !== deps.length ||
     prevDepsRef.current.some((dep, i) => dep !== deps[i]);
 
   if (depsChanged) {
@@ -35,7 +36,7 @@ export const useShallowMemo = <T extends Record<string, any>>(
  * More efficient than useCallback for simple handlers
  */
 export const useStableCallback = <T extends (...args: any[]) => any>(
-  callback: T
+  callback: T,
 ): T => {
   const callbackRef = useRef(callback);
 
@@ -54,7 +55,7 @@ export const useStableCallback = <T extends (...args: any[]) => any>(
  */
 export const useDebouncedCallback = <T extends (...args: any[]) => any>(
   callback: T,
-  delayMs: number = 300
+  delayMs: number = 300,
 ): T => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -68,7 +69,7 @@ export const useDebouncedCallback = <T extends (...args: any[]) => any>(
         callback(...args);
       }, delayMs);
     },
-    [callback, delayMs]
+    [callback, delayMs],
   ) as T;
 };
 
@@ -78,7 +79,7 @@ export const useDebouncedCallback = <T extends (...args: any[]) => any>(
  */
 export const useThrottledCallback = <T extends (...args: any[]) => any>(
   callback: T,
-  intervalMs: number = 200
+  intervalMs: number = 200,
 ): T => {
   const lastRunRef = useRef(Date.now());
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -102,7 +103,7 @@ export const useThrottledCallback = <T extends (...args: any[]) => any>(
         }, intervalMs - timeSinceLastRun);
       }
     },
-    [callback, intervalMs]
+    [callback, intervalMs],
   ) as T;
 };
 
@@ -113,7 +114,7 @@ export const useThrottledCallback = <T extends (...args: any[]) => any>(
 export const useMemoized = <T>(
   fn: () => T,
   deps: React.DependencyList,
-  debugName?: string
+  debugName?: string,
 ): T => {
   return useMemo(() => {
     const start = Date.now();
@@ -135,7 +136,7 @@ export const useMemoized = <T>(
 export const createMemoComponent = <P extends object>(
   Component: React.ComponentType<P>,
   compare?: (prevProps: P, nextProps: P) => boolean,
-  displayName?: string
+  displayName?: string,
 ): React.NamedExoticComponent<P> => {
   const Memoized = React.memo(Component, compare);
 
@@ -178,7 +179,9 @@ export const usePerformanceMetrics = (componentName: string) => {
 
     return () => {
       if (__DEV__ && renderCountRef.current > 0) {
-        console.log(`♻️  ${componentName} unmounted after ${renderCountRef.current} renders`);
+        console.log(
+          `♻️  ${componentName} unmounted after ${renderCountRef.current} renders`,
+        );
       }
     };
   }, [componentName]);
@@ -198,15 +201,12 @@ export const usePerformanceMetrics = (componentName: string) => {
  */
 export const createListItemMemo = <T extends { id: string | number }>(
   Component: React.ComponentType<{ item: T; index?: number }>,
-  displayName?: string
+  displayName?: string,
 ) => {
-  const MemoizedItem = React.memo(
-    Component,
-    (prevProps, nextProps) => {
-      // Only re-render if item ID or completely new item
-      return prevProps.item.id === nextProps.item.id;
-    }
-  );
+  const MemoizedItem = React.memo(Component, (prevProps, nextProps) => {
+    // Only re-render if item ID or completely new item
+    return prevProps.item.id === nextProps.item.id;
+  });
 
   if (displayName) {
     MemoizedItem.displayName = `MemoizedItem(${displayName})`;
@@ -222,17 +222,14 @@ export const createListItemMemo = <T extends { id: string | number }>(
 export const useReducerOptimized = <S, A>(
   reducer: (state: S, action: A) => S,
   initialState: S,
-  init?: (initial: S) => S
+  init?: (initial: S) => S,
 ) => {
   const [state, dispatch] = React.useReducer(reducer, initialState, init);
 
   // Memoize dispatch to ensure it's always the same reference
-  const memoizedDispatch = useCallback(
-    (action: A) => {
-      dispatch(action);
-    },
-    []
-  );
+  const memoizedDispatch = useCallback((action: A) => {
+    dispatch(action);
+  }, []);
 
   return [state, memoizedDispatch] as const;
 };

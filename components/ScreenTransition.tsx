@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import React, { useEffect, useRef } from "react";
+import { View, StyleSheet, Dimensions } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -10,14 +10,14 @@ import Animated, {
   interpolate,
   Easing as ReEasing,
   runOnJS,
-} from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
+} from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface ScreenTransitionProps {
   children: React.ReactNode;
   isVisible: boolean;
-  animationType?: 'slide' | 'fade' | 'scale' | 'flip' | 'bounce' | 'glide';
-  direction?: 'left' | 'right' | 'up' | 'down';
+  animationType?: "slide" | "fade" | "scale" | "flip" | "bounce" | "glide";
+  direction?: "left" | "right" | "up" | "down";
   duration?: number;
   onAnimationComplete?: () => void;
 }
@@ -25,18 +25,18 @@ interface ScreenTransitionProps {
 // Ultra-fast configuration for maximum performance
 const ULTRA_FAST_CONFIG = {
   duration: 200, // Reduzido de 500ms para 200ms
-  fps: 120,      // Máximo FPS possível
-  hz: 120,       // Máximo HZ para atualizações
-  easing: 'out' as const, // Easing mais rápido
+  fps: 120, // Máximo FPS possível
+  hz: 120, // Máximo HZ para atualizações
+  easing: "out" as const, // Easing mais rápido
 };
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 export default function ScreenTransition({
   children,
   isVisible,
-  animationType = 'slide',
-  direction = 'left',
+  animationType = "slide",
+  direction = "left",
   duration = ULTRA_FAST_CONFIG.duration, // Usar configuração ultra-rápida
   onAnimationComplete,
 }: ScreenTransitionProps) {
@@ -51,43 +51,43 @@ export default function ScreenTransition({
     if (isVisible) {
       // Show animation - ultra-fast with maximum performance
       progress.value = withSequence(
-        withTiming(1, { 
+        withTiming(1, {
           duration: Math.floor(duration * 0.6), // 60% do tempo original
-          easing: ReEasing.out(ReEasing.ease) // Easing mais rápido
+          easing: ReEasing.out(ReEasing.ease), // Easing mais rápido
         }),
-        withTiming(1, { duration: 0 })
+        withTiming(1, { duration: 0 }),
       );
-      
+
       scale.value = withSpring(1, {
-        damping: 25,      // Aumentado para menos oscilação
-        stiffness: 200,   // Aumentado para resposta mais rápida
-        mass: 0.5,        // Reduzido para menor inércia
+        damping: 25, // Aumentado para menos oscilação
+        stiffness: 200, // Aumentado para resposta mais rápida
+        mass: 0.5, // Reduzido para menor inércia
       });
-      
-      rotation.value = withTiming(0, { 
+
+      rotation.value = withTiming(0, {
         duration: Math.floor(duration * 0.4), // 40% do tempo
-        easing: ReEasing.out(ReEasing.ease)
+        easing: ReEasing.out(ReEasing.ease),
       });
-      
-      opacity.value = withTiming(1, { 
+
+      opacity.value = withTiming(1, {
         duration: Math.floor(duration * 0.3), // 30% do tempo
-        easing: ReEasing.out(ReEasing.ease)
+        easing: ReEasing.out(ReEasing.ease),
       });
     } else {
       // Hide animation - ainda mais rápido
-      progress.value = withTiming(0, { 
+      progress.value = withTiming(0, {
         duration: Math.floor(duration * 0.3), // 30% do tempo
-        easing: ReEasing.in(ReEasing.ease)
+        easing: ReEasing.in(ReEasing.ease),
       });
-      
-      scale.value = withTiming(0.9, { 
+
+      scale.value = withTiming(0.9, {
         duration: Math.floor(duration * 0.2), // 20% do tempo
-        easing: ReEasing.in(ReEasing.ease)
+        easing: ReEasing.in(ReEasing.ease),
       });
-      
-      opacity.value = withTiming(0, { 
+
+      opacity.value = withTiming(0, {
         duration: Math.floor(duration * 0.15), // 15% do tempo
-        easing: ReEasing.in(ReEasing.ease)
+        easing: ReEasing.in(ReEasing.ease),
       });
     }
   }, [isVisible, duration]);
@@ -102,26 +102,26 @@ export default function ScreenTransition({
   // Calculate initial and final positions based on direction
   const getAnimationValues = () => {
     switch (animationType) {
-      case 'slide':
+      case "slide":
         switch (direction) {
-          case 'left':
+          case "left":
             return { from: -screenWidth, to: 0 };
-          case 'right':
+          case "right":
             return { from: screenWidth, to: 0 };
-          case 'up':
+          case "up":
             return { from: -screenHeight, to: 0 };
-          case 'down':
+          case "down":
             return { from: screenHeight, to: 0 };
           default:
             return { from: -screenWidth, to: 0 };
         }
-      case 'scale':
+      case "scale":
         return { from: 0.5, to: 1 };
-      case 'flip':
+      case "flip":
         return { from: 90, to: 0 };
-      case 'bounce':
+      case "bounce":
         return { from: -50, to: 0 };
-      case 'glide':
+      case "glide":
         return { from: -100, to: 0 };
       default:
         return { from: -screenWidth, to: 0 };
@@ -133,16 +133,16 @@ export default function ScreenTransition({
   // Animated styles
   const containerStyle = useAnimatedStyle(() => {
     const animProgress = progress.value;
-    
+
     switch (animationType) {
-      case 'slide':
+      case "slide":
         const translateValue = interpolate(
           animProgress,
           [0, 1],
-          [animationValues.from, animationValues.to]
+          [animationValues.from, animationValues.to],
         );
-        
-        if (direction === 'left' || direction === 'right') {
+
+        if (direction === "left" || direction === "right") {
           return {
             transform: [{ translateX: translateValue }],
             opacity: opacity.value,
@@ -153,64 +153,67 @@ export default function ScreenTransition({
             opacity: opacity.value,
           };
         }
-        
-      case 'fade':
+
+      case "fade":
         return {
           opacity: opacity.value,
         };
-        
-      case 'scale':
+
+      case "scale":
         const scaleValue = interpolate(
           animProgress,
           [0, 1],
-          [animationValues.from, animationValues.to]
+          [animationValues.from, animationValues.to],
         );
         return {
           transform: [{ scale: scaleValue }],
           opacity: opacity.value,
         };
-        
-      case 'flip':
+
+      case "flip":
         const rotationValue = interpolate(
           animProgress,
           [0, 1],
-          [animationValues.from, animationValues.to]
+          [animationValues.from, animationValues.to],
         );
         return {
           transform: [{ rotateY: `${rotationValue}deg` }],
           opacity: opacity.value,
         };
-        
-      case 'bounce':
+
+      case "bounce":
         const bounceValue = interpolate(
           animProgress,
           [0, 0.3, 0.6, 0.8, 1], // Keyframes mais rápidos
-          [animationValues.from, animationValues.to * 1.05, animationValues.to * 0.98, animationValues.to, animationValues.to]
+          [
+            animationValues.from,
+            animationValues.to * 1.05,
+            animationValues.to * 0.98,
+            animationValues.to,
+            animationValues.to,
+          ],
         );
         return {
           transform: [{ translateY: bounceValue }],
           opacity: opacity.value,
         };
-        
-      case 'glide':
+
+      case "glide":
         const glideValue = interpolate(
           animProgress,
           [0, 1],
-          [animationValues.from, animationValues.to]
+          [animationValues.from, animationValues.to],
         );
         const glideScale = interpolate(
           animProgress,
           [0, 0.4, 1], // Keyframes mais rápidos
-          [0.9, 1.02, 1] // Menor amplitude
+          [0.9, 1.02, 1], // Menor amplitude
         );
         return {
-          transform: [
-            { translateX: glideValue },
-            { scale: glideScale }
-          ],
+          transform: [{ translateX: glideValue }, { scale: glideScale }],
           opacity: opacity.value,
         };
-        
+
       default:
         return {
           opacity: opacity.value,
@@ -220,9 +223,7 @@ export default function ScreenTransition({
 
   return (
     <Animated.View style={[styles.container, containerStyle]}>
-      <View style={{ flex: 1 }}>
-        {children}
-      </View>
+      <View style={{ flex: 1 }}>{children}</View>
     </Animated.View>
   );
 }
@@ -230,28 +231,28 @@ export default function ScreenTransition({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
 });
 
 // Export animation types for easy use
 export const ANIMATION_TYPES = {
-  SLIDE: 'slide',
-  FADE: 'fade',
-  SCALE: 'scale',
-  FLIP: 'flip',
-  BOUNCE: 'bounce',
-  GLIDE: 'glide',
+  SLIDE: "slide",
+  FADE: "fade",
+  SCALE: "scale",
+  FLIP: "flip",
+  BOUNCE: "bounce",
+  GLIDE: "glide",
 } as const;
 
 export const DIRECTIONS = {
-  LEFT: 'left',
-  RIGHT: 'right',
-  UP: 'up',
-  DOWN: 'down',
+  LEFT: "left",
+  RIGHT: "right",
+  UP: "up",
+  DOWN: "down",
 } as const;

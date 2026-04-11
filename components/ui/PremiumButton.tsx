@@ -3,7 +3,7 @@
  * Botão premium com haptics, animações e feedback visual excepcional
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import {
   TouchableOpacity,
   Text,
@@ -12,22 +12,22 @@ import {
   View,
   Platform,
   InteractionManager,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
-import * as Haptics from 'expo-haptics';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
 
 interface PremiumButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'glass';
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  variant?: "primary" | "secondary" | "tertiary" | "ghost" | "glass";
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
   disabled?: boolean;
   loading?: boolean;
   icon?: React.ReactNode;
-  iconPosition?: 'left' | 'right';
+  iconPosition?: "left" | "right";
   gradient?: string[];
-  hapticType?: 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error';
+  hapticType?: "light" | "medium" | "heavy" | "success" | "warning" | "error";
   rippleEffect?: boolean;
   glowEffect?: boolean;
   pulseEffect?: boolean;
@@ -48,39 +48,39 @@ interface ButtonTheme {
 
 const THEMES: Record<string, ButtonTheme> = {
   primary: {
-    background: ['#FF6B35', '#F7931E'],
-    text: '#FFFFFF',
-    border: '#FF6B35',
-    shadow: '#FF6B3540',
-    glow: '#FF6B3520',
+    background: ["#FF6B35", "#F7931E"],
+    text: "#FFFFFF",
+    border: "#FF6B35",
+    shadow: "#FF6B3540",
+    glow: "#FF6B3520",
   },
   secondary: {
-    background: ['#667EEA', '#764BA2'],
-    text: '#FFFFFF',
-    border: '#667EEA',
-    shadow: '#667EEA40',
-    glow: '#667EEA20',
+    background: ["#667EEA", "#764BA2"],
+    text: "#FFFFFF",
+    border: "#667EEA",
+    shadow: "#667EEA40",
+    glow: "#667EEA20",
   },
   tertiary: {
-    background: ['#48BB78', '#38A169'],
-    text: '#FFFFFF',
-    border: '#48BB78',
-    shadow: '#48BB7840',
-    glow: '#48BB7820',
+    background: ["#48BB78", "#38A169"],
+    text: "#FFFFFF",
+    border: "#48BB78",
+    shadow: "#48BB7840",
+    glow: "#48BB7820",
   },
   ghost: {
-    background: ['transparent', 'transparent'],
-    text: '#667EEA',
-    border: '#667EEA',
-    shadow: 'transparent',
-    glow: '#667EEA10',
+    background: ["transparent", "transparent"],
+    text: "#667EEA",
+    border: "#667EEA",
+    shadow: "transparent",
+    glow: "#667EEA10",
   },
   glass: {
-    background: ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)'],
-    text: '#FFFFFF',
-    border: 'rgba(255,255,255,0.2)',
-    shadow: '#00000020',
-    glow: '#FFFFFF10',
+    background: ["rgba(255,255,255,0.1)", "rgba(255,255,255,0.05)"],
+    text: "#FFFFFF",
+    border: "rgba(255,255,255,0.2)",
+    shadow: "#00000020",
+    glow: "#FFFFFF10",
   },
 };
 
@@ -95,14 +95,14 @@ const SIZES = {
 export const PremiumButton: React.FC<PremiumButtonProps> = ({
   title,
   onPress,
-  variant = 'primary',
-  size = 'md',
+  variant = "primary",
+  size = "md",
   disabled = false,
   loading = false,
   icon,
-  iconPosition = 'left',
+  iconPosition = "left",
   gradient,
-  hapticType = 'medium',
+  hapticType = "medium",
   rippleEffect = true,
   glowEffect = true,
   pulseEffect = false,
@@ -113,9 +113,11 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
   textStyle,
 }) => {
   const [isPressed, setIsPressed] = useState(false);
-  const [ripples, setRipples] = useState<Array<{x: number, y: number, id: number}>>([]);
+  const [ripples, setRipples] = useState<
+    Array<{ x: number; y: number; id: number }>
+  >([]);
   const buttonRef = useRef<View>(null);
-  
+
   // Animações
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
@@ -126,11 +128,12 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
   const theme = THEMES[variant] ?? THEMES.primary!;
   const sizeConfig = SIZES[size];
   const buttonGradient = gradient || theme.background;
-  
+
   // Ensure gradient has at least 2 colors for LinearGradient
-  const safeGradient = buttonGradient.length >= 2 
-    ? buttonGradient 
-    : [buttonGradient[0] || '#FF6B35', buttonGradient[1] || '#F7931E'];
+  const safeGradient =
+    buttonGradient.length >= 2
+      ? buttonGradient
+      : [buttonGradient[0] || "#FF6B35", buttonGradient[1] || "#F7931E"];
 
   // Efeito de pulse
   useEffect(() => {
@@ -147,10 +150,10 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
             duration: 1000,
             useNativeDriver: true,
           }),
-        ])
+        ]),
       );
       pulseAnimation.start();
-      
+
       return () => pulseAnimation.stop();
     }
   }, [pulseEffect, disabled, loading, pulseAnim]);
@@ -163,7 +166,7 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
           toValue: 1,
           duration: 1500,
           useNativeDriver: true,
-        })
+        }),
       ).start();
     } else {
       loadingAnim.setValue(0);
@@ -190,9 +193,9 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
   // Efeito de scale
   const handlePressIn = () => {
     if (disabled || loading) return;
-    
+
     setIsPressed(true);
-    
+
     if (scaleEffect) {
       Animated.spring(scaleAnim, {
         toValue: 0.95,
@@ -216,9 +219,9 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
 
   const handlePressOut = () => {
     if (disabled || loading) return;
-    
+
     setIsPressed(false);
-    
+
     if (scaleEffect) {
       Animated.spring(scaleAnim, {
         toValue: 1,
@@ -239,7 +242,7 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
 
   const handlePress = () => {
     if (disabled || loading) return;
-    
+
     // Adiciona ripple effect
     if (rippleEffect) {
       const newRipple = {
@@ -247,11 +250,11 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
         y: Math.random() * 100,
         id: Date.now(),
       };
-      setRipples(prev => [...prev, newRipple]);
-      
+      setRipples((prev) => [...prev, newRipple]);
+
       // Remove ripple após animação
       setTimeout(() => {
-        setRipples(prev => prev.filter(r => r.id !== newRipple.id));
+        setRipples((prev) => prev.filter((r) => r.id !== newRipple.id));
       }, 600);
     }
 
@@ -264,22 +267,22 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
   const triggerHaptic = (type: string) => {
     try {
       switch (type) {
-        case 'light':
+        case "light":
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           break;
-        case 'medium':
+        case "medium":
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           break;
-        case 'heavy':
+        case "heavy":
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
           break;
-        case 'success':
+        case "success":
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           break;
-        case 'warning':
+        case "warning":
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
           break;
-        case 'error':
+        case "error":
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           break;
       }
@@ -301,7 +304,7 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
                   {
                     rotate: loadingAnim.interpolate({
                       inputRange: [0, 1],
-                      outputRange: ['0deg', '360deg'],
+                      outputRange: ["0deg", "360deg"],
                     }),
                   },
                 ],
@@ -327,10 +330,10 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
 
     return (
       <>
-        {icon && iconPosition === 'left' && (
+        {icon && iconPosition === "left" && (
           <View style={styles.iconLeft}>{icon}</View>
         )}
-        
+
         <Text
           style={[
             styles.text,
@@ -343,11 +346,11 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
         >
           {title}
         </Text>
-        
-        {icon && iconPosition === 'right' && (
+
+        {icon && iconPosition === "right" && (
           <View style={styles.iconRight}>{icon}</View>
         )}
-        
+
         {children}
       </>
     );
@@ -366,36 +369,40 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
   ];
 
   // Efeito de glow
-  const glowStyle = glowEffect ? {
-    position: 'absolute' as const,
-    top: -4,
-    left: -4,
-    right: -4,
-    bottom: -4,
-    borderRadius: sizeConfig.borderRadius + 4,
-    backgroundColor: theme.glow,
-    opacity: glowAnim,
-  } : null;
+  const glowStyle = glowEffect
+    ? {
+        position: "absolute" as const,
+        top: -4,
+        left: -4,
+        right: -4,
+        bottom: -4,
+        borderRadius: sizeConfig.borderRadius + 4,
+        backgroundColor: theme.glow,
+        opacity: glowAnim,
+      }
+    : null;
 
   // Efeito de shadow
-  const shadowStyle = shadowEffect ? {
-    shadowColor: theme.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: shadowAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0.2, 0.4],
-    }),
-    shadowRadius: 8,
-    elevation: 8,
-  } : null;
+  const shadowStyle = shadowEffect
+    ? {
+        shadowColor: theme.shadow,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: shadowAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.2, 0.4],
+        }),
+        shadowRadius: 8,
+        elevation: 8,
+      }
+    : null;
 
   return (
     <View style={styles.container}>
       {/* Glow Effect */}
       {glowStyle && <Animated.View style={glowStyle} />}
-      
+
       {/* Ripple Effects */}
-      {ripples.map(ripple => (
+      {ripples.map((ripple) => (
         <Animated.View
           key={ripple.id}
           style={[
@@ -407,7 +414,7 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
           ]}
         />
       ))}
-      
+
       {/* Main Button */}
       <Animated.View
         style={[
@@ -427,17 +434,19 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
           disabled={disabled || loading}
           activeOpacity={0.8}
         >
-          {variant === 'glass' ? (
-            <BlurView
-              intensity={20}
-              style={styles.glassContainer}
-              tint="light"
-            >
+          {variant === "glass" ? (
+            <BlurView intensity={20} style={styles.glassContainer} tint="light">
               {renderContent()}
             </BlurView>
           ) : (
             <LinearGradient
-              colors={safeGradient as unknown as readonly [string, string, ...string[]]}
+              colors={
+                safeGradient as unknown as readonly [
+                  string,
+                  string,
+                  ...string[],
+                ]
+              }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.gradientContainer}
@@ -453,34 +462,34 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    position: 'relative',
-    alignSelf: 'flex-start',
+    position: "relative",
+    alignSelf: "flex-start",
   },
   button: {
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   touchable: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
   },
   gradientContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
   },
   glassContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
     borderRadius: 12,
   },
   text: {
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   iconLeft: {
     marginRight: 8,
@@ -489,24 +498,24 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   spinner: {
     width: 16,
     height: 16,
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.3)',
-    borderTopColor: '#FFFFFF',
+    borderColor: "rgba(255,255,255,0.3)",
+    borderTopColor: "#FFFFFF",
     borderRadius: 8,
   },
   ripple: {
-    position: 'absolute',
+    position: "absolute",
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: "rgba(255,255,255,0.3)",
     transform: [{ translateX: -10 }, { translateY: -10 }],
   },
 });

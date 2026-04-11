@@ -3,7 +3,7 @@
  * Detecção automática de padrões em códigos e sequências
  */
 
-import { DetectedPattern } from '@/types/aiPatternRecognition';
+import { DetectedPattern } from "@/types/aiPatternRecognition";
 
 export class PatternDetectionService {
   private patterns: Map<string, DetectedPattern> = new Map();
@@ -15,7 +15,7 @@ export class PatternDetectionService {
    */
   analyzePatterns(codes: string[]): DetectedPattern[] {
     const detectedPatterns: DetectedPattern[] = [];
-    
+
     if (codes.length < this.MIN_PATTERN_LENGTH) {
       return detectedPatterns;
     }
@@ -42,7 +42,7 @@ export class PatternDetectionService {
 
     // Filtrar por confiança e ordenar
     return detectedPatterns
-      .filter(pattern => pattern.confidence >= this.CONFIDENCE_THRESHOLD)
+      .filter((pattern) => pattern.confidence >= this.CONFIDENCE_THRESHOLD)
       .sort((a, b) => b.confidence - a.confidence);
   }
 
@@ -53,10 +53,12 @@ export class PatternDetectionService {
     const patterns: DetectedPattern[] = [];
 
     // Extrair partes numéricas dos códigos
-    const numericParts = codes.map(code => {
-      const matches = code.match(/\d+/g);
-      return matches ? matches.join('') : '';
-    }).filter(part => part.length > 0);
+    const numericParts = codes
+      .map((code) => {
+        const matches = code.match(/\d+/g);
+        return matches ? matches.join("") : "";
+      })
+      .filter((part) => part.length > 0);
 
     if (numericParts.length < this.MIN_PATTERN_LENGTH) {
       return patterns;
@@ -66,26 +68,32 @@ export class PatternDetectionService {
     for (let i = 0; i <= numericParts.length - this.MIN_PATTERN_LENGTH; i++) {
       const sequence = numericParts.slice(i, i + this.MIN_PATTERN_LENGTH);
       const differences = this.calculateDifferences(sequence);
-      
+
       if (this.isConsistentSequence(differences)) {
         const commonDiff = differences[0];
-        const confidence = this.calculateSequenceConfidence(sequence, commonDiff);
-        
+        const confidence = this.calculateSequenceConfidence(
+          sequence,
+          commonDiff,
+        );
+
         // Prever próximo código
         const lastNumber = parseInt(sequence[sequence.length - 1]);
         const nextNumber = lastNumber + commonDiff;
-        
+
         patterns.push({
-          type: 'sequential',
+          type: "sequential",
           confidence,
           pattern: `Sequential +${commonDiff}`,
           examples: codes.slice(i, i + this.MIN_PATTERN_LENGTH),
-          nextPredicted: this.replaceNumericInCode(codes[i + this.MIN_PATTERN_LENGTH - 1], nextNumber),
+          nextPredicted: this.replaceNumericInCode(
+            codes[i + this.MIN_PATTERN_LENGTH - 1],
+            nextNumber,
+          ),
           metadata: {
             sequenceLength: sequence.length,
             commonDifference: commonDiff,
-            detectedAt: Date.now()
-          }
+            detectedAt: Date.now(),
+          },
         });
       }
     }
@@ -115,17 +123,17 @@ export class PatternDetectionService {
     for (const [prefix, codeList] of prefixMap.entries()) {
       if (codeList.length >= this.MIN_PATTERN_LENGTH) {
         const confidence = Math.min(codeList.length / codes.length, 1.0);
-        
+
         patterns.push({
-          type: 'prefix',
+          type: "prefix",
           confidence,
           pattern: `Prefix: ${prefix}`,
           examples: codeList.slice(0, 5),
           metadata: {
             sequenceLength: codeList.length,
             prefix,
-            detectedAt: Date.now()
-          }
+            detectedAt: Date.now(),
+          },
         });
       }
     }
@@ -155,17 +163,17 @@ export class PatternDetectionService {
     for (const [suffix, codeList] of suffixMap.entries()) {
       if (codeList.length >= this.MIN_PATTERN_LENGTH) {
         const confidence = Math.min(codeList.length / codes.length, 1.0);
-        
+
         patterns.push({
-          type: 'suffix',
+          type: "suffix",
           confidence,
           pattern: `Suffix: ${suffix}`,
           examples: codeList.slice(0, 5),
           metadata: {
             sequenceLength: codeList.length,
             suffix,
-            detectedAt: Date.now()
-          }
+            detectedAt: Date.now(),
+          },
         });
       }
     }
@@ -178,9 +186,9 @@ export class PatternDetectionService {
    */
   private detectAlphanumericPatterns(codes: string[]): DetectedPattern[] {
     const patterns: DetectedPattern[] = [];
-    
+
     // Verificar estrutura alfanumérica consistente
-    const structures = codes.map(code => this.analyzeCodeStructure(code));
+    const structures = codes.map((code) => this.analyzeCodeStructure(code));
     const structureCounts = new Map<string, number>();
 
     for (const structure of structures) {
@@ -190,16 +198,16 @@ export class PatternDetectionService {
     for (const [structure, count] of structureCounts.entries()) {
       if (count >= this.MIN_PATTERN_LENGTH) {
         const confidence = count / codes.length;
-        
+
         patterns.push({
-          type: 'alphanumeric',
+          type: "alphanumeric",
           confidence,
           pattern: `Structure: ${structure}`,
           examples: codes.slice(0, 5),
           metadata: {
             sequenceLength: count,
-            detectedAt: Date.now()
-          }
+            detectedAt: Date.now(),
+          },
         });
       }
     }
@@ -212,7 +220,7 @@ export class PatternDetectionService {
    */
   private detectMixedPatterns(codes: string[]): DetectedPattern[] {
     const patterns: DetectedPattern[] = [];
-    
+
     // Padrão: letras + números sequenciais (ex: BR001, BR002, BR003)
     const letterNumberPatterns = this.detectLetterNumberSequences(codes);
     patterns.push(...letterNumberPatterns);
@@ -236,7 +244,7 @@ export class PatternDetectionService {
       if (match) {
         const [, letters, numbers] = match;
         const key = `${letters}_${numbers.length}`;
-        
+
         if (!letterPrefixMap.has(key)) {
           letterPrefixMap.set(key, []);
         }
@@ -246,27 +254,29 @@ export class PatternDetectionService {
 
     for (const [key, codeList] of letterPrefixMap.entries()) {
       if (codeList.length >= this.MIN_PATTERN_LENGTH) {
-        const [letters, numLength] = key.split('_');
-        const numericParts = codeList.map(code => {
+        const [letters, numLength] = key.split("_");
+        const numericParts = codeList.map((code) => {
           const match = code.match(/\d+/);
           return match ? parseInt(match[0]) : 0;
         });
 
-        const differences = this.calculateDifferences(numericParts.map(n => n.toString()));
-        
+        const differences = this.calculateDifferences(
+          numericParts.map((n) => n.toString()),
+        );
+
         if (this.isConsistentSequence(differences)) {
           const confidence = Math.min(codeList.length / codes.length, 1.0);
-          
+
           patterns.push({
-            type: 'mixed',
+            type: "mixed",
             confidence,
             pattern: `${letters} + sequential numbers (${numLength} digits)`,
             examples: codeList.slice(0, 5),
             metadata: {
               sequenceLength: codeList.length,
               prefix: letters,
-              detectedAt: Date.now()
-            }
+              detectedAt: Date.now(),
+            },
           });
         }
       }
@@ -281,21 +291,21 @@ export class PatternDetectionService {
   private detectTimestampPatterns(codes: string[]): DetectedPattern[] {
     const patterns: DetectedPattern[] = [];
     const timestampRegex = /\d{10,13}/; // Unix timestamp
-    
-    const timestampCodes = codes.filter(code => timestampRegex.test(code));
-    
+
+    const timestampCodes = codes.filter((code) => timestampRegex.test(code));
+
     if (timestampCodes.length >= this.MIN_PATTERN_LENGTH) {
       const confidence = timestampCodes.length / codes.length;
-      
+
       patterns.push({
-        type: 'numeric',
+        type: "numeric",
         confidence,
-        pattern: 'Timestamp pattern detected',
+        pattern: "Timestamp pattern detected",
         examples: timestampCodes.slice(0, 5),
         metadata: {
           sequenceLength: timestampCodes.length,
-          detectedAt: Date.now()
-        }
+          detectedAt: Date.now(),
+        },
       });
     }
 
@@ -307,13 +317,13 @@ export class PatternDetectionService {
    */
   private calculateDifferences(sequence: string[]): number[] {
     const differences: number[] = [];
-    
+
     for (let i = 1; i < sequence.length; i++) {
       const current = parseInt(sequence[i]) || 0;
       const previous = parseInt(sequence[i - 1]) || 0;
       differences.push(current - previous);
     }
-    
+
     return differences;
   }
 
@@ -322,25 +332,28 @@ export class PatternDetectionService {
    */
   private isConsistentSequence(differences: number[]): boolean {
     if (differences.length === 0) return false;
-    
+
     const firstDiff = differences[0];
-    return differences.every(diff => Math.abs(diff - firstDiff) <= 1);
+    return differences.every((diff) => Math.abs(diff - firstDiff) <= 1);
   }
 
   /**
    * Calcula confiança da sequência
    */
-  private calculateSequenceConfidence(sequence: string[], commonDiff: number): number {
+  private calculateSequenceConfidence(
+    sequence: string[],
+    commonDiff: number,
+  ): number {
     let confidence = 0.8; // Base confidence
-    
+
     // Aumentar confiança para sequências mais longas
     confidence += Math.min(sequence.length * 0.05, 0.2);
-    
+
     // Aumentar confiança para diferenças comuns (1, 10, 100)
     if ([1, 10, 100].includes(Math.abs(commonDiff))) {
       confidence += 0.1;
     }
-    
+
     return Math.min(confidence, 1.0);
   }
 
@@ -348,18 +361,18 @@ export class PatternDetectionService {
    * Analisa estrutura do código
    */
   private analyzeCodeStructure(code: string): string {
-    let structure = '';
-    
+    let structure = "";
+
     for (const char of code) {
       if (/[A-Z]/.test(char)) {
-        structure += 'L';
+        structure += "L";
       } else if (/[0-9]/.test(char)) {
-        structure += 'N';
+        structure += "N";
       } else {
-        structure += 'S';
+        structure += "S";
       }
     }
-    
+
     return structure;
   }
 
@@ -370,7 +383,7 @@ export class PatternDetectionService {
     const match = code.match(/(\d+)/);
     if (match) {
       const numLength = match[1].length;
-      const paddedNumber = newNumber.toString().padStart(numLength, '0');
+      const paddedNumber = newNumber.toString().padStart(numLength, "0");
       return code.replace(match[0], paddedNumber);
     }
     return code;
@@ -388,7 +401,7 @@ export class PatternDetectionService {
    */
   clearOldPatterns(maxAge: number = 24 * 60 * 60 * 1000): void {
     const now = Date.now();
-    
+
     for (const [id, pattern] of this.patterns.entries()) {
       if (now - pattern.metadata.detectedAt > maxAge) {
         this.patterns.delete(id);

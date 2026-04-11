@@ -1,6 +1,6 @@
 // src/utils/scannerParser.ts
 
-import { PEDIDO_TYPES, PedidoType } from '../config/apiConfig';
+import { PEDIDO_TYPES, PedidoType } from "../config/apiConfig";
 
 export type TipoPedido = PedidoType;
 
@@ -29,21 +29,21 @@ export class ScannerParser {
    * Analisa um código escaneado e determina seu tipo
    */
   static parseCode(codigo: string): ParsedCode {
-    if (!codigo || typeof codigo !== 'string') {
+    if (!codigo || typeof codigo !== "string") {
       return {
         codigo,
-        tipo: 'AVULSO',
+        tipo: "AVULSO",
         valido: false,
-        mensagem: 'Código inválido ou vazio',
+        mensagem: "Código inválido ou vazio",
       };
     }
 
     // Extrai id de JSON quando presente (alguns scanners enviam objeto serializado)
     let input = codigo;
-    if (input.startsWith('{') && input.endsWith('}')) {
+    if (input.startsWith("{") && input.endsWith("}")) {
       try {
         const obj = JSON.parse(input);
-        if (obj && typeof obj.id === 'string') {
+        if (obj && typeof obj.id === "string") {
           input = obj.id;
         }
       } catch {
@@ -52,7 +52,7 @@ export class ScannerParser {
     }
 
     // Remover espaços e caracteres especiais
-    let cleanCode = input.trim().replace(/[^A-Z0-9]/gi, '');
+    let cleanCode = input.trim().replace(/[^A-Z0-9]/gi, "");
 
     // Se o código não começa com ML mas contém um fragmento válido (pode
     // ocorrer em QR codes que retornam um URL ou payload maior), extraímos
@@ -63,7 +63,9 @@ export class ScannerParser {
       if (frag) {
         const before = cleanCode;
         cleanCode = frag[0];
-        console.debug(`[ScannerParser] extracted ML fragment from "${before}" → "${cleanCode}"`);
+        console.debug(
+          `[ScannerParser] extracted ML fragment from "${before}" → "${cleanCode}"`,
+        );
       }
     }
 
@@ -74,18 +76,18 @@ export class ScannerParser {
     if (cleanCode.length < 8 && !/^(20000|46)/.test(cleanCode)) {
       return {
         codigo: cleanCode,
-        tipo: 'AVULSO',
+        tipo: "AVULSO",
         valido: false,
-        mensagem: 'Código muito curto (mínimo 8 caracteres)',
+        mensagem: "Código muito curto (mínimo 8 caracteres)",
       };
     }
 
     if (cleanCode.length > 20) {
       return {
         codigo: cleanCode,
-        tipo: 'AVULSO',
+        tipo: "AVULSO",
         valido: false,
-        mensagem: 'Código muito longo (máximo 20 caracteres)',
+        mensagem: "Código muito longo (máximo 20 caracteres)",
       };
     }
 
@@ -119,16 +121,16 @@ export class ScannerParser {
     if (this.PATTERNS.AVULSO.test(cleanCode)) {
       return {
         codigo: cleanCode,
-        tipo: 'AVULSO',
+        tipo: "AVULSO",
         valido: true,
       };
     }
 
     return {
       codigo: cleanCode,
-      tipo: 'AVULSO',
+      tipo: "AVULSO",
       valido: false,
-      mensagem: 'Formato de código não reconhecido',
+      mensagem: "Formato de código não reconhecido",
     };
   }
 
@@ -157,12 +159,12 @@ export class ScannerParser {
 
     // Adicionar formatação baseada no tipo
     switch (parsed.tipo) {
-      case 'SHOPEE':
+      case "SHOPEE":
         return `SPX-BR-${parsed.codigo.slice(5)}`;
-      case 'MERCADO_LIVRE':
+      case "MERCADO_LIVRE":
         // códigos numéricos começando com 20000 são retornados "raw"
         return parsed.codigo;
-      case 'LOGMANAGER':
+      case "LOGMANAGER":
         return `BR-${parsed.codigo.slice(2)}`;
       default:
         return parsed.codigo;
@@ -174,13 +176,10 @@ export class ScannerParser {
    */
   static getExamples(): Record<TipoPedido, string[]> {
     return {
-      SHOPEE: ['SPXBR12345678', 'SPXBR87654321'],
-      MERCADO_LIVRE: [
-        '20000987654321',
-        '20000123456789',
-      ],
-      LOGMANAGER: ['BR1234567890', 'BR0987654321'],
-      AVULSO: ['PEDIDO001', 'AVULSO123', 'INTERNO456'],
+      SHOPEE: ["SPXBR12345678", "SPXBR87654321"],
+      MERCADO_LIVRE: ["20000987654321", "20000123456789"],
+      LOGMANAGER: ["BR1234567890", "BR0987654321"],
+      AVULSO: ["PEDIDO001", "AVULSO123", "INTERNO456"],
     };
   }
 }

@@ -16,22 +16,22 @@ export interface ValidationResult<T> {
 export const validateBarcode = (barcode: unknown): ValidationResult<string> => {
   const errors: string[] = [];
 
-  if (!barcode || typeof barcode !== 'string') {
-    errors.push('Barcode deve ser uma string válida');
+  if (!barcode || typeof barcode !== "string") {
+    errors.push("Barcode deve ser uma string válida");
     return { isValid: false, errors };
   }
 
   const sanitized = barcode.trim().toUpperCase();
 
   if (sanitized.length < 5 || sanitized.length > 50) {
-    errors.push('Barcode deve ter entre 5 e 50 caracteres');
+    errors.push("Barcode deve ter entre 5 e 50 caracteres");
     return { isValid: false, errors };
   }
 
   // Check for valid barcode format (alphanumeric + hyphens + spaces)
   // Allow letters for Mercado Livre codes like "2200D1241459785"
   if (!/^[A-Z0-9\-\s]+$/.test(sanitized)) {
-    errors.push('Barcode contém caracteres inválidos');
+    errors.push("Barcode contém caracteres inválidos");
     return { isValid: false, errors };
   }
 
@@ -41,24 +41,26 @@ export const validateBarcode = (barcode: unknown): ValidationResult<string> => {
 /**
  * Validate operator name
  */
-export const validateOperatorName = (name: unknown): ValidationResult<string> => {
+export const validateOperatorName = (
+  name: unknown,
+): ValidationResult<string> => {
   const errors: string[] = [];
 
-  if (!name || typeof name !== 'string') {
-    errors.push('Nome do operador deve ser texto');
+  if (!name || typeof name !== "string") {
+    errors.push("Nome do operador deve ser texto");
     return { isValid: false, errors };
   }
 
   const sanitized = name.trim();
 
   if (sanitized.length < 2 || sanitized.length > 100) {
-    errors.push('Nome deve ter entre 2 e 100 caracteres');
+    errors.push("Nome deve ter entre 2 e 100 caracteres");
     return { isValid: false, errors };
   }
 
   // Only letters, numbers, spaces, and common accents
   if (!/^[^\p{P}]{2,100}$/u.test(sanitized)) {
-    errors.push('Nome contém caracteres inválidos');
+    errors.push("Nome contém caracteres inválidos");
     return { isValid: false, errors };
   }
 
@@ -68,18 +70,20 @@ export const validateOperatorName = (name: unknown): ValidationResult<string> =>
 /**
  * Validate declared count
  */
-export const validateDeclaredCount = (count: unknown): ValidationResult<number> => {
+export const validateDeclaredCount = (
+  count: unknown,
+): ValidationResult<number> => {
   const errors: string[] = [];
 
   if (!Number.isInteger(count)) {
-    errors.push('Quantidade deve ser um número inteiro');
+    errors.push("Quantidade deve ser um número inteiro");
     return { isValid: false, errors };
   }
 
   const num = count as number;
 
   if (num < 0 || num > 10000) {
-    errors.push('Quantidade deve estar entre 0 e 10.000');
+    errors.push("Quantidade deve estar entre 0 e 10.000");
     return { isValid: false, errors };
   }
 
@@ -89,11 +93,13 @@ export const validateDeclaredCount = (count: unknown): ValidationResult<number> 
 /**
  * Validate session ID
  */
-export const validateSessionId = (sessionId: unknown): ValidationResult<string> => {
+export const validateSessionId = (
+  sessionId: unknown,
+): ValidationResult<string> => {
   const errors: string[] = [];
 
-  if (!sessionId || typeof sessionId !== 'string') {
-    errors.push('Session ID deve ser uma string');
+  if (!sessionId || typeof sessionId !== "string") {
+    errors.push("Session ID deve ser uma string");
     return { isValid: false, errors };
   }
 
@@ -101,7 +107,7 @@ export const validateSessionId = (sessionId: unknown): ValidationResult<string> 
 
   // UUID or custom session ID format
   if (!/^[a-z0-9\-]{8,50}$/.test(sanitized)) {
-    errors.push('Session ID formato inválido');
+    errors.push("Session ID formato inválido");
     return { isValid: false, errors };
   }
 
@@ -114,8 +120,8 @@ export const validateSessionId = (sessionId: unknown): ValidationResult<string> 
 export const validateEmail = (email: unknown): ValidationResult<string> => {
   const errors: string[] = [];
 
-  if (!email || typeof email !== 'string') {
-    errors.push('Email deve ser texto');
+  if (!email || typeof email !== "string") {
+    errors.push("Email deve ser texto");
     return { isValid: false, errors };
   }
 
@@ -123,12 +129,12 @@ export const validateEmail = (email: unknown): ValidationResult<string> => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (!emailRegex.test(sanitized)) {
-    errors.push('Email formato inválido');
+    errors.push("Email formato inválido");
     return { isValid: false, errors };
   }
 
   if (sanitized.length > 254) {
-    errors.push('Email muito longo');
+    errors.push("Email muito longo");
     return { isValid: false, errors };
   }
 
@@ -142,7 +148,7 @@ export const validateNumeric = (
   value: unknown,
   min = 0,
   max = Number.MAX_SAFE_INTEGER,
-  fieldName = 'Valor'
+  fieldName = "Valor",
 ): ValidationResult<number> => {
   const errors: string[] = [];
 
@@ -168,11 +174,11 @@ export const validateString = (
   value: unknown,
   minLength = 1,
   maxLength = 255,
-  fieldName = 'Campo'
+  fieldName = "Campo",
 ): ValidationResult<string> => {
   const errors: string[] = [];
 
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     errors.push(`${fieldName} deve ser texto`);
     return { isValid: false, errors };
   }
@@ -180,7 +186,9 @@ export const validateString = (
   const sanitized = value.trim();
 
   if (sanitized.length < minLength || sanitized.length > maxLength) {
-    errors.push(`${fieldName} deve ter entre ${minLength} e ${maxLength} caracteres`);
+    errors.push(
+      `${fieldName} deve ter entre ${minLength} e ${maxLength} caracteres`,
+    );
     return { isValid: false, errors };
   }
 
@@ -191,12 +199,17 @@ export const validateString = (
  * Validate scanned package data
  */
 export const validateScannedPackage = (
-  data: unknown
-): ValidationResult<{ barcode: string; type: string; value: string; timestamp: number }> => {
+  data: unknown,
+): ValidationResult<{
+  barcode: string;
+  type: string;
+  value: string;
+  timestamp: number;
+}> => {
   const errors: string[] = [];
 
-  if (!data || typeof data !== 'object') {
-    errors.push('Pacote deve ser um objeto válido');
+  if (!data || typeof data !== "object") {
+    errors.push("Pacote deve ser um objeto válido");
     return { isValid: false, errors };
   }
 
@@ -209,18 +222,22 @@ export const validateScannedPackage = (
   }
 
   // Validate type
-  if (!['SHOPEE', 'MERCADO_LIVRE', 'AVULSO', 'LOGMANAGER'].includes(pkg.type as string)) {
-    errors.push('Tipo de pacote inválido');
+  if (
+    !["SHOPEE", "MERCADO_LIVRE", "AVULSO", "LOGMANAGER"].includes(
+      pkg.type as string,
+    )
+  ) {
+    errors.push("Tipo de pacote inválido");
   }
 
   // Validate value (optional but if present, validate)
-  if (pkg.value !== undefined && typeof pkg.value !== 'string') {
-    errors.push('Valor deve ser texto (string)');
+  if (pkg.value !== undefined && typeof pkg.value !== "string") {
+    errors.push("Valor deve ser texto (string)");
   }
 
   // Validate timestamp
   if (!Number.isInteger(pkg.timestamp) || (pkg.timestamp as number) < 0) {
-    errors.push('Timestamp inválido');
+    errors.push("Timestamp inválido");
   }
 
   if (errors.length > 0) {
@@ -232,7 +249,7 @@ export const validateScannedPackage = (
     data: {
       barcode: barcodeValidation.data!,
       type: pkg.type as string,
-      value: (pkg.value as string) || '',
+      value: (pkg.value as string) || "",
       timestamp: pkg.timestamp as number,
     },
   };
@@ -242,10 +259,7 @@ export const validateScannedPackage = (
  * Sanitize log messages (prevent injection attacks)
  */
 export const sanitizeLogMessage = (message: string): string => {
-  return message
-    .replace(/\n/g, ' | ')
-    .replace(/\r/g, '')
-    .slice(0, 1000);
+  return message.replace(/\n/g, " | ").replace(/\r/g, "").slice(0, 1000);
 };
 
 /**
@@ -262,7 +276,7 @@ export interface BatchValidationResult<T> {
  */
 export const validateBatch = <T>(
   items: unknown[],
-  validator: (item: unknown) => ValidationResult<T>
+  validator: (item: unknown) => ValidationResult<T>,
 ): BatchValidationResult<T> => {
   const validItems: T[] = [];
   const invalidItems: Array<{ index: number; errors: string[] }> = [];
@@ -274,7 +288,7 @@ export const validateBatch = <T>(
     } else {
       invalidItems.push({
         index,
-        errors: result.errors || ['Validação falhou'],
+        errors: result.errors || ["Validação falhou"],
       });
     }
   });

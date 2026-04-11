@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,9 +8,9 @@ import {
   StyleSheet,
   Dimensions,
   Animated,
-} from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
-import { ThemeName, themePresets } from '@/utils/theme';
+} from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
+import { ThemeName, themePresets } from "@/utils/theme";
 import {
   Check,
   Sun,
@@ -24,10 +24,10 @@ import {
   Heart,
   Gem,
   Zap,
-} from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
+} from "lucide-react-native";
+import * as Haptics from "expo-haptics";
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get("window");
 
 interface ThemeOption {
   name: ThemeName;
@@ -46,7 +46,10 @@ interface ThemeSelectorProps {
   onClose: () => void;
 }
 
-export default function ThemeSelector({ visible, onClose }: ThemeSelectorProps) {
+export default function ThemeSelector({
+  visible,
+  onClose,
+}: ThemeSelectorProps) {
   const { themeName, setThemeName } = useAppTheme();
   const [selectedTheme, setSelectedTheme] = useState<ThemeName>(themeName);
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -69,124 +72,124 @@ export default function ThemeSelector({ visible, onClose }: ThemeSelectorProps) 
 
   const themeOptions: ThemeOption[] = [
     {
-      name: 'light',
-      displayName: 'Claro',
-      description: 'Tema limpo e profissional',
+      name: "light",
+      displayName: "Claro",
+      description: "Tema limpo e profissional",
       icon: Sun,
       preview: {
-        primary: '#f97316',
-        background: '#ffffff',
-        surface: '#f9fafb',
+        primary: "#f97316",
+        background: "#ffffff",
+        surface: "#f9fafb",
       },
     },
     {
-      name: 'dark',
-      displayName: 'Escuro',
-      description: 'Tema escuro com alto contraste',
+      name: "dark",
+      displayName: "Escuro",
+      description: "Tema escuro com alto contraste",
       icon: Moon,
       preview: {
-        primary: '#ff7a1f',
-        background: '#000000',
-        surface: '#020617',
+        primary: "#ff7a1f",
+        background: "#000000",
+        surface: "#020617",
       },
     },
     {
-      name: 'ocean',
-      displayName: 'Oceano',
-      description: 'Tema azul marinho profissional',
+      name: "ocean",
+      displayName: "Oceano",
+      description: "Tema azul marinho profissional",
       icon: Droplets,
       preview: {
-        primary: '#06b6d4',
-        background: '#0f172a',
-        surface: '#1e293b',
+        primary: "#06b6d4",
+        background: "#0f172a",
+        surface: "#1e293b",
       },
     },
     {
-      name: 'forest',
-      displayName: 'Floresta',
-      description: 'Tema verde natural',
+      name: "forest",
+      displayName: "Floresta",
+      description: "Tema verde natural",
       icon: Trees,
       preview: {
-        primary: '#10b981',
-        background: '#052e16',
-        surface: '#064e3b',
+        primary: "#10b981",
+        background: "#052e16",
+        surface: "#064e3b",
       },
     },
     {
-      name: 'sunset',
-      displayName: 'Pôr do Sol',
-      description: 'Tema laranja aconchegante',
+      name: "sunset",
+      displayName: "Pôr do Sol",
+      description: "Tema laranja aconchegante",
       icon: CloudSun,
       preview: {
-        primary: '#f97316',
-        background: '#1c0c0c',
-        surface: '#291515',
+        primary: "#f97316",
+        background: "#1c0c0c",
+        surface: "#291515",
       },
     },
     {
-      name: 'midnight',
-      displayName: 'Meia-Noite',
-      description: 'Tema roxo escuro elegante',
+      name: "midnight",
+      displayName: "Meia-Noite",
+      description: "Tema roxo escuro elegante",
       icon: Star,
       preview: {
-        primary: '#6366f1',
-        background: '#0f0f23',
-        surface: '#1a1a2e',
+        primary: "#6366f1",
+        background: "#0f0f23",
+        surface: "#1a1a2e",
       },
     },
     {
-      name: 'arctic',
-      displayName: 'Ártico',
-      description: 'Tema azul gelo limpo',
+      name: "arctic",
+      displayName: "Ártico",
+      description: "Tema azul gelo limpo",
       icon: Snowflake,
       preview: {
-        primary: '#0284c7',
-        background: '#f8fafc',
-        surface: '#f1f5f9',
+        primary: "#0284c7",
+        background: "#f8fafc",
+        surface: "#f1f5f9",
       },
     },
     {
-      name: 'volcano',
-      displayName: 'Vulcão',
-      description: 'Tema vermelho intenso',
+      name: "volcano",
+      displayName: "Vulcão",
+      description: "Tema vermelho intenso",
       icon: Flame,
       preview: {
-        primary: '#dc2626',
-        background: '#1a0505',
-        surface: '#2d0909',
+        primary: "#dc2626",
+        background: "#1a0505",
+        surface: "#2d0909",
       },
     },
     {
-      name: 'rose',
-      displayName: 'Rosa',
-      description: 'Tema rosa elegante',
+      name: "rose",
+      displayName: "Rosa",
+      description: "Tema rosa elegante",
       icon: Heart,
       preview: {
-        primary: '#e11d48',
-        background: '#1f0514',
-        surface: '#2f0d1a',
+        primary: "#e11d48",
+        background: "#1f0514",
+        surface: "#2f0d1a",
       },
     },
     {
-      name: 'emerald',
-      displayName: 'Esmeralda',
-      description: 'Tema verde esmeralda',
+      name: "emerald",
+      displayName: "Esmeralda",
+      description: "Tema verde esmeralda",
       icon: Gem,
       preview: {
-        primary: '#059669',
-        background: '#022c22',
-        surface: '#042f2e',
+        primary: "#059669",
+        background: "#022c22",
+        surface: "#042f2e",
       },
     },
     {
-      name: 'amber',
-      displayName: 'Âmbar',
-      description: 'Tema âmbar sofisticado',
+      name: "amber",
+      displayName: "Âmbar",
+      description: "Tema âmbar sofisticado",
       icon: Zap,
       preview: {
-        primary: '#d97706',
-        background: '#1c1912',
-        surface: '#292524',
+        primary: "#d97706",
+        background: "#1c1912",
+        surface: "#292524",
       },
     },
   ];
@@ -212,7 +215,7 @@ export default function ThemeSelector({ visible, onClose }: ThemeSelectorProps) 
           styles.themeCard,
           {
             backgroundColor: option.preview.surface,
-            borderColor: isSelected ? option.preview.primary : '#374151',
+            borderColor: isSelected ? option.preview.primary : "#374151",
             borderWidth: isSelected ? 2 : 1,
           },
         ]}
@@ -246,7 +249,7 @@ export default function ThemeSelector({ visible, onClose }: ThemeSelectorProps) 
             <View
               style={[
                 styles.iconContainer,
-                { backgroundColor: option.preview.primary + '20' },
+                { backgroundColor: option.preview.primary + "20" },
               ]}
             >
               <Icon size={20} color={option.preview.primary} />
@@ -255,7 +258,12 @@ export default function ThemeSelector({ visible, onClose }: ThemeSelectorProps) 
               <Text
                 style={[
                   styles.themeName,
-                  { color: option.preview.background === '#ffffff' ? '#111827' : '#f8fafc' },
+                  {
+                    color:
+                      option.preview.background === "#ffffff"
+                        ? "#111827"
+                        : "#f8fafc",
+                  },
                 ]}
               >
                 {option.displayName}
@@ -263,7 +271,12 @@ export default function ThemeSelector({ visible, onClose }: ThemeSelectorProps) 
               <Text
                 style={[
                   styles.themeDescription,
-                  { color: option.preview.background === '#ffffff' ? '#6b7280' : '#cbd5e1' },
+                  {
+                    color:
+                      option.preview.background === "#ffffff"
+                        ? "#6b7280"
+                        : "#cbd5e1",
+                  },
                 ]}
               >
                 {option.description}
@@ -344,33 +357,33 @@ export default function ThemeSelector({ visible, onClose }: ThemeSelectorProps) 
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   container: {
     width: screenWidth * 0.95,
-    maxHeight: '85%',
-    backgroundColor: '#ffffff',
+    maxHeight: "85%",
+    backgroundColor: "#ffffff",
     borderRadius: 20,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   header: {
     padding: 24,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-    alignItems: 'center',
+    borderBottomColor: "#f3f4f6",
+    alignItems: "center",
   },
   title: {
     fontSize: 22,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: "700",
+    color: "#111827",
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: '#6b7280',
-    textAlign: 'center',
+    color: "#6b7280",
+    textAlign: "center",
     lineHeight: 20,
   },
   scrollView: {
@@ -384,12 +397,12 @@ const styles = StyleSheet.create({
   },
   themeCard: {
     borderRadius: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   previewHeader: {
     height: 40,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 12,
     gap: 8,
   },
@@ -407,15 +420,15 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   themeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   iconContainer: {
     width: 40,
     height: 40,
     borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
   },
   themeInfo: {
@@ -423,7 +436,7 @@ const styles = StyleSheet.create({
   },
   themeName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 2,
   },
   themeDescription: {
@@ -434,42 +447,42 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   actions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
     gap: 12,
     borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
+    borderTopColor: "#f3f4f6",
   },
   cancelButton: {
     flex: 1,
     height: 48,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ffffff',
+    borderColor: "#e5e7eb",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ffffff",
   },
   cancelText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#6b7280',
+    fontWeight: "600",
+    color: "#6b7280",
   },
   applyButton: {
     flex: 1,
     height: 48,
     borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f97316',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f97316",
   },
   applyText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
+    fontWeight: "600",
+    color: "#ffffff",
   },
 });

@@ -8,8 +8,8 @@ export interface Achievement {
   title: string;
   description: string;
   icon: string;
-  category: 'speed' | 'accuracy' | 'streak' | 'volume' | 'special';
-  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  category: "speed" | "accuracy" | "streak" | "volume" | "special";
+  rarity: "common" | "rare" | "epic" | "legendary";
   points: number;
   unlockedAt?: number;
   progress: number;
@@ -57,7 +57,7 @@ export interface LeaderboardEntry {
   score: number;
   level: number;
   rank: number;
-  change: 'up' | 'down' | 'same';
+  change: "up" | "down" | "same";
   statistics: {
     totalScans: number;
     accuracy: number;
@@ -69,8 +69,8 @@ export interface Challenge {
   id: string;
   title: string;
   description: string;
-  type: 'daily' | 'weekly' | 'monthly' | 'special';
-  category: 'scans' | 'accuracy' | 'speed' | 'streak';
+  type: "daily" | "weekly" | "monthly" | "special";
+  category: "scans" | "accuracy" | "speed" | "streak";
   requirements: {
     type: string;
     target: number;
@@ -90,7 +90,12 @@ export interface Challenge {
 
 export interface GameEvent {
   id: string;
-  type: 'scan' | 'session_complete' | 'achievement_unlock' | 'level_up' | 'streak_milestone';
+  type:
+    | "scan"
+    | "session_complete"
+    | "achievement_unlock"
+    | "level_up"
+    | "streak_milestone";
   timestamp: number;
   userId: string;
   data: {
@@ -129,9 +134,9 @@ export interface StreakData {
 
 export interface Reward {
   id: string;
-  type: 'points' | 'experience' | 'badge' | 'title' | 'avatar';
+  type: "points" | "experience" | "badge" | "title" | "avatar";
   value: number | string;
   description: string;
   icon: string;
-  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  rarity: "common" | "rare" | "epic" | "legendary";
 }

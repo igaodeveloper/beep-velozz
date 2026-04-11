@@ -3,13 +3,13 @@
  * Hook React para sistema de multi-idioma
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { 
-  Language, 
+import { useState, useEffect, useCallback } from "react";
+import {
+  Language,
   LanguageSettings,
-  LocalizationConfig 
-} from '@/types/localization';
-import { localizationService } from '@/services/localizationService';
+  LocalizationConfig,
+} from "@/types/localization";
+import { localizationService } from "@/services/localizationService";
 
 interface UseLocalizationOptions {
   autoDetect?: boolean;
@@ -28,7 +28,7 @@ export function useLocalization({
   persistChoice = true,
 }: UseLocalizationOptions = {}) {
   const [state, setState] = useState<LocalizationState>({
-    currentLanguage: 'pt-BR',
+    currentLanguage: "pt-BR",
     availableLanguages: [],
     isRTL: false,
     isLoading: true,
@@ -66,8 +66,8 @@ export function useLocalization({
         isLoading: false,
       });
     } catch (error) {
-      console.error('Error initializing localization:', error);
-      setState(prev => ({
+      console.error("Error initializing localization:", error);
+      setState((prev) => ({
         ...prev,
         isLoading: false,
       }));
@@ -75,28 +75,31 @@ export function useLocalization({
   }, [autoDetect, persistChoice]);
 
   // Traduzir texto
-  const translate = useCallback((
-    key: string, 
-    namespace: string = 'common', 
-    variables?: Record<string, any>
-  ) => {
-    return localizationService.translate(key, namespace, variables);
-  }, []);
+  const translate = useCallback(
+    (
+      key: string,
+      namespace: string = "common",
+      variables?: Record<string, any>,
+    ) => {
+      return localizationService.translate(key, namespace, variables);
+    },
+    [],
+  );
 
   // Mudar idioma
   const changeLanguage = useCallback((languageCode: string) => {
     try {
       localizationService.setLanguage(languageCode);
-      
+
       const isRTL = localizationService.isRTL();
-      
-      setState(prev => ({
+
+      setState((prev) => ({
         ...prev,
         currentLanguage: languageCode,
         isRTL,
       }));
     } catch (error) {
-      console.error('Error changing language:', error);
+      console.error("Error changing language:", error);
     }
   }, []);
 
@@ -126,100 +129,137 @@ export function useLocalization({
   }, []);
 
   // Obter idioma por código
-  const getLanguageByCode = useCallback((code: string) => {
-    return state.availableLanguages.find(lang => lang.code === code);
-  }, [state.availableLanguages]);
+  const getLanguageByCode = useCallback(
+    (code: string) => {
+      return state.availableLanguages.find((lang) => lang.code === code);
+    },
+    [state.availableLanguages],
+  );
 
   // Verificar se idioma é suportado
-  const isLanguageSupported = useCallback((code: string) => {
-    return state.availableLanguages.some(lang => lang.code === code);
-  }, [state.availableLanguages]);
+  const isLanguageSupported = useCallback(
+    (code: string) => {
+      return state.availableLanguages.some((lang) => lang.code === code);
+    },
+    [state.availableLanguages],
+  );
 
   // Obter nome nativo do idioma
-  const getLanguageNativeName = useCallback((code: string) => {
-    const language = getLanguageByCode(code);
-    return language?.nativeName || code;
-  }, [getLanguageByCode]);
+  const getLanguageNativeName = useCallback(
+    (code: string) => {
+      const language = getLanguageByCode(code);
+      return language?.nativeName || code;
+    },
+    [getLanguageByCode],
+  );
 
   // Obter bandeira do idioma
-  const getLanguageFlag = useCallback((code: string) => {
-    const language = getLanguageByCode(code);
-    return language?.flag || '🌐';
-  }, [getLanguageByCode]);
+  const getLanguageFlag = useCallback(
+    (code: string) => {
+      const language = getLanguageByCode(code);
+      return language?.flag || "🌐";
+    },
+    [getLanguageByCode],
+  );
 
   // Obter direção do texto
   const getTextDirection = useCallback(() => {
-    return state.isRTL ? 'rtl' : 'ltr';
+    return state.isRTL ? "rtl" : "ltr";
   }, [state.isRTL]);
 
   // Obter alinhamento do texto
   const getTextAlign = useCallback(() => {
-    return state.isRTL ? 'right' : 'left';
+    return state.isRTL ? "right" : "left";
   }, [state.isRTL]);
 
   // Obter margem (para RTL)
-  const getMarginStyle = useCallback((margin: number) => {
-    return state.isRTL 
-      ? { marginLeft: margin, marginRight: 0 }
-      : { marginLeft: 0, marginRight: margin };
-  }, [state.isRTL]);
+  const getMarginStyle = useCallback(
+    (margin: number) => {
+      return state.isRTL
+        ? { marginLeft: margin, marginRight: 0 }
+        : { marginLeft: 0, marginRight: margin };
+    },
+    [state.isRTL],
+  );
 
   // Obter padding (para RTL)
-  const getPaddingStyle = useCallback((padding: number) => {
-    return state.isRTL 
-      ? { paddingLeft: padding, paddingRight: 0 }
-      : { paddingLeft: 0, paddingRight: padding };
-  }, [state.isRTL]);
+  const getPaddingStyle = useCallback(
+    (padding: number) => {
+      return state.isRTL
+        ? { paddingLeft: padding, paddingRight: 0 }
+        : { paddingLeft: 0, paddingRight: padding };
+    },
+    [state.isRTL],
+  );
 
   // Traduzir com plural
-  const translatePlural = useCallback((
-    key: string,
-    count: number,
-    namespace: string = 'common',
-    variables?: Record<string, any>
-  ) => {
-    // Implementar lógica de pluralização
-    const pluralKey = count === 1 ? key : `${key}_plural`;
-    
-    return translate(pluralKey, namespace, { ...variables, count });
-  }, [translate]);
+  const translatePlural = useCallback(
+    (
+      key: string,
+      count: number,
+      namespace: string = "common",
+      variables?: Record<string, any>,
+    ) => {
+      // Implementar lógica de pluralização
+      const pluralKey = count === 1 ? key : `${key}_plural`;
+
+      return translate(pluralKey, namespace, { ...variables, count });
+    },
+    [translate],
+  );
 
   // Traduzir com contexto
-  const translateWithContext = useCallback((
-    key: string,
-    context: string,
-    variables?: Record<string, any>
-  ) => {
-    return translate(key, context, variables);
-  }, [translate]);
+  const translateWithContext = useCallback(
+    (key: string, context: string, variables?: Record<string, any>) => {
+      return translate(key, context, variables);
+    },
+    [translate],
+  );
 
   // Obter traduções de um namespace
-  const getNamespaceTranslations = useCallback((namespace: string) => {
-    // Implementar obtenção de todas as traduções de um namespace
-    const translations: Record<string, string> = {};
-    
-    // Chaves comuns que poderiam ser necessárias
-    const commonKeys = [
-      'ok', 'cancel', 'save', 'delete', 'edit', 'add',
-      'search', 'filter', 'loading', 'error', 'success',
-      'yes', 'no', 'close', 'back', 'next', 'previous'
-    ];
+  const getNamespaceTranslations = useCallback(
+    (namespace: string) => {
+      // Implementar obtenção de todas as traduções de um namespace
+      const translations: Record<string, string> = {};
 
-    commonKeys.forEach(key => {
-      translations[key] = translate(key, namespace);
-    });
+      // Chaves comuns que poderiam ser necessárias
+      const commonKeys = [
+        "ok",
+        "cancel",
+        "save",
+        "delete",
+        "edit",
+        "add",
+        "search",
+        "filter",
+        "loading",
+        "error",
+        "success",
+        "yes",
+        "no",
+        "close",
+        "back",
+        "next",
+        "previous",
+      ];
 
-    return translations;
-  }, [translate]);
+      commonKeys.forEach((key) => {
+        translations[key] = translate(key, namespace);
+      });
+
+      return translations;
+    },
+    [translate],
+  );
 
   // Validar tradução
-  const validateTranslation = useCallback((
-    key: string,
-    namespace: string = 'common'
-  ) => {
-    const translation = translate(key, namespace);
-    return translation !== key; // Retorna true se a tradução existir
-  }, [translate]);
+  const validateTranslation = useCallback(
+    (key: string, namespace: string = "common") => {
+      const translation = translate(key, namespace);
+      return translation !== key; // Retorna true se a tradução existir
+    },
+    [translate],
+  );
 
   // Obter estatísticas de tradução
   const getTranslationStats = useCallback(() => {
@@ -234,7 +274,7 @@ export function useLocalization({
 
   // Recarregar localização
   const reloadLocalization = useCallback(() => {
-    setState(prev => ({ ...prev, isLoading: true }));
+    setState((prev) => ({ ...prev, isLoading: true }));
     initializeLocalization();
   }, [initializeLocalization]);
 
@@ -242,7 +282,7 @@ export function useLocalization({
   const exportSettings = useCallback((): LanguageSettings => {
     const config = localizationService.getConfig();
     const currentLang = getCurrentLanguageData();
-    
+
     return {
       code: state.currentLanguage,
       autoDetect: config.autoDetect,
@@ -250,10 +290,10 @@ export function useLocalization({
         enabled: config.enableRTL,
         autoDetect: true,
         flipIcons: true,
-        textAlign: 'auto',
+        textAlign: "auto",
       },
       font: {
-        family: 'System',
+        family: "System",
         size: {
           xs: 12,
           sm: 14,
@@ -269,45 +309,47 @@ export function useLocalization({
           bold: 700,
         },
       },
-      adaptations: currentLang ? {
-        dateFormat: currentLang.dateFormat,
-        timeFormat: currentLang.timeFormat,
-        weekStart: 1,
-        workingDays: [1, 2, 3, 4, 5],
-        holidays: [],
-        currency: currentLang.currency,
-        units: {
-          distance: 'km',
-          weight: 'kg',
-          temperature: 'celsius',
-        },
-        formats: {
-          phone: '+55 (00) 00000-0000',
-          postal: '00000-000',
-          id: '000.000.000-00',
-        },
-      } : {
-        dateFormat: 'dd/MM/yyyy',
-        timeFormat: 'HH:mm',
-        weekStart: 1,
-        workingDays: [1, 2, 3, 4, 5],
-        holidays: [],
-        currency: {
-          code: 'BRL',
-          symbol: 'R$',
-          position: 'before',
-        },
-        units: {
-          distance: 'km',
-          weight: 'kg',
-          temperature: 'celsius',
-        },
-        formats: {
-          phone: '+55 (00) 00000-0000',
-          postal: '00000-000',
-          id: '000.000.000-00',
-        },
-      },
+      adaptations: currentLang
+        ? {
+            dateFormat: currentLang.dateFormat,
+            timeFormat: currentLang.timeFormat,
+            weekStart: 1,
+            workingDays: [1, 2, 3, 4, 5],
+            holidays: [],
+            currency: currentLang.currency,
+            units: {
+              distance: "km",
+              weight: "kg",
+              temperature: "celsius",
+            },
+            formats: {
+              phone: "+55 (00) 00000-0000",
+              postal: "00000-000",
+              id: "000.000.000-00",
+            },
+          }
+        : {
+            dateFormat: "dd/MM/yyyy",
+            timeFormat: "HH:mm",
+            weekStart: 1,
+            workingDays: [1, 2, 3, 4, 5],
+            holidays: [],
+            currency: {
+              code: "BRL",
+              symbol: "R$",
+              position: "before",
+            },
+            units: {
+              distance: "km",
+              weight: "kg",
+              temperature: "celsius",
+            },
+            formats: {
+              phone: "+55 (00) 00000-0000",
+              postal: "00000-000",
+              id: "000.000.000-00",
+            },
+          },
     };
   }, [state.currentLanguage, getCurrentLanguageData]);
 

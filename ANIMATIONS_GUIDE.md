@@ -5,13 +5,14 @@ Este guia documenta o sistema completo de animações, feedback tátil e micro-i
 ## 📦 Componentes Implementados
 
 ### 1. Sistema de Haptics Avançado (`utils/advancedHaptics.ts`)
+
 - **Feedback tátil contextual** com diferentes intensidades e padrões
 - **Presets para ações específicas**: scan, sucesso, erro, navegação
 - **Padrões complexos**: pulse, shake, ramp-up/down, complex
 - **Configuração de intensidade** adaptável
 
 ```typescript
-import { advancedHaptics } from '@/utils/advancedHaptics';
+import { advancedHaptics } from "@/utils/advancedHaptics";
 
 // Uso simples
 advancedHaptics.onTabPress();
@@ -20,21 +21,26 @@ advancedHaptics.onScanError();
 
 // Configuração avançada
 advancedHaptics.trigger({
-  type: 'success',
-  pattern: 'pulse',
+  type: "success",
+  pattern: "pulse",
   intensity: 1.5,
-  delay: 100
+  delay: 100,
 });
 ```
 
 ### 2. Sistema de Animações (`utils/animationUtils.ts`)
+
 - **Hooks reutilizáveis** para diferentes tipos de animação
 - **Configurações predefinidas** (spring, timing, bouncy, snappy)
 - **Animações de tela**, loading, cards, listas, modais
 - **Transições fluidas** com easing avançado
 
 ```typescript
-import { useBasicAnimation, useScreenTransition, useTabAnimation } from '@/utils/animationUtils';
+import {
+  useBasicAnimation,
+  useScreenTransition,
+  useTabAnimation,
+} from "@/utils/animationUtils";
 
 // Animação básica
 const { animatedStyle, pressIn, pressOut, shake, bounce } = useBasicAnimation();
@@ -47,6 +53,7 @@ const { animatedStyle, activate, deactivate } = useTabAnimation(isActive);
 ```
 
 ### 3. Ícones Animados (`components/AnimatedIcon.tsx`)
+
 - **Ícones premium com animações** integradas
 - **Tipos de animação**: pulse, bounce, shake, rotate, scale, glow
 - **Componentes específicos**: AnimatedHomeIcon, AnimatedCameraIcon, etc.
@@ -56,20 +63,21 @@ const { animatedStyle, activate, deactivate } = useTabAnimation(isActive);
 import { AnimatedHomeIcon, AnimatedSuccessIcon } from '@/components/AnimatedIcon';
 
 // Ícone animado básico
-<AnimatedHomeIcon 
-  animationType="bounce" 
+<AnimatedHomeIcon
+  animationType="bounce"
   autoPlay={true}
   hapticType="light"
 />
 
 // Ícone de sucesso
-<AnimatedSuccessIcon 
+<AnimatedSuccessIcon
   trigger={showSuccess}
   size={32}
 />
 ```
 
 ### 4. Micro-interações (`components/MicroInteractions.tsx`)
+
 - **Botões com gestos avançados**: swipe, long press, double tap
 - **Cards interativos** com elevação e feedback tátil
 - **Ripple effects** para feedback visual
@@ -100,6 +108,7 @@ import { MicroInteractions, InteractiveCard, RippleButton } from '@/components/M
 ```
 
 ### 5. Otimização de Performance (`utils/performanceOptimizer.ts`)
+
 - **Monitoramento de FPS** em tempo real
 - **Adaptação automática** baseada na performance do dispositivo
 - **Gerenciamento de animações** com fila e limites
@@ -107,12 +116,12 @@ import { MicroInteractions, InteractiveCard, RippleButton } from '@/components/M
 - **Configurações otimizadas** para diferentes níveis de performance
 
 ```typescript
-import { 
-  performanceMonitor, 
-  useOptimizedAnimation, 
+import {
+  performanceMonitor,
+  useOptimizedAnimation,
   shouldAnimate,
-  debounce 
-} from '@/utils/performanceOptimizer';
+  debounce,
+} from "@/utils/performanceOptimizer";
 
 // Monitorar performance
 performanceMonitor.startMonitoring();
@@ -129,6 +138,7 @@ const debouncedSearch = debounce(handleSearch, 300);
 ### 1. BottomTabNavigator Melhorado
 
 O BottomTabNavigator foi atualizado com:
+
 - **Animações fluidas** ao trocar de tab
 - **Feedback tátil contextual**
 - **Ícones animados**
@@ -136,7 +146,7 @@ O BottomTabNavigator foi atualizado com:
 
 ```typescript
 // O componente já está atualizado com as novas animações
-<BottomTabNavigator 
+<BottomTabNavigator
   activeTab={activeTab}
   onTabChange={handleTabChange}
   showScannerTab={true}
@@ -157,7 +167,7 @@ function MyComponent() {
   const { shouldUseComplexAnimations } = useOptimizedAnimation();
 
   return (
-    <Animated.View 
+    <Animated.View
       style={[styles.container, animatedStyle]}
       onTouchStart={pressIn}
       onTouchEnd={pressOut}
@@ -191,6 +201,7 @@ const handleTabPress = () => {
 ## 🎨 Tipos de Animação Disponíveis
 
 ### Animações Básicas
+
 - **Pulse**: Efeito de pulsação suave
 - **Bounce**: Efeito de quicada
 - **Shake**: Efeito de shake/vibração
@@ -198,6 +209,7 @@ const handleTabPress = () => {
 - **Scale**: Efeito de zoom
 
 ### Animações de Transição
+
 - **SlideIn**: Entrada deslizando
 - **SlideOut**: Saída deslizando
 - **FadeIn**: Aparecimento suave
@@ -206,6 +218,7 @@ const handleTabPress = () => {
 - **ScaleOut**: Saída com zoom
 
 ### Animações Avançadas
+
 - **Elastic**: Efeito elástico
 - **Wave**: Efeito de onda
 - **Glow**: Efeito de brilho
@@ -214,6 +227,7 @@ const handleTabPress = () => {
 ## 🔧 Configurações
 
 ### Performance Config
+
 ```typescript
 export const PERFORMANCE_CONFIG = {
   TARGET_FPS: 60,
@@ -225,6 +239,7 @@ export const PERFORMANCE_CONFIG = {
 ```
 
 ### Animation Presets
+
 ```typescript
 export const ANIMATION_PRESETS = {
   spring: { damping: 15, stiffness: 200, mass: 1 },
@@ -237,17 +252,20 @@ export const ANIMATION_PRESETS = {
 ## 📱 Melhores Práticas
 
 ### 1. Performance
+
 - Use `shouldAnimate()` para verificar se deve animar
 - Monitore FPS com `performanceMonitor`
 - Use presets otimizados para cada dispositivo
 - Limpe animações não utilizadas
 
 ### 2. Feedback Tátil
+
 - Use feedback contextual (light para navegação, heavy para ações importantes)
 - Respeite preferências do usuário (reduced motion)
 - Adapte intensidade baseada na ação
 
 ### 3. Animações
+
 - Mantenha durações entre 200-500ms
 - Use easing natural (bezier curves)
 - Evite muitas animações simultâneas
@@ -256,6 +274,7 @@ export const ANIMATION_PRESETS = {
 ## 🎯 Exemplos de Uso
 
 ### Scanner com Feedback Completo
+
 ```typescript
 function ScannerComponent() {
   const { animatedStyle, shake, pulse } = useBasicAnimation();
@@ -265,7 +284,7 @@ function ScannerComponent() {
     setIsScanning(true);
     advancedHaptics.onScanSuccess();
     pulse();
-    
+
     try {
       // Lógica de scan
     } catch (error) {
@@ -287,10 +306,11 @@ function ScannerComponent() {
 ```
 
 ### Card de Lista Animado
+
 ```typescript
 function PackageListItem({ item, index }) {
   const { animatedStyle, enter } = useListItemAnimation(index);
-  
+
   useEffect(() => {
     enter();
   }, []);
@@ -306,18 +326,19 @@ function PackageListItem({ item, index }) {
 ## 🔍 Debug e Monitoramento
 
 ### 1. Performance Monitor
+
 ```typescript
 // Adicionar ao app principal
 useEffect(() => {
   performanceMonitor.startMonitoring();
-  
+
   const unsubscribe = performanceMonitor.onFPSUpdate((fps) => {
     console.log(`Current FPS: ${fps}`);
     if (fps < 30) {
-      console.warn('Low performance detected!');
+      console.warn("Low performance detected!");
     }
   });
-  
+
   return () => {
     unsubscribe();
     performanceMonitor.stopMonitoring();
@@ -326,6 +347,7 @@ useEffect(() => {
 ```
 
 ### 2. Animation Manager
+
 ```typescript
 // Monitorar animações ativas
 console.log(`Active animations: ${animationManager.getActiveCount()}`);
@@ -379,6 +401,6 @@ O sistema de animações e micro-interações implementado oferece:
 ✅ **Micro-interações** intuitivas  
 ✅ **Componentes reutilizáveis** e bem documentados  
 ✅ **Otimização automática** baseada no dispositivo  
-✅ **Acessibilidade** e preferências do usuário  
+✅ **Acessibilidade** e preferências do usuário
 
 Isso resulta em uma experiência de usuário **incrivelmente robusta e avançada** que se adapta a diferentes dispositivos e contextos de uso.

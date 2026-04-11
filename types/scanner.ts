@@ -6,15 +6,15 @@
 /**
  * Tipos de pacotes identificáveis pelo scanner
  */
-export type PackageType = 'shopee' | 'mercado_livre' | 'avulso' | 'unknown';
+export type PackageType = "shopee" | "mercado_livre" | "avulso" | "unknown";
 
 /**
  * Estado do scanner - Determinístico
  */
 export enum ScannerState {
-  ACTIVE = 'ACTIVE',
-  LIMIT_REACHED = 'LIMIT_REACHED',
-  PAUSED = 'PAUSED',
+  ACTIVE = "ACTIVE",
+  LIMIT_REACHED = "LIMIT_REACHED",
+  PAUSED = "PAUSED",
 }
 
 /**
@@ -23,7 +23,7 @@ export enum ScannerState {
 export interface PackageIdentification {
   type: PackageType;
   matched: boolean;
-  confidence: 'high' | 'medium' | 'low';
+  confidence: "high" | "medium" | "low";
   description?: string;
 }
 
@@ -70,7 +70,7 @@ export interface ScanResult {
   code: string;
   type?: PackageType;
   isDuplicate?: boolean;
-  reason?: 'limit_reached' | 'duplicate' | 'invalid' | 'rate_limited';
+  reason?: "limit_reached" | "duplicate" | "invalid" | "rate_limited";
   timestamp: number;
 }
 

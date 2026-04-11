@@ -1,19 +1,19 @@
-import { Session } from '@/types/session';
-import * as SecureStore from 'expo-secure-store';
+import { Session } from "@/types/session";
+import * as SecureStore from "expo-secure-store";
 
 /**
  * Configurações de nuvem
  */
 const CLOUD_CONFIG = {
-  baseURL: process.env.EXPO_PUBLIC_API_URL || 'https://api.beep-velozz.com',
+  baseURL: process.env.EXPO_PUBLIC_API_URL || "https://api.beep-velozz.com",
   syncInterval: 5 * 60 * 1000, // 5 minutos
 };
 
 /**
  * Fila de sincronização local
  */
-const SYNC_QUEUE_KEY = 'sync_queue';
-const LAST_SYNC_KEY = 'last_sync_time';
+const SYNC_QUEUE_KEY = "sync_queue";
+const LAST_SYNC_KEY = "last_sync_time";
 
 /**
  * Adiciona uma sessão à fila de sincronização
@@ -25,7 +25,7 @@ export async function addToSyncQueue(session: Session): Promise<void> {
     queue.push(session);
     await SecureStore.setItemAsync(SYNC_QUEUE_KEY, JSON.stringify(queue));
   } catch (error) {
-    console.error('Erro ao adicionar à fila de sincronização:', error);
+    console.error("Erro ao adicionar à fila de sincronização:", error);
   }
 }
 
@@ -51,9 +51,9 @@ export async function syncWithCloud(): Promise<{
     for (const session of queue) {
       try {
         const response = await fetch(`${CLOUD_CONFIG.baseURL}/sessions`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(session),
         });
@@ -65,7 +65,7 @@ export async function syncWithCloud(): Promise<{
         }
       } catch (error) {
         failedCount++;
-        console.error('Erro ao sincronizar sessão:', error);
+        console.error("Erro ao sincronizar sessão:", error);
       }
     }
 
@@ -92,7 +92,7 @@ export async function getLastSyncTime(): Promise<Date | null> {
     const lastSyncJSON = await SecureStore.getItemAsync(LAST_SYNC_KEY);
     return lastSyncJSON ? new Date(lastSyncJSON) : null;
   } catch (error) {
-    console.error('Erro ao obter tempo da última sincronização:', error);
+    console.error("Erro ao obter tempo da última sincronização:", error);
     return null;
   }
 }
@@ -106,7 +106,7 @@ export async function getSyncQueueSize(): Promise<number> {
     const queue: Session[] = queueJSON ? JSON.parse(queueJSON) : [];
     return queue.length;
   } catch (error) {
-    console.error('Erro ao obter tamanho da fila:', error);
+    console.error("Erro ao obter tamanho da fila:", error);
     return 0;
   }
 }
@@ -114,7 +114,9 @@ export async function getSyncQueueSize(): Promise<number> {
 /**
  * Inicia sincronização automática periódica
  */
-export function startAutoSync(onSyncComplete?: (result: { success: number; failed: number }) => void) {
+export function startAutoSync(
+  onSyncComplete?: (result: { success: number; failed: number }) => void,
+) {
   const interval = setInterval(async () => {
     const result = await syncWithCloud();
     if (onSyncComplete) {

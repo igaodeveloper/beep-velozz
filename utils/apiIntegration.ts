@@ -3,8 +3,8 @@
  * Serviço de integração com APIs externas para validação de pacotes
  */
 
-import { Session, ScannedPackage } from '@/types/session';
-import { PackageType } from '@/types/scanner';
+import { Session, ScannedPackage } from "@/types/session";
+import { PackageType } from "@/types/scanner";
 
 export interface APIValidationResult {
   isValid: boolean;
@@ -17,7 +17,7 @@ export interface APIValidationResult {
 
 export interface PackageInfo {
   trackingCode: string;
-  status: 'in_transit' | 'delivered' | 'pending' | 'cancelled' | 'returned';
+  status: "in_transit" | "delivered" | "pending" | "cancelled" | "returned";
   carrier: string;
   origin: string;
   destination: string;
@@ -79,9 +79,9 @@ class PackageAPIIntegration {
    */
   private initializeProviders(): void {
     // Shopee API
-    this.providers.set('shopee', {
-      name: 'Shopee',
-      endpoint: 'https://api.shopee.com/v1/package',
+    this.providers.set("shopee", {
+      name: "Shopee",
+      endpoint: "https://api.shopee.com/v1/package",
       apiKey: process.env.SHOPEE_API_KEY,
       rateLimit: 100,
       timeout: 5000,
@@ -89,9 +89,9 @@ class PackageAPIIntegration {
     });
 
     // Mercado Libre API
-    this.providers.set('mercadolibre', {
-      name: 'Mercado Libre',
-      endpoint: 'https://api.mercadolibre.com/v1/tracking',
+    this.providers.set("mercadolibre", {
+      name: "Mercado Libre",
+      endpoint: "https://api.mercadolibre.com/v1/tracking",
       apiKey: process.env.MERCADOLIBRE_API_KEY,
       rateLimit: 60,
       timeout: 7000,
@@ -99,9 +99,9 @@ class PackageAPIIntegration {
     });
 
     // Correios API (Brasil)
-    this.providers.set('correios', {
-      name: 'Correios',
-      endpoint: 'https://api.correios.com.br/package',
+    this.providers.set("correios", {
+      name: "Correios",
+      endpoint: "https://api.correios.com.br/package",
       apiKey: process.env.CORREIOS_API_KEY,
       rateLimit: 30,
       timeout: 10000,
@@ -109,9 +109,9 @@ class PackageAPIIntegration {
     });
 
     // API genérica para pacotes avulsos
-    this.providers.set('generic', {
-      name: 'Generic Tracker',
-      endpoint: 'https://api.tracking.com/v1/track',
+    this.providers.set("generic", {
+      name: "Generic Tracker",
+      endpoint: "https://api.tracking.com/v1/track",
       rateLimit: 50,
       timeout: 8000,
       enabled: true,
@@ -122,8 +122,8 @@ class PackageAPIIntegration {
    * Valida pacote com APIs externas
    */
   async validatePackage(
-    code: string, 
-    type: PackageType
+    code: string,
+    type: PackageType,
   ): Promise<APIValidationResult> {
     if (!this.config.enableRealTimeValidation) {
       return this.createMockResult(code, type);
@@ -148,7 +148,7 @@ class PackageAPIIntegration {
       if (this.requestQueue.length === 0) return;
 
       const batch = this.requestQueue.splice(0, 10); // Processa em lotes de 10
-      
+
       await Promise.allSettled(
         batch.map(async ({ code, type, resolve, reject }) => {
           try {
@@ -157,7 +157,7 @@ class PackageAPIIntegration {
           } catch (error) {
             reject(error as Error);
           }
-        })
+        }),
       );
     }, 1000); // Processa a cada segundo
   }
@@ -166,8 +166,8 @@ class PackageAPIIntegration {
    * Processa requisição individual
    */
   private async processRequest(
-    code: string, 
-    type: PackageType
+    code: string,
+    type: PackageType,
   ): Promise<APIValidationResult> {
     const providerKey = this.getProviderForType(type);
     const provider = this.providers.get(providerKey);
@@ -179,17 +179,16 @@ class PackageAPIIntegration {
     try {
       // Simula requisição HTTP
       const result = await this.makeAPIRequest(provider, code, type);
-      
+
       // Cache do resultado
       if (this.config.cacheResults) {
         this.cacheResult(code, result);
       }
 
       return result;
-      
     } catch (error) {
       console.error(`API request failed for ${code}:`, error);
-      
+
       // Tenta fallback providers
       if (this.config.fallbackProviders) {
         return this.tryFallbackProviders(code, type);
@@ -203,12 +202,14 @@ class PackageAPIIntegration {
    * Faz requisição HTTP para API
    */
   private async makeAPIRequest(
-    provider: APIProvider, 
-    code: string, 
-    type: PackageType
+    provider: APIProvider,
+    code: string,
+    type: PackageType,
   ): Promise<APIValidationResult> {
     // Simulação de requisição HTTP
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+    await new Promise((resolve) =>
+      setTimeout(resolve, 1000 + Math.random() * 2000),
+    );
 
     // Simula resposta da API
     const isValid = Math.random() > 0.1; // 90% de validade
@@ -219,30 +220,37 @@ class PackageAPIIntegration {
         trackingCode: code,
         status: this.getRandomStatus(),
         carrier: provider.name,
-        origin: 'São Paulo, SP',
-        destination: 'Rio de Janeiro, RJ',
+        origin: "São Paulo, SP",
+        destination: "Rio de Janeiro, RJ",
         weight: 0.5 + Math.random() * 4.5,
         dimensions: {
           length: 10 + Math.random() * 30,
           width: 10 + Math.random() * 30,
           height: 5 + Math.random() * 20,
         },
-        value: type === 'shopee' ? 50 + Math.random() * 500 : 30 + Math.random() * 300,
-        estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+        value:
+          type === "shopee"
+            ? 50 + Math.random() * 500
+            : 30 + Math.random() * 300,
+        estimatedDelivery: new Date(
+          Date.now() + 3 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
         lastUpdate: new Date().toISOString(),
       };
 
       return {
         isValid: true,
         packageInfo,
-        warnings: hasWarnings ? ['Pacote com leve atraso na entrega'] : undefined,
+        warnings: hasWarnings
+          ? ["Pacote com leve atraso na entrega"]
+          : undefined,
         timestamp: Date.now(),
         source: provider.name,
       };
     } else {
       return {
         isValid: false,
-        errors: ['Código de rastreamento inválido ou não encontrado'],
+        errors: ["Código de rastreamento inválido ou não encontrado"],
         timestamp: Date.now(),
         source: provider.name,
       };
@@ -253,11 +261,13 @@ class PackageAPIIntegration {
    * Tenta provedores fallback
    */
   private async tryFallbackProviders(
-    code: string, 
-    type: PackageType
+    code: string,
+    type: PackageType,
   ): Promise<APIValidationResult> {
-    const fallbackProviders = Array.from(this.providers.entries())
-      .filter(([key, provider]) => key !== this.getProviderForType(type) && provider.enabled);
+    const fallbackProviders = Array.from(this.providers.entries()).filter(
+      ([key, provider]) =>
+        key !== this.getProviderForType(type) && provider.enabled,
+    );
 
     for (const [_, provider] of fallbackProviders) {
       try {
@@ -279,20 +289,23 @@ class PackageAPIIntegration {
   /**
    * Cria resultado simulado
    */
-  private createMockResult(code: string, type: PackageType): APIValidationResult {
+  private createMockResult(
+    code: string,
+    type: PackageType,
+  ): APIValidationResult {
     return {
       isValid: true,
       packageInfo: {
         trackingCode: code,
-        status: 'in_transit',
-        carrier: 'Local Scanner',
-        origin: 'Local',
-        destination: 'Local',
+        status: "in_transit",
+        carrier: "Local Scanner",
+        origin: "Local",
+        destination: "Local",
         lastUpdate: new Date().toISOString(),
       },
-      warnings: ['Validação offline - Sem conexão com APIs externas'],
+      warnings: ["Validação offline - Sem conexão com APIs externas"],
       timestamp: Date.now(),
-      source: 'Local',
+      source: "Local",
     };
   }
 
@@ -301,10 +314,14 @@ class PackageAPIIntegration {
    */
   private getProviderForType(type: PackageType): string {
     switch (type) {
-      case 'shopee': return 'shopee';
-      case 'mercado_livre': return 'mercadolibre';
-      case 'avulso': return 'correios';
-      default: return 'generic';
+      case "shopee":
+        return "shopee";
+      case "mercado_livre":
+        return "mercadolibre";
+      case "avulso":
+        return "correios";
+      default:
+        return "generic";
     }
   }
 
@@ -329,7 +346,7 @@ class PackageAPIIntegration {
    */
   private cacheResult(code: string, result: APIValidationResult): void {
     this.cache.set(code, result);
-    
+
     // Limpa cache antigo periodicamente
     if (this.cache.size > 1000) {
       this.cleanupCache();
@@ -351,8 +368,12 @@ class PackageAPIIntegration {
   /**
    * Obtém status aleatório para simulação
    */
-  private getRandomStatus(): PackageInfo['status'] {
-    const statuses: PackageInfo['status'][] = ['in_transit', 'pending', 'delivered'];
+  private getRandomStatus(): PackageInfo["status"] {
+    const statuses: PackageInfo["status"][] = [
+      "in_transit",
+      "pending",
+      "delivered",
+    ];
     return statuses[Math.floor(Math.random() * statuses.length)];
   }
 
@@ -360,10 +381,10 @@ class PackageAPIIntegration {
    * Valida lote de pacotes
    */
   async validateBatch(
-    packages: Array<{ code: string; type: PackageType }>
+    packages: Array<{ code: string; type: PackageType }>,
   ): Promise<APIValidationResult[]> {
-    const promises = packages.map(({ code, type }) => 
-      this.validatePackage(code, type)
+    const promises = packages.map(({ code, type }) =>
+      this.validatePackage(code, type),
     );
 
     return Promise.all(promises);
@@ -383,7 +404,7 @@ class PackageAPIIntegration {
         acc[key] = provider.enabled;
         return acc;
       },
-      {} as Record<string, boolean>
+      {} as Record<string, boolean>,
     );
 
     return {

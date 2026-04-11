@@ -7,24 +7,24 @@
  * - Erro handling robusto
  */
 
-import { playBeepA, playBeepB, playBeepC, playError } from '@/utils/sound';
+import { playBeepA, playBeepB, playBeepC, playError } from "@/utils/sound";
 
 /**
  * Estados do reprodutor de áudio
  */
 enum AudioState {
-  IDLE = 'IDLE',
-  PLAYING = 'PLAYING',
+  IDLE = "IDLE",
+  PLAYING = "PLAYING",
 }
 
 /**
  * Tipos de som que o scanner pode emitir
  */
 export enum ScannerAudioType {
-  BEEP_A = 'beep_a', // Shopee
-  BEEP_B = 'beep_b', // Mercado Livre
-  BEEP_C = 'beep_c', // Avulso
-  BEEP_ERROR = 'beep_error', // Erro / Desconhecido
+  BEEP_A = "beep_a", // Shopee
+  BEEP_B = "beep_b", // Mercado Livre
+  BEEP_C = "beep_c", // Avulso
+  BEEP_ERROR = "beep_error", // Erro / Desconhecido
 }
 
 /**
@@ -40,9 +40,21 @@ interface AudioConfig {
  * Mapa de configurações de áudio
  */
 const AUDIO_CONFIGS: Record<ScannerAudioType, AudioConfig> = {
-  [ScannerAudioType.BEEP_A]: { type: ScannerAudioType.BEEP_A, durationMs: 150, minGapMs: 300 },
-  [ScannerAudioType.BEEP_B]: { type: ScannerAudioType.BEEP_B, durationMs: 150, minGapMs: 300 },
-  [ScannerAudioType.BEEP_C]: { type: ScannerAudioType.BEEP_C, durationMs: 150, minGapMs: 300 },
+  [ScannerAudioType.BEEP_A]: {
+    type: ScannerAudioType.BEEP_A,
+    durationMs: 150,
+    minGapMs: 300,
+  },
+  [ScannerAudioType.BEEP_B]: {
+    type: ScannerAudioType.BEEP_B,
+    durationMs: 150,
+    minGapMs: 300,
+  },
+  [ScannerAudioType.BEEP_C]: {
+    type: ScannerAudioType.BEEP_C,
+    durationMs: 150,
+    minGapMs: 300,
+  },
   [ScannerAudioType.BEEP_ERROR]: {
     type: ScannerAudioType.BEEP_ERROR,
     durationMs: 200,
@@ -65,27 +77,41 @@ export class ScannerAudioService {
    * Toca um som de forma segura
    * Garante que não haverá sobreposição ou múltiplos bipes rápidos
    */
-  async playAudio(audioType: ScannerAudioType, forcePlay = false): Promise<void> {
-    console.log(`[ScannerAudioService] 🔊 playAudio requested: type="${audioType}"`);
+  async playAudio(
+    audioType: ScannerAudioType,
+    forcePlay = false,
+  ): Promise<void> {
+    console.log(
+      `[ScannerAudioService] 🔊 playAudio requested: type="${audioType}"`,
+    );
     const now = Date.now();
     const config = AUDIO_CONFIGS[audioType];
 
     // Prevenção dupla: ignorar se mesmo som tocado recentemente
-    if (this.lastPlayedType === audioType && now - this.lastAudioTime < config.minGapMs) {
-      console.log(`[ScannerAudioService] ⏭️ SKIPPED (duplicate too soon): "${audioType}"`);
+    if (
+      this.lastPlayedType === audioType &&
+      now - this.lastAudioTime < config.minGapMs
+    ) {
+      console.log(
+        `[ScannerAudioService] ⏭️ SKIPPED (duplicate too soon): "${audioType}"`,
+      );
       return;
     }
 
     // Se estamos tocando algo, enfileira
     if (this.state === AudioState.PLAYING && !forcePlay) {
-      console.log(`[ScannerAudioService] 📋 QUEUED: "${audioType}" (currently playing)`);
+      console.log(
+        `[ScannerAudioService] 📋 QUEUED: "${audioType}" (currently playing)`,
+      );
       this.audioQueue.push(audioType);
       return;
     }
 
     // Se tempo insuficiente desde último áudio, enfileira
     if (now - this.lastAudioTime < config.minGapMs && !forcePlay) {
-      console.log(`[ScannerAudioService] 📋 QUEUED: "${audioType}" (gap too short)`);
+      console.log(
+        `[ScannerAudioService] 📋 QUEUED: "${audioType}" (gap too short)`,
+      );
       this.audioQueue.push(audioType);
       return;
     }
@@ -106,7 +132,9 @@ export class ScannerAudioService {
     this.lastPlayedType = audioType;
 
     try {
-      console.log(`[ScannerAudioService] 🎵 Executando áudio: "${audioType}" (duração: ${config.durationMs}ms)`);
+      console.log(
+        `[ScannerAudioService] 🎵 Executando áudio: "${audioType}" (duração: ${config.durationMs}ms)`,
+      );
       // Mapeia tipo de áudio para função de reprodução
       switch (audioType) {
         case ScannerAudioType.BEEP_A:
@@ -127,7 +155,7 @@ export class ScannerAudioService {
           break;
       }
     } catch (error) {
-      console.error('[ScannerAudio] Erro ao tocar áudio:', error);
+      console.error("[ScannerAudio] Erro ao tocar áudio:", error);
     }
 
     // Espera a duração do áudio

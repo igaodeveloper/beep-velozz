@@ -1,5 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { captureMessage } from './sentry';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { captureMessage } from "./sentry";
 
 export interface CacheItem<T = any> {
   data: T;
@@ -18,7 +18,11 @@ export class CacheService {
     return CacheService.instance;
   }
 
-  async set<T>(key: string, data: T, ttl: number = 5 * 60 * 1000): Promise<void> {
+  async set<T>(
+    key: string,
+    data: T,
+    ttl: number = 5 * 60 * 1000,
+  ): Promise<void> {
     const item: CacheItem<T> = {
       data,
       timestamp: Date.now(),
@@ -32,7 +36,7 @@ export class CacheService {
       // Store in persistent storage
       await AsyncStorage.setItem(`cache_${key}`, JSON.stringify(item));
     } catch (error) {
-      captureMessage('Cache set failed', 'error', { key, error });
+      captureMessage("Cache set failed", "error", { key, error });
     }
   }
 
@@ -61,7 +65,7 @@ export class CacheService {
       await this.delete(key);
       return null;
     } catch (error) {
-      captureMessage('Cache get failed', 'error', { key, error });
+      captureMessage("Cache get failed", "error", { key, error });
       return null;
     }
   }
@@ -71,7 +75,7 @@ export class CacheService {
       this.memoryCache.delete(key);
       await AsyncStorage.removeItem(`cache_${key}`);
     } catch (error) {
-      captureMessage('Cache delete failed', 'error', { key, error });
+      captureMessage("Cache delete failed", "error", { key, error });
     }
   }
 
@@ -79,17 +83,17 @@ export class CacheService {
     try {
       this.memoryCache.clear();
       const keys = await AsyncStorage.getAllKeys();
-      const cacheKeys = keys.filter(key => key.startsWith('cache_'));
+      const cacheKeys = keys.filter((key) => key.startsWith("cache_"));
       await AsyncStorage.multiRemove(cacheKeys);
     } catch (error) {
-      captureMessage('Cache clear failed', 'error', { error });
+      captureMessage("Cache clear failed", "error", { error });
     }
   }
 
   async cleanup(): Promise<void> {
     try {
       const keys = await AsyncStorage.getAllKeys();
-      const cacheKeys = keys.filter(key => key.startsWith('cache_'));
+      const cacheKeys = keys.filter((key) => key.startsWith("cache_"));
 
       for (const key of cacheKeys) {
         const stored = await AsyncStorage.getItem(key);
@@ -101,7 +105,7 @@ export class CacheService {
         }
       }
     } catch (error) {
-      captureMessage('Cache cleanup failed', 'error', { error });
+      captureMessage("Cache cleanup failed", "error", { error });
     }
   }
 
@@ -111,27 +115,27 @@ export class CacheService {
 
   // Specialized cache methods for common use cases
   async getPricingData(): Promise<any> {
-    return this.get('pricing_data');
+    return this.get("pricing_data");
   }
 
   async setPricingData(data: any, ttl: number = 30 * 60 * 1000): Promise<void> {
-    await this.set('pricing_data', data, ttl);
+    await this.set("pricing_data", data, ttl);
   }
 
   async getUserPreferences(): Promise<any> {
-    return this.get('user_preferences');
+    return this.get("user_preferences");
   }
 
   async setUserPreferences(data: any): Promise<void> {
-    await this.set('user_preferences', data, 24 * 60 * 60 * 1000); // 24 hours
+    await this.set("user_preferences", data, 24 * 60 * 60 * 1000); // 24 hours
   }
 
   async getSessionHistory(): Promise<any[]> {
-    return (await this.get('session_history')) || [];
+    return (await this.get("session_history")) || [];
   }
 
   async setSessionHistory(data: any[]): Promise<void> {
-    await this.set('session_history', data, 7 * 24 * 60 * 60 * 1000); // 7 days
+    await this.set("session_history", data, 7 * 24 * 60 * 60 * 1000); // 7 days
   }
 }
 

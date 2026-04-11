@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -7,17 +7,17 @@ import {
   Animated as RNAnimated,
   PanResponder,
   Dimensions,
-} from 'react-native';
+} from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-} from 'react-native-reanimated';
-import { useAppTheme } from '@/utils/useAppTheme';
-import { advancedHaptics } from '@/utils/advancedHaptics';
-import { useBasicAnimation } from '@/utils/animationUtils';
+} from "react-native-reanimated";
+import { useAppTheme } from "@/utils/useAppTheme";
+import { advancedHaptics } from "@/utils/advancedHaptics";
+import { useBasicAnimation } from "@/utils/animationUtils";
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 interface MicroInteractionsProps {
   children: React.ReactNode;
@@ -54,20 +54,21 @@ export function MicroInteractions({
   const [isPressed, setIsPressed] = useState(false);
   const [isLongPressed, setIsLongPressed] = useState(false);
   const longPressTimerRef = useRef<number | null>(null);
-  
-  const { animatedStyle, pressIn, pressOut, shake, bounce, pulse } = useBasicAnimation();
-  
+
+  const { animatedStyle, pressIn, pressOut, shake, bounce, pulse } =
+    useBasicAnimation();
+
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => !disabled,
     onMoveShouldSetPanResponder: () => !disabled,
     onPanResponderGrant: (evt, gestureState) => {
       if (disabled) return;
-      
+
       setIsPressed(true);
       if (pressAnimation) {
         pressIn();
       }
-      
+
       // Start long press timer
       longPressTimerRef.current = setTimeout(() => {
         setIsLongPressed(true);
@@ -77,10 +78,10 @@ export function MicroInteractions({
         }
       }, longPressDelay);
     },
-    
+
     onPanResponderMove: (evt, gestureState) => {
       if (disabled) return;
-      
+
       // Cancel long press if moved too much
       if (Math.abs(gestureState.dx) > 10 || Math.abs(gestureState.dy) > 10) {
         if (longPressTimerRef.current) {
@@ -90,26 +91,26 @@ export function MicroInteractions({
         setIsLongPressed(false);
       }
     },
-    
+
     onPanResponderRelease: (evt, gestureState) => {
       if (disabled) return;
-      
+
       setIsPressed(false);
       setIsLongPressed(false);
-      
+
       if (pressAnimation) {
         pressOut();
       }
-      
+
       // Clear long press timer
       if (longPressTimerRef.current) {
         clearTimeout(longPressTimerRef.current);
         longPressTimerRef.current = null;
       }
-      
+
       const dx = gestureState.dx;
       const dy = gestureState.dy;
-      
+
       // Detect swipe gestures
       if (Math.abs(dx) > Math.abs(dy)) {
         if (Math.abs(dx) > swipeThreshold) {
@@ -164,13 +165,13 @@ export function MicroInteractions({
       {...panResponder.panHandlers}
     >
       {children}
-      
+
       {/* Long press indicator */}
       {isLongPressed && (
         <View
           style={[
             styles.longPressIndicator,
-            { backgroundColor: colors.primary + '30' },
+            { backgroundColor: colors.primary + "30" },
           ]}
         />
       )}
@@ -273,26 +274,28 @@ export function RippleButton({
   hapticFeedback = true,
 }: RippleButtonProps) {
   const { colors } = useAppTheme();
-  const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
+  const [ripples, setRipples] = useState<
+    { id: number; x: number; y: number }[]
+  >([]);
   const rippleIdRef = useRef(0);
 
   const handlePress = (evt: any) => {
     if (disabled) return;
-    
+
     const { locationX, locationY } = evt.nativeEvent;
     const newRipple = {
       id: rippleIdRef.current++,
       x: locationX,
       y: locationY,
     };
-    
-    setRipples(prev => [...prev, newRipple]);
-    
+
+    setRipples((prev) => [...prev, newRipple]);
+
     // Remove ripple after animation
     setTimeout(() => {
-      setRipples(prev => prev.filter(r => r.id !== newRipple.id));
+      setRipples((prev) => prev.filter((r) => r.id !== newRipple.id));
     }, 600);
-    
+
     if (onPress) {
       onPress();
       if (hapticFeedback) advancedHaptics.onButtonPress();
@@ -315,9 +318,9 @@ export function RippleButton({
       activeOpacity={0.8}
     >
       {children}
-      
+
       {/* Ripple effects */}
-      {ripples.map(ripple => (
+      {ripples.map((ripple) => (
         <Animated.View
           key={ripple.id}
           style={[
@@ -325,7 +328,7 @@ export function RippleButton({
             {
               left: ripple.x - 25,
               top: ripple.y - 25,
-              backgroundColor: rippleColor || colors.primary + '40',
+              backgroundColor: rippleColor || colors.primary + "40",
             },
           ]}
         />
@@ -365,7 +368,7 @@ export function SwipeableItem({
 
   const handleSwipe = (gesture: any) => {
     const { dx } = gesture;
-    
+
     if (dx > threshold) {
       // Swipe right
       setShowLeftActions(true);
@@ -410,14 +413,14 @@ export function SwipeableItem({
           {leftActions}
         </View>
       )}
-      
+
       {/* Right Actions */}
       {showRightActions && (
         <View style={[styles.actionsContainer, styles.rightActions]}>
           {rightActions}
         </View>
       )}
-      
+
       {/* Main Content */}
       <Animated.View
         style={[
@@ -441,13 +444,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     minHeight: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-    overflow: 'hidden',
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+    overflow: "hidden",
   },
   longPressIndicator: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
@@ -467,21 +470,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     minHeight: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-    overflow: 'hidden',
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+    overflow: "hidden",
   },
   ripple: {
-    position: 'absolute',
+    position: "absolute",
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: "rgba(0,0,0,0.2)",
   },
   swipeableContainer: {
-    position: 'relative',
-    flexDirection: 'row',
+    position: "relative",
+    flexDirection: "row",
     marginVertical: 4,
   },
   swipeableContent: {
@@ -490,13 +493,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     minHeight: 60,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   actionsContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     bottom: 0,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingHorizontal: 16,
   },
   leftActions: {

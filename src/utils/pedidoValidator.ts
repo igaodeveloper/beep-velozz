@@ -1,6 +1,12 @@
 // src/utils/pedidoValidator.ts
 
-import { Pedido, Cliente, Entrega, StatusPedido, ItemPedido } from '../types/Pedido';
+import {
+  Pedido,
+  Cliente,
+  Entrega,
+  StatusPedido,
+  ItemPedido,
+} from "../types/Pedido";
 
 /**
  * Utilitários para validação de dados de pedidos
@@ -12,15 +18,15 @@ export class PedidoValidator {
   static isValidPedido(obj: any): obj is Pedido {
     return (
       obj &&
-      typeof obj.id === 'string' &&
-      typeof obj.codigo === 'string' &&
-      typeof obj.tipo === 'string' &&
+      typeof obj.id === "string" &&
+      typeof obj.codigo === "string" &&
+      typeof obj.tipo === "string" &&
       this.isValidCliente(obj.cliente) &&
       this.isValidEntrega(obj.entrega) &&
       this.isValidStatus(obj.status) &&
-      typeof obj.dataCriacao === 'string' &&
-      typeof obj.dataAtualizacao === 'string' &&
-      typeof obj.valorTotal === 'number' &&
+      typeof obj.dataCriacao === "string" &&
+      typeof obj.dataAtualizacao === "string" &&
+      typeof obj.valorTotal === "number" &&
       Array.isArray(obj.itens) &&
       obj.itens.every((item: any) => this.isValidItemPedido(item))
     );
@@ -30,11 +36,7 @@ export class PedidoValidator {
    * Valida se um objeto é um cliente válido
    */
   static isValidCliente(obj: any): obj is Cliente {
-    return (
-      obj &&
-      typeof obj.id === 'string' &&
-      typeof obj.nome === 'string'
-    );
+    return obj && typeof obj.id === "string" && typeof obj.nome === "string";
   }
 
   /**
@@ -43,11 +45,11 @@ export class PedidoValidator {
   static isValidEntrega(obj: any): obj is Entrega {
     return (
       obj &&
-      typeof obj.endereco === 'string' &&
-      typeof obj.cidade === 'string' &&
-      typeof obj.estado === 'string' &&
-      typeof obj.cep === 'string' &&
-      typeof obj.pais === 'string'
+      typeof obj.endereco === "string" &&
+      typeof obj.cidade === "string" &&
+      typeof obj.estado === "string" &&
+      typeof obj.cep === "string" &&
+      typeof obj.pais === "string"
     );
   }
 
@@ -55,11 +57,7 @@ export class PedidoValidator {
    * Valida se um objeto é um status válido
    */
   static isValidStatus(obj: any): obj is StatusPedido {
-    return (
-      obj &&
-      typeof obj.id === 'string' &&
-      typeof obj.nome === 'string'
-    );
+    return obj && typeof obj.id === "string" && typeof obj.nome === "string";
   }
 
   /**
@@ -68,11 +66,11 @@ export class PedidoValidator {
   static isValidItemPedido(obj: any): obj is ItemPedido {
     return (
       obj &&
-      typeof obj.id === 'string' &&
-      typeof obj.nome === 'string' &&
-      typeof obj.quantidade === 'number' &&
-      typeof obj.precoUnitario === 'number' &&
-      typeof obj.total === 'number'
+      typeof obj.id === "string" &&
+      typeof obj.nome === "string" &&
+      typeof obj.quantidade === "number" &&
+      typeof obj.precoUnitario === "number" &&
+      typeof obj.total === "number"
     );
   }
 
@@ -81,7 +79,7 @@ export class PedidoValidator {
    */
   static sanitizePedido(data: any): Pedido | null {
     if (!this.isValidPedido(data)) {
-      console.warn('Pedido inválido recebido da API:', data);
+      console.warn("Pedido inválido recebido da API:", data);
       return null;
     }
 
@@ -103,7 +101,7 @@ export class PedidoValidator {
    */
   static isValidCEP(cep: string): boolean {
     const cepRegex = /^\d{5}-?\d{3}$/;
-    return cepRegex.test(cep.replace(/\D/g, ''));
+    return cepRegex.test(cep.replace(/\D/g, ""));
   }
 
   /**
@@ -111,7 +109,7 @@ export class PedidoValidator {
    */
   static isValidCPF(cpf: string): boolean {
     const cpfRegex = /^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/;
-    return cpfRegex.test(cpf.replace(/\D/g, ''));
+    return cpfRegex.test(cpf.replace(/\D/g, ""));
   }
 
   /**
@@ -119,14 +117,14 @@ export class PedidoValidator {
    */
   static isValidCNPJ(cnpj: string): boolean {
     const cnpjRegex = /^\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}$/;
-    return cnpjRegex.test(cnpj.replace(/\D/g, ''));
+    return cnpjRegex.test(cnpj.replace(/\D/g, ""));
   }
 
   /**
    * Formata CEP para exibição
    */
   static formatCEP(cep: string): string {
-    const cleanCEP = cep.replace(/\D/g, '');
+    const cleanCEP = cep.replace(/\D/g, "");
     if (cleanCEP.length === 8) {
       return `${cleanCEP.slice(0, 5)}-${cleanCEP.slice(5)}`;
     }
@@ -137,7 +135,7 @@ export class PedidoValidator {
    * Formata CPF para exibição
    */
   static formatCPF(cpf: string): string {
-    const cleanCPF = cpf.replace(/\D/g, '');
+    const cleanCPF = cpf.replace(/\D/g, "");
     if (cleanCPF.length === 11) {
       return `${cleanCPF.slice(0, 3)}.${cleanCPF.slice(3, 6)}.${cleanCPF.slice(6, 9)}-${cleanCPF.slice(9)}`;
     }
@@ -148,7 +146,7 @@ export class PedidoValidator {
    * Formata CNPJ para exibição
    */
   static formatCNPJ(cnpj: string): string {
-    const cleanCNPJ = cnpj.replace(/\D/g, '');
+    const cleanCNPJ = cnpj.replace(/\D/g, "");
     if (cleanCNPJ.length === 14) {
       return `${cleanCNPJ.slice(0, 2)}.${cleanCNPJ.slice(2, 5)}.${cleanCNPJ.slice(5, 8)}/${cleanCNPJ.slice(8, 12)}-${cleanCNPJ.slice(12)}`;
     }
@@ -159,7 +157,7 @@ export class PedidoValidator {
    * Formata documento (CPF ou CNPJ) automaticamente
    */
   static formatDocumento(documento: string): string {
-    const cleanDoc = documento.replace(/\D/g, '');
+    const cleanDoc = documento.replace(/\D/g, "");
     if (cleanDoc.length === 11) {
       return this.formatCPF(cleanDoc);
     } else if (cleanDoc.length === 14) {

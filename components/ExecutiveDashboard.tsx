@@ -3,7 +3,7 @@
  * Dashboard executivo com métricas avançadas e visualizações de negócio
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -13,15 +13,15 @@ import {
   Dimensions,
   RefreshControl,
   Animated,
-} from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
-import { Session, OperatorStats } from '@/types/session';
-import { enhancedAI, EnhancedPrediction } from '@/utils/enhancedAI';
-import { Ionicons } from '@expo/vector-icons';
-import { shouldAnimate } from '@/utils/performanceOptimizer';
-import { debounce } from '@/utils/performanceOptimizer';
+} from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
+import { Session, OperatorStats } from "@/types/session";
+import { enhancedAI, EnhancedPrediction } from "@/utils/enhancedAI";
+import { Ionicons } from "@expo/vector-icons";
+import { shouldAnimate } from "@/utils/performanceOptimizer";
+import { debounce } from "@/utils/performanceOptimizer";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 interface ExecutiveDashboardProps {
   sessions: Session[];
@@ -50,7 +50,7 @@ interface KPIData {
   title: string;
   value: string | number;
   change?: number;
-  changeType?: 'increase' | 'decrease' | 'neutral';
+  changeType?: "increase" | "decrease" | "neutral";
   icon: string;
   color: string;
   trend?: number[];
@@ -65,7 +65,9 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   onDrillDown,
 }) => {
   const { colors } = useAppTheme();
-  const [selectedPeriod, setSelectedPeriod] = useState<'day' | 'week' | 'month' | 'year'>('week');
+  const [selectedPeriod, setSelectedPeriod] = useState<
+    "day" | "week" | "month" | "year"
+  >("week");
   const [aiPredictions, setAiPredictions] = useState<EnhancedPrediction[]>([]);
   const [showDetailedView, setShowDetailedView] = useState(false);
   const [selectedKPI, setSelectedKPI] = useState<string | null>(null);
@@ -77,10 +79,15 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   // Calcula métricas executivas
   const executiveMetrics = useMemo((): ExecutiveMetrics => {
     const totalSessions = sessions.length;
-    const completedSessionsArray = sessions.filter(s => s.completedAt);
-    const totalPackages = sessions.reduce((sum, s) => sum + s.packages.length, 0);
-    const totalRevenue = sessions.reduce((sum, s) => 
-      sum + s.packages.reduce((pkgSum, pkg) => pkgSum + (pkg.value || 0), 0), 0
+    const completedSessionsArray = sessions.filter((s) => s.completedAt);
+    const totalPackages = sessions.reduce(
+      (sum, s) => sum + s.packages.length,
+      0,
+    );
+    const totalRevenue = sessions.reduce(
+      (sum, s) =>
+        sum + s.packages.reduce((pkgSum, pkg) => pkgSum + (pkg.value || 0), 0),
+      0,
     );
 
     // Duração média das sessões
@@ -89,28 +96,41 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
       const end = new Date(s.completedAt!).getTime();
       return (end - start) / (1000 * 60); // minutos
     });
-    const avgSessionDuration = durations.length > 0 
-      ? durations.reduce((sum: number, d: number) => sum + d, 0) / durations.length 
-      : 0;
+    const avgSessionDuration =
+      durations.length > 0
+        ? durations.reduce((sum: number, d: number) => sum + d, 0) /
+          durations.length
+        : 0;
 
     // Melhor operador
-    const topOperator = operatorStats.length > 0
-      ? operatorStats.reduce((best, current) => 
-          current.avgRatePerMinute > best.avgRatePerMinute ? current : best
-        )
-      : null;
+    const topOperator =
+      operatorStats.length > 0
+        ? operatorStats.reduce((best, current) =>
+            current.avgRatePerMinute > best.avgRatePerMinute ? current : best,
+          )
+        : null;
 
     // Taxa de crescimento (simulação)
     const revenueGrowth = 12.5; // % em relação ao período anterior
 
     // Scores (simulações baseadas em dados)
-    const efficiencyScore = Math.min(100, (totalPackages / Math.max(totalSessions, 1)) * 2);
-    const qualityScore = Math.max(0, 100 - (sessions.filter(s => s.hasDivergence).length / Math.max(totalSessions, 1)) * 100);
+    const efficiencyScore = Math.min(
+      100,
+      (totalPackages / Math.max(totalSessions, 1)) * 2,
+    );
+    const qualityScore = Math.max(
+      0,
+      100 -
+        (sessions.filter((s) => s.hasDivergence).length /
+          Math.max(totalSessions, 1)) *
+          100,
+    );
     const customerSatisfaction = 92.3; // Simulação
 
     // Custos e margem (simulações)
     const operationalCosts = totalRevenue * 0.35; // 35% de custos operacionais
-    const profitMargin = ((totalRevenue - operationalCosts) / Math.max(totalRevenue, 1)) * 100;
+    const profitMargin =
+      ((totalRevenue - operationalCosts) / Math.max(totalRevenue, 1)) * 100;
 
     return {
       totalRevenue,
@@ -128,62 +148,66 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   }, [sessions, operatorStats]);
 
   // Dados para KPIs
-  const kpiData: KPIData[] = useMemo(() => [
-    {
-      title: 'Receita Total',
-      value: `R$ ${executiveMetrics.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-      change: executiveMetrics.revenueGrowth,
-      changeType: executiveMetrics.revenueGrowth > 0 ? 'increase' : 'decrease',
-      icon: 'cash-outline',
-      color: '#4ECDC4',
-      trend: [100, 105, 102, 108, 112, 115, 118],
-    },
-    {
-      title: 'Pacotes Processados',
-      value: executiveMetrics.totalPackages.toLocaleString('pt-BR'),
-      change: 8.3,
-      changeType: 'increase',
-      icon: 'package-outline',
-      color: '#FF6B6B',
-      trend: [50, 55, 52, 58, 62, 65, 68],
-    },
-    {
-      title: 'Eficiência Operacional',
-      value: `${Math.round(executiveMetrics.efficiencyScore)}%`,
-      change: 5.2,
-      changeType: 'increase',
-      icon: 'trending-up-outline',
-      color: '#45B7D1',
-      trend: [85, 87, 86, 89, 91, 92, 94],
-    },
-    {
-      title: 'Margem de Lucro',
-      value: `${Math.round(executiveMetrics.profitMargin)}%`,
-      change: -2.1,
-      changeType: 'decrease',
-      icon: 'analytics-outline',
-      color: '#96CEB4',
-      trend: [68, 70, 67, 65, 66, 64, 65],
-    },
-    {
-      title: 'Satisfação Cliente',
-      value: `${executiveMetrics.customerSatisfaction}%`,
-      change: 3.7,
-      changeType: 'increase',
-      icon: 'happy-outline',
-      color: '#FFA500',
-      trend: [88, 89, 90, 91, 91, 92, 92],
-    },
-    {
-      title: 'Qualidade',
-      value: `${Math.round(executiveMetrics.qualityScore)}%`,
-      change: 1.8,
-      changeType: 'increase',
-      icon: 'shield-checkmark-outline',
-      color: '#9B59B6',
-      trend: [90, 91, 92, 91, 93, 94, 95],
-    },
-  ], [executiveMetrics]);
+  const kpiData: KPIData[] = useMemo(
+    () => [
+      {
+        title: "Receita Total",
+        value: `R$ ${executiveMetrics.totalRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+        change: executiveMetrics.revenueGrowth,
+        changeType:
+          executiveMetrics.revenueGrowth > 0 ? "increase" : "decrease",
+        icon: "cash-outline",
+        color: "#4ECDC4",
+        trend: [100, 105, 102, 108, 112, 115, 118],
+      },
+      {
+        title: "Pacotes Processados",
+        value: executiveMetrics.totalPackages.toLocaleString("pt-BR"),
+        change: 8.3,
+        changeType: "increase",
+        icon: "package-outline",
+        color: "#FF6B6B",
+        trend: [50, 55, 52, 58, 62, 65, 68],
+      },
+      {
+        title: "Eficiência Operacional",
+        value: `${Math.round(executiveMetrics.efficiencyScore)}%`,
+        change: 5.2,
+        changeType: "increase",
+        icon: "trending-up-outline",
+        color: "#45B7D1",
+        trend: [85, 87, 86, 89, 91, 92, 94],
+      },
+      {
+        title: "Margem de Lucro",
+        value: `${Math.round(executiveMetrics.profitMargin)}%`,
+        change: -2.1,
+        changeType: "decrease",
+        icon: "analytics-outline",
+        color: "#96CEB4",
+        trend: [68, 70, 67, 65, 66, 64, 65],
+      },
+      {
+        title: "Satisfação Cliente",
+        value: `${executiveMetrics.customerSatisfaction}%`,
+        change: 3.7,
+        changeType: "increase",
+        icon: "happy-outline",
+        color: "#FFA500",
+        trend: [88, 89, 90, 91, 91, 92, 92],
+      },
+      {
+        title: "Qualidade",
+        value: `${Math.round(executiveMetrics.qualityScore)}%`,
+        change: 1.8,
+        changeType: "increase",
+        icon: "shield-checkmark-outline",
+        color: "#9B59B6",
+        trend: [90, 91, 92, 91, 93, 94, 95],
+      },
+    ],
+    [executiveMetrics],
+  );
 
   // Carrega predições da IA
   useEffect(() => {
@@ -199,7 +223,12 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
             currentTime: Date.now(),
             scanRate: 15, // Simulação
             errorRate: 0.05, // Simulação
-            packageDistribution: { shopee: 40, mercado_livre: 35, avulso: 15, unknown: 10 },
+            packageDistribution: {
+              shopee: 40,
+              mercado_livre: 35,
+              avulso: 15,
+              unknown: 10,
+            },
           };
 
           const predictions = await Promise.all([
@@ -208,7 +237,7 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
 
           setAiPredictions(predictions);
         } catch (error) {
-          console.error('Error loading AI predictions:', error);
+          console.error("Error loading AI predictions:", error);
         }
       }
     };
@@ -235,17 +264,23 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   }, [fadeAnimation, slideAnimation]);
 
   // Handler para drill down
-  const handleKPIDrillDown = useCallback((kpiTitle: string, value: any) => {
-    setSelectedKPI(kpiTitle);
-    onDrillDown?.(kpiTitle, value);
-    setShowDetailedView(true);
-  }, [onDrillDown]);
+  const handleKPIDrillDown = useCallback(
+    (kpiTitle: string, value: any) => {
+      setSelectedKPI(kpiTitle);
+      onDrillDown?.(kpiTitle, value);
+      setShowDetailedView(true);
+    },
+    [onDrillDown],
+  );
 
   // Handler para mudança de período
-  const handlePeriodChange = useCallback((period: typeof selectedPeriod) => {
-    setSelectedPeriod(period);
-    onRefresh?.();
-  }, [onRefresh]);
+  const handlePeriodChange = useCallback(
+    (period: typeof selectedPeriod) => {
+      setSelectedPeriod(period);
+      onRefresh?.();
+    },
+    [onRefresh],
+  );
 
   // Renderiza KPI card
   const renderKPICard = (kpi: KPIData, index: number) => {
@@ -266,8 +301,12 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
       },
     ];
 
-    const changeColor = kpi.changeType === 'increase' ? '#4ECDC4' : 
-                       kpi.changeType === 'decrease' ? '#FF6B6B' : colors.secondary;
+    const changeColor =
+      kpi.changeType === "increase"
+        ? "#4ECDC4"
+        : kpi.changeType === "decrease"
+          ? "#FF6B6B"
+          : colors.secondary;
 
     return (
       <Animated.View key={kpi.title} style={cardStyle}>
@@ -276,15 +315,24 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           activeOpacity={0.7}
         >
           <View style={styles.kpiHeader}>
-            <View style={[styles.kpiIconContainer, { backgroundColor: kpi.color + '20' }]}>
+            <View
+              style={[
+                styles.kpiIconContainer,
+                { backgroundColor: kpi.color + "20" },
+              ]}
+            >
               <Ionicons name={kpi.icon as any} size={20} color={kpi.color} />
             </View>
             {kpi.change !== undefined && (
               <View style={styles.changeContainer}>
-                <Ionicons 
-                  name={kpi.changeType === 'increase' ? 'trending-up' : 'trending-down'} 
-                  size={12} 
-                  color={changeColor} 
+                <Ionicons
+                  name={
+                    kpi.changeType === "increase"
+                      ? "trending-up"
+                      : "trending-down"
+                  }
+                  size={12}
+                  color={changeColor}
                 />
                 <Text style={[styles.changeText, { color: changeColor }]}>
                   {Math.abs(kpi.change)}%
@@ -292,11 +340,11 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
               </View>
             )}
           </View>
-          
+
           <Text style={[styles.kpiValue, { color: colors.text }]}>
             {kpi.value}
           </Text>
-          
+
           <Text style={[styles.kpiTitle, { color: colors.secondary }]}>
             {kpi.title}
           </Text>
@@ -326,40 +374,56 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
 
   // Renderiza insights da IA
   const renderAIInsights = () => (
-    <View style={[styles.insightsContainer, { backgroundColor: colors.surface }]}>
+    <View
+      style={[styles.insightsContainer, { backgroundColor: colors.surface }]}
+    >
       <Text style={[styles.sectionTitle, { color: colors.text }]}>
         🤖 Insights da IA
       </Text>
-      
+
       {aiPredictions.length > 0 ? (
         aiPredictions.map((prediction, index) => (
-          <View key={`prediction-${index}-${prediction.type}`} style={[styles.insightCard, { borderColor: colors.border }]}>
+          <View
+            key={`prediction-${index}-${prediction.type}`}
+            style={[styles.insightCard, { borderColor: colors.border }]}
+          >
             <View style={styles.insightHeader}>
               <Text style={[styles.insightType, { color: colors.primary }]}>
-                {prediction.type === 'divergence' ? '⚠️ Risco de Divergência' : 
-                 prediction.type === 'efficiency' ? '⚡ Otimização' : '📊 Análise'}
+                {prediction.type === "divergence"
+                  ? "⚠️ Risco de Divergência"
+                  : prediction.type === "efficiency"
+                    ? "⚡ Otimização"
+                    : "📊 Análise"}
               </Text>
-              <Text style={[styles.insightConfidence, { color: colors.secondary }]}>
+              <Text
+                style={[styles.insightConfidence, { color: colors.secondary }]}
+              >
                 Confiança: {Math.round(prediction.confidence * 100)}%
               </Text>
             </View>
-            
+
             <Text style={[styles.insightDescription, { color: colors.text }]}>
-              {prediction.prediction?.probability ? 
-                `Probabilidade de ${(prediction.prediction.probability * 100).toFixed(1)}%` :
-                'Análise em andamento...'
-              }
+              {prediction.prediction?.probability
+                ? `Probabilidade de ${(prediction.prediction.probability * 100).toFixed(1)}%`
+                : "Análise em andamento..."}
             </Text>
-            
-            {prediction.recommendations && prediction.recommendations.length > 0 && (
-              <View style={styles.recommendationsContainer}>
-                {prediction.recommendations.slice(0, 2).map((rec, i) => (
-                  <Text key={i} style={[styles.recommendation, { color: colors.secondary }]}>
-                    • {rec}
-                  </Text>
-                ))}
-              </View>
-            )}
+
+            {prediction.recommendations &&
+              prediction.recommendations.length > 0 && (
+                <View style={styles.recommendationsContainer}>
+                  {prediction.recommendations.slice(0, 2).map((rec, i) => (
+                    <Text
+                      key={i}
+                      style={[
+                        styles.recommendation,
+                        { color: colors.secondary },
+                      ]}
+                    >
+                      • {rec}
+                    </Text>
+                  ))}
+                </View>
+              )}
           </View>
         ))
       ) : (
@@ -373,25 +437,32 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   // Renderiza seletor de período
   const renderPeriodSelector = () => (
     <View style={styles.periodSelector}>
-      {(['day', 'week', 'month', 'year'] as const).map((period) => (
+      {(["day", "week", "month", "year"] as const).map((period) => (
         <TouchableOpacity
           key={period}
           style={[
             styles.periodButton,
             {
-              backgroundColor: selectedPeriod === period ? colors.primary : colors.surface,
+              backgroundColor:
+                selectedPeriod === period ? colors.primary : colors.surface,
               borderColor: colors.border,
             },
           ]}
           onPress={() => handlePeriodChange(period)}
         >
-          <Text style={[
-            styles.periodButtonText,
-            { color: selectedPeriod === period ? '#fff' : colors.text },
-          ]}>
-            {period === 'day' ? 'Dia' : 
-             period === 'week' ? 'Semana' : 
-             period === 'month' ? 'Mês' : 'Ano'}
+          <Text
+            style={[
+              styles.periodButtonText,
+              { color: selectedPeriod === period ? "#fff" : colors.text },
+            ]}
+          >
+            {period === "day"
+              ? "Dia"
+              : period === "week"
+                ? "Semana"
+                : period === "month"
+                  ? "Mês"
+                  : "Ano"}
           </Text>
         </TouchableOpacity>
       ))}
@@ -410,7 +481,7 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
         <Text style={[styles.title, { color: colors.text }]}>
           📊 Dashboard Executivo
         </Text>
-        
+
         <View style={styles.headerActions}>
           <TouchableOpacity
             style={[styles.exportButton, { backgroundColor: colors.primary }]}
@@ -435,28 +506,39 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
 
       {/* Top Performers */}
       {operatorStats.length > 0 && (
-        <View style={[styles.performersContainer, { backgroundColor: colors.surface }]}>
+        <View
+          style={[
+            styles.performersContainer,
+            { backgroundColor: colors.surface },
+          ]}
+        >
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             🏆 Top Performers
           </Text>
-          
+
           {operatorStats.slice(0, 3).map((operator, index) => (
-            <View key={operator.name} style={[styles.performerCard, { borderColor: colors.border }]}>
+            <View
+              key={operator.name}
+              style={[styles.performerCard, { borderColor: colors.border }]}
+            >
               <View style={styles.performerRank}>
                 <Text style={[styles.rankText, { color: colors.primary }]}>
                   #{index + 1}
                 </Text>
               </View>
-              
+
               <View style={styles.performerInfo}>
                 <Text style={[styles.performerName, { color: colors.text }]}>
                   {operator.name}
                 </Text>
-                <Text style={[styles.performerStats, { color: colors.secondary }]}>
-                  {operator.totalPackages} pacotes • {operator.avgRatePerMinute.toFixed(1)}/min
+                <Text
+                  style={[styles.performerStats, { color: colors.secondary }]}
+                >
+                  {operator.totalPackages} pacotes •{" "}
+                  {operator.avgRatePerMinute.toFixed(1)}/min
                 </Text>
               </View>
-              
+
               <View style={styles.performerScore}>
                 <Text style={[styles.scoreText, { color: colors.primary }]}>
                   {Math.round(operator.accuracyScore)}%
@@ -471,11 +553,13 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
       )}
 
       {/* Resumo Operacional */}
-      <View style={[styles.summaryContainer, { backgroundColor: colors.surface }]}>
+      <View
+        style={[styles.summaryContainer, { backgroundColor: colors.surface }]}
+      >
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
           📈 Resumo Operacional
         </Text>
-        
+
         <View style={styles.summaryGrid}>
           <View style={styles.summaryItem}>
             <Text style={[styles.summaryValue, { color: colors.text }]}>
@@ -485,7 +569,7 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
               Sessões Hoje
             </Text>
           </View>
-          
+
           <View style={styles.summaryItem}>
             <Text style={[styles.summaryValue, { color: colors.text }]}>
               {Math.round(executiveMetrics.avgSessionDuration)}min
@@ -494,10 +578,13 @@ const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
               Duração Média
             </Text>
           </View>
-          
+
           <View style={styles.summaryItem}>
             <Text style={[styles.summaryValue, { color: colors.text }]}>
-              R$ {Math.round(executiveMetrics.operationalCosts).toLocaleString('pt-BR')}
+              R${" "}
+              {Math.round(executiveMetrics.operationalCosts).toLocaleString(
+                "pt-BR",
+              )}
             </Text>
             <Text style={[styles.summaryLabel, { color: colors.secondary }]}>
               Custos Operacionais
@@ -514,38 +601,38 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 20,
     paddingBottom: 10,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   headerActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 10,
   },
   exportButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
     gap: 6,
   },
   exportButtonText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: "#fff",
+    fontWeight: "600",
     fontSize: 12,
   },
   periodSelector: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginHorizontal: 20,
     marginBottom: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     borderRadius: 10,
     padding: 4,
   },
@@ -553,56 +640,56 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 8,
     borderRadius: 6,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
   },
   periodButtonText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   kpiGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     paddingHorizontal: 20,
     marginBottom: 20,
   },
   kpiCard: {
-    width: '48%',
-    margin: '1%',
+    width: "48%",
+    margin: "1%",
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
   kpiHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
   kpiIconContainer: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   changeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 2,
   },
   changeText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   kpiValue: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 4,
   },
   kpiTitle: {
@@ -610,8 +697,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   miniTrendContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
+    flexDirection: "row",
+    alignItems: "flex-end",
     height: 20,
     gap: 2,
   },
@@ -628,7 +715,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 12,
   },
   insightCard: {
@@ -638,14 +725,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   insightHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
   insightType: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   insightConfidence: {
     fontSize: 12,
@@ -662,8 +749,8 @@ const styles = StyleSheet.create({
   },
   noInsightsText: {
     fontSize: 14,
-    fontStyle: 'italic',
-    textAlign: 'center',
+    fontStyle: "italic",
+    textAlign: "center",
   },
   performersContainer: {
     margin: 20,
@@ -672,8 +759,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   performerCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
@@ -681,11 +768,11 @@ const styles = StyleSheet.create({
   },
   performerRank: {
     width: 30,
-    alignItems: 'center',
+    alignItems: "center",
   },
   rankText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   performerInfo: {
     flex: 1,
@@ -693,18 +780,18 @@ const styles = StyleSheet.create({
   },
   performerName: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 2,
   },
   performerStats: {
     fontSize: 12,
   },
   performerScore: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   scoreText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   scoreLabel: {
     fontSize: 10,
@@ -716,21 +803,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   summaryGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   summaryItem: {
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
   },
   summaryValue: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 4,
   },
   summaryLabel: {
     fontSize: 12,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 

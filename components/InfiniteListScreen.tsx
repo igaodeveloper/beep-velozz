@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -11,8 +11,8 @@ import {
   FlatListProps,
   ListRenderItem,
   ListRenderItemInfo,
-} from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
+} from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
 
 interface InfiniteListData {
   id: string;
@@ -46,8 +46,8 @@ export function InfiniteListScreen<T extends InfiniteListData>({
   isLoading = false,
   isRefreshing = false,
   hasMore = true,
-  emptyMessage = 'Nenhum item encontrado',
-  loadingMessage = 'Carregando...',
+  emptyMessage = "Nenhum item encontrado",
+  loadingMessage = "Carregando...",
   headerComponent,
   footerComponent,
   numColumns = 1,
@@ -55,15 +55,15 @@ export function InfiniteListScreen<T extends InfiniteListData>({
   contentContainerStyle,
 }: InfiniteListScreenProps<T>) {
   const { colors } = useAppTheme();
-  const [dimensions, setDimensions] = useState(Dimensions.get('window'));
+  const [dimensions, setDimensions] = useState(Dimensions.get("window"));
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
     const onChange = () => {
-      setDimensions(Dimensions.get('window'));
+      setDimensions(Dimensions.get("window"));
     };
 
-    const subscription = Dimensions.addEventListener('change', onChange);
+    const subscription = Dimensions.addEventListener("change", onChange);
     return () => subscription?.remove();
   }, []);
 
@@ -95,14 +95,14 @@ export function InfiniteListScreen<T extends InfiniteListData>({
     </View>
   );
 
-  const getItemLayout = Platform.OS === 'ios' ? (
-    data: any,
-    index: number
-  ) => ({
-    length: estimatedItemSize,
-    offset: estimatedItemSize * index,
-    index,
-  }) : undefined;
+  const getItemLayout =
+    Platform.OS === "ios"
+      ? (data: any, index: number) => ({
+          length: estimatedItemSize,
+          offset: estimatedItemSize * index,
+          index,
+        })
+      : undefined;
 
   const getNumColumns = () => {
     if (dimensions.width >= 768) {
@@ -116,7 +116,9 @@ export function InfiniteListScreen<T extends InfiniteListData>({
       <FlatList
         ref={flatListRef}
         data={data}
-        renderItem={({ item, index }: ListRenderItemInfo<T>) => renderItem(item, index)}
+        renderItem={({ item, index }: ListRenderItemInfo<T>) =>
+          renderItem(item, index)
+        }
         keyExtractor={keyExtractor}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.1}
@@ -138,7 +140,7 @@ export function InfiniteListScreen<T extends InfiniteListData>({
         contentContainerStyle={[
           styles.contentContainer,
           contentContainerStyle,
-          { backgroundColor: colors.bg }
+          { backgroundColor: colors.bg },
         ]}
         showsVerticalScrollIndicator={false}
         removeClippedSubviews={true}
@@ -161,24 +163,24 @@ const styles = StyleSheet.create({
   },
   loadingFooter: {
     paddingVertical: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   loadingText: {
     marginTop: 8,
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
   },
   emptyContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 60,
   },
   emptyText: {
     fontSize: 16,
-    textAlign: 'center',
-    fontStyle: 'italic',
+    textAlign: "center",
+    fontStyle: "italic",
   },
 });
 

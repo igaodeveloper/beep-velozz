@@ -9,6 +9,7 @@ Este projeto agora inclui um sistema completo de tema claro e escuro com cores p
 **Documentação completa**: Veja [THEME_SYSTEM.md](./THEME_SYSTEM.md) para detalhes sobre o sistema de cores.
 
 ### Características:
+
 - ✨ Tema claro e escuro automático
 - 🎯 Cor primária: Laranja (#f97316)
 - ⚪ Cor secundária: Branco
@@ -17,6 +18,7 @@ Este projeto agora inclui um sistema completo de tema claro e escuro com cores p
 - 📱 Suporte completo para todos os componentes
 
 ### Como testar:
+
 1. Inicie o app normalmente
 2. Use o componente `ThemeToggle` para alternar entre light/dark mode
 3. A preferência será salva automaticamente

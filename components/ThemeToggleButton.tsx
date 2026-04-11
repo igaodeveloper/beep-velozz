@@ -1,15 +1,9 @@
-import React, { useState } from 'react';
-import {
-  View,
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  Modal,
-} from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
-import { Palette } from 'lucide-react-native';
-import SimpleThemeSelector from './SimpleThemeSelector';
-import * as Haptics from 'expo-haptics';
+import React, { useState } from "react";
+import { View, TouchableOpacity, Text, StyleSheet, Modal } from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
+import { Palette } from "lucide-react-native";
+import SimpleThemeSelector from "./SimpleThemeSelector";
+import * as Haptics from "expo-haptics";
 
 export default function ThemeToggleButton() {
   const { colors, theme, themeName } = useAppTheme();
@@ -28,7 +22,7 @@ export default function ThemeToggleButton() {
           {
             backgroundColor: colors.primary,
             borderColor: colors.border,
-          }
+          },
         ]}
         onPress={handleOpenSelector}
       >
@@ -45,16 +39,16 @@ export default function ThemeToggleButton() {
 
 const styles = StyleSheet.create({
   floatingButton: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 80,
     right: 20,
     width: 56,
     height: 56,
     borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,

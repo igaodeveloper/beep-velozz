@@ -9,55 +9,71 @@
 ### 🛠️ Implementação Técnica
 
 #### 1. Imports Adicionados
+
 ```typescript
-import { Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { Keyboard, TouchableWithoutFeedback } from "react-native";
 ```
 
 #### 2. Função de Controle
+
 ```typescript
 const dismissKeyboardAndCloseInput = useCallback(() => {
   Keyboard.dismiss();
   setManualInputExpanded(false);
-  setManualCode('');
+  setManualCode("");
   setManualError(null);
 }, []);
 ```
 
 #### 3. Estrutura JSX com TouchableWithoutFeedback
+
 ```tsx
-{/* Enhanced Manual Input */}
-{manualInputExpanded && (
-  <TouchableWithoutFeedback onPress={dismissKeyboardAndCloseInput}>
-    <View style={{ /* Container externo */ }}>
-      <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
-        <View>
-          {/* Conteúdo da entrada manual */}
-          <Text>Digite o código...</Text>
-          <TextInput autoFocus={true} />
-          <TouchableOpacity onPress={handleManualSubmit}>
-            {/* Botão de envio */}
-          </TouchableOpacity>
-        </View>
-      </TouchableWithoutFeedback>
-    </View>
-  </TouchableWithoutFeedback>
-)}
+{
+  /* Enhanced Manual Input */
+}
+{
+  manualInputExpanded && (
+    <TouchableWithoutFeedback onPress={dismissKeyboardAndCloseInput}>
+      <View
+        style={
+          {
+            /* Container externo */
+          }
+        }
+      >
+        <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+          <View>
+            {/* Conteúdo da entrada manual */}
+            <Text>Digite o código...</Text>
+            <TextInput autoFocus={true} />
+            <TouchableOpacity onPress={handleManualSubmit}>
+              {/* Botão de envio */}
+            </TouchableOpacity>
+          </View>
+        </TouchableWithoutFeedback>
+      </View>
+    </TouchableWithoutFeedback>
+  );
+}
 ```
 
 ### 🎨 Comportamento Implementado
 
 #### Toque Fora da Área
+
 - **Ação**: Oculta o teclado imediatamente
 - **Limpa**: Campo de texto e erros
 - **Fecha**: Painel de entrada manual
 - **Restaura**: Estado inicial para próxima entrada
 
 #### Toque Dentro da Área
+
 - **Proteção**: `stopPropagation()` evita fechamento
 - **Foco**: Mantém o teclado visível
 - **Interação**: Permite digitar normalmente
 
 #### Envio do Formulário
+
 - **Submit**: Funciona normalmente com `onSubmitEditing`
 - **Botão**: Mantém funcionalidade original
 - **Sucesso**: Fecha automaticamente após envio
@@ -65,6 +81,7 @@ const dismissKeyboardAndCloseInput = useCallback(() => {
 ### 🔧 Detalhes Técnicos
 
 #### Estrutura de Camadas
+
 1. **TouchableWithoutFeedback (externo)**
    - Detecta toques fora da área
    - Aciona `dismissKeyboardAndCloseInput()`
@@ -79,6 +96,7 @@ const dismissKeyboardAndCloseInput = useCallback(() => {
    - Mensagens de erro
 
 #### Estados Gerenciados
+
 - **manualInputExpanded**: Controla visibilidade
 - **manualCode**: Limpo ao fechar
 - **manualError**: Resetado ao fechar
@@ -87,6 +105,7 @@ const dismissKeyboardAndCloseInput = useCallback(() => {
 ### 📱 Experiência do Usuário
 
 #### Fluxo Natural
+
 1. **Usuário toca** no botão de entrada manual
 2. **Painel abre** com teclado visível
 3. **Usuário digita** ou toca fora
@@ -94,6 +113,7 @@ const dismissKeyboardAndCloseInput = useCallback(() => {
 5. **Painel fecha** com limpeza automática
 
 #### Benefícios
+
 ✅ **Intuitivo**: Comportamento esperado pelo usuário
 ✅ **Limpo**: Campos limpos ao fechar
 ✅ **Rápido**: Resposta imediata ao toque
@@ -103,11 +123,13 @@ const dismissKeyboardAndCloseInput = useCallback(() => {
 ### 🎯 Casos de Uso
 
 #### Toque Fora Intencional
+
 - Usuário decide não digitar
 - Mudança para modo de scanner
 - Navegação para outra função
 
 #### Toque Fora Acidental
+
 - Recuperação fácil com novo toque
 - Sem perda de dados importantes
 - Reabertura rápida do painel
@@ -115,12 +137,14 @@ const dismissKeyboardAndCloseInput = useCallback(() => {
 ### ⚡ Performance
 
 #### Otimizações
+
 - **useCallback**: Função memoizada
 - **stopPropagation**: Evita propag desnecessários
 - **Keyboard.dismiss**: API nativa eficiente
 - **Limpeza de estado**: Reset imediato
 
 #### Sem Impacto
+
 - **Scanner**: Continua funcionando normalmente
 - **Animações**: Mantidas sem alteração
 - **Cores**: Sistema intacto

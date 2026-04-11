@@ -1,6 +1,6 @@
 // types/Pedido.ts
 
-import { PedidoType } from '../config/apiConfig';
+import { PedidoType } from "../config/apiConfig";
 
 export interface Cliente {
   id: string;

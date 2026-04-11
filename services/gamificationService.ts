@@ -3,18 +3,18 @@
  * Sistema completo de gamificação para engajamento e retenção
  */
 
-import { 
-  Achievement, 
-  UserProfile, 
-  LeaderboardEntry, 
-  Challenge, 
+import {
+  Achievement,
+  UserProfile,
+  LeaderboardEntry,
+  Challenge,
   GameEvent,
   GamificationConfig,
   StreakData,
-  Reward
-} from '@/types/gamification';
-import { PackageType } from '@/types/scanner';
-import { ScannedPackage } from '@/types/session';
+  Reward,
+} from "@/types/gamification";
+import { PackageType } from "@/types/scanner";
+import { ScannedPackage } from "@/types/session";
 
 export class GamificationService {
   private config: GamificationConfig = {
@@ -28,8 +28,16 @@ export class GamificationService {
     streakBonusMultiplier: 1.5,
     levelThresholds: [0, 100, 250, 500, 1000, 2000, 3500, 5000, 7500, 10000],
     rankNames: [
-      'Iniciante', 'Aprendiz', 'Operador', 'Especialista', 'Mestre',
-      'Veterano', 'Elite', 'Lendário', 'Mítico', 'Supremo'
+      "Iniciante",
+      "Aprendiz",
+      "Operador",
+      "Especialista",
+      "Mestre",
+      "Veterano",
+      "Elite",
+      "Lendário",
+      "Mítico",
+      "Supremo",
     ],
   };
 
@@ -51,123 +59,113 @@ export class GamificationService {
     const achievements: Achievement[] = [
       // Conquistas de Velocidade
       {
-        id: 'speed_demon',
-        title: 'Demônio da Velocidade',
-        description: 'Escaneie 50 pacotes em menos de 5 minutos',
-        icon: '⚡',
-        category: 'speed',
-        rarity: 'rare',
+        id: "speed_demon",
+        title: "Demônio da Velocidade",
+        description: "Escaneie 50 pacotes em menos de 5 minutos",
+        icon: "⚡",
+        category: "speed",
+        rarity: "rare",
         points: 500,
         progress: 0,
         maxProgress: 50,
         requirements: [
-          { type: 'scans_in_time', value: 50, condition: '5_minutes' }
+          { type: "scans_in_time", value: 50, condition: "5_minutes" },
         ],
       },
       {
-        id: 'lightning_fast',
-        title: 'Rápido como um Relâmpago',
-        description: 'Mantenha média de menos de 2 segundos por scan',
-        icon: '🚀',
-        category: 'speed',
-        rarity: 'epic',
+        id: "lightning_fast",
+        title: "Rápido como um Relâmpago",
+        description: "Mantenha média de menos de 2 segundos por scan",
+        icon: "🚀",
+        category: "speed",
+        rarity: "epic",
         points: 750,
         progress: 0,
         maxProgress: 100,
         requirements: [
-          { type: 'average_speed', value: 2, condition: 'seconds_per_scan' }
+          { type: "average_speed", value: 2, condition: "seconds_per_scan" },
         ],
       },
       // Conquistas de Acurácia
       {
-        id: 'perfectionist',
-        title: 'Perfeccionista',
-        description: 'Alcance 100% de acurácia em uma sessão',
-        icon: '🎯',
-        category: 'accuracy',
-        rarity: 'epic',
+        id: "perfectionist",
+        title: "Perfeccionista",
+        description: "Alcance 100% de acurácia em uma sessão",
+        icon: "🎯",
+        category: "accuracy",
+        rarity: "epic",
         points: 600,
         progress: 0,
         maxProgress: 1,
-        requirements: [
-          { type: 'perfect_session', value: 1 }
-        ],
+        requirements: [{ type: "perfect_session", value: 1 }],
       },
       {
-        id: 'accuracy_master',
-        title: 'Mestre da Precisão',
-        description: 'Mantenha 95% de acurácia por 7 dias seguidos',
-        icon: '🏹',
-        category: 'accuracy',
-        rarity: 'legendary',
+        id: "accuracy_master",
+        title: "Mestre da Precisão",
+        description: "Mantenha 95% de acurácia por 7 dias seguidos",
+        icon: "🏹",
+        category: "accuracy",
+        rarity: "legendary",
         points: 1000,
         progress: 0,
         maxProgress: 7,
         requirements: [
-          { type: 'daily_accuracy', value: 95, condition: '7_days' }
+          { type: "daily_accuracy", value: 95, condition: "7_days" },
         ],
       },
       // Conquistas de Sequência
       {
-        id: 'on_fire',
-        title: 'Em Chamas',
-        description: 'Mantenha uma sequência de 5 dias ativos',
-        icon: '🔥',
-        category: 'streak',
-        rarity: 'common',
+        id: "on_fire",
+        title: "Em Chamas",
+        description: "Mantenha uma sequência de 5 dias ativos",
+        icon: "🔥",
+        category: "streak",
+        rarity: "common",
         points: 200,
         progress: 0,
         maxProgress: 5,
-        requirements: [
-          { type: 'daily_streak', value: 5 }
-        ],
+        requirements: [{ type: "daily_streak", value: 5 }],
       },
       {
-        id: 'unstoppable',
-        title: 'Inparável',
-        description: 'Alcance uma sequência de 30 dias',
-        icon: '💎',
-        category: 'streak',
-        rarity: 'legendary',
+        id: "unstoppable",
+        title: "Inparável",
+        description: "Alcance uma sequência de 30 dias",
+        icon: "💎",
+        category: "streak",
+        rarity: "legendary",
         points: 1500,
         progress: 0,
         maxProgress: 30,
-        requirements: [
-          { type: 'daily_streak', value: 30 }
-        ],
+        requirements: [{ type: "daily_streak", value: 30 }],
       },
       // Conquistas de Volume
       {
-        id: 'busy_bee',
-        title: 'Abelha Operosa',
-        description: 'Escaneie 100 pacotes em um único dia',
-        icon: '🐝',
-        category: 'volume',
-        rarity: 'common',
+        id: "busy_bee",
+        title: "Abelha Operosa",
+        description: "Escaneie 100 pacotes em um único dia",
+        icon: "🐝",
+        category: "volume",
+        rarity: "common",
         points: 300,
         progress: 0,
         maxProgress: 100,
-        requirements: [
-          { type: 'daily_scans', value: 100 }
-        ],
+        requirements: [{ type: "daily_scans", value: 100 }],
       },
       {
-        id: 'pac_machine',
-        title: 'Máquina de Pacotes',
-        description: 'Escaneie 10.000 pacotes no total',
-        icon: '📦',
-        category: 'volume',
-        rarity: 'epic',
+        id: "pac_machine",
+        title: "Máquina de Pacotes",
+        description: "Escaneie 10.000 pacotes no total",
+        icon: "📦",
+        category: "volume",
+        rarity: "epic",
         points: 800,
         progress: 0,
         maxProgress: 10000,
-        requirements: [
-          { type: 'total_scans', value: 10000 }
-        ],
+        requirements: [{ type: "total_scans", value: 10000 }],
       },
     ];
 
-    achievements.forEach(achievement => {
+    achievements.forEach((achievement) => {
       this.achievements.set(achievement.id, achievement);
     });
   }
@@ -177,16 +175,16 @@ export class GamificationService {
    */
   private initializeChallenges(): void {
     const now = Date.now();
-    
+
     // Desafio Diário
     const dailyChallenge: Challenge = {
-      id: 'daily_scanner',
-      title: 'Scanner Diário',
-      description: 'Escaneie 50 pacotes hoje',
-      type: 'daily',
-      category: 'scans',
+      id: "daily_scanner",
+      title: "Scanner Diário",
+      description: "Escaneie 50 pacotes hoje",
+      type: "daily",
+      category: "scans",
       requirements: {
-        type: 'daily_scans',
+        type: "daily_scans",
         target: 50,
         timeframe: 86400000, // 24 horas
       },
@@ -203,13 +201,13 @@ export class GamificationService {
 
     // Desafio Semanal
     const weeklyChallenge: Challenge = {
-      id: 'weekly_accuracy',
-      title: 'Precisão Semanal',
-      description: 'Mantenha 90% de acurácia esta semana',
-      type: 'weekly',
-      category: 'accuracy',
+      id: "weekly_accuracy",
+      title: "Precisão Semanal",
+      description: "Mantenha 90% de acurácia esta semana",
+      type: "weekly",
+      category: "accuracy",
       requirements: {
-        type: 'weekly_accuracy',
+        type: "weekly_accuracy",
         target: 90,
         timeframe: 604800000, // 7 dias
       },
@@ -224,8 +222,8 @@ export class GamificationService {
       claimed: false,
     };
 
-    this.challenges.set('daily_scanner', dailyChallenge);
-    this.challenges.set('weekly_accuracy', weeklyChallenge);
+    this.challenges.set("daily_scanner", dailyChallenge);
+    this.challenges.set("weekly_accuracy", weeklyChallenge);
   }
 
   /**
@@ -233,7 +231,7 @@ export class GamificationService {
    */
   getUserProfile(userId: string, userName: string): UserProfile {
     let profile = this.userProfiles.get(userId);
-    
+
     if (!profile) {
       profile = {
         id: userId,
@@ -243,7 +241,7 @@ export class GamificationService {
         totalPoints: 0,
         currentStreak: 0,
         bestStreak: 0,
-        rank: 'Iniciante',
+        rank: "Iniciante",
         badges: [],
         statistics: {
           totalScans: 0,
@@ -251,21 +249,21 @@ export class GamificationService {
           averageAccuracy: 0,
           averageSpeed: 0,
           totalTime: 0,
-          favoriteType: 'avulso',
+          favoriteType: "avulso",
         },
         preferences: {
           notificationsEnabled: true,
           soundEnabled: true,
           vibrationEnabled: true,
-          theme: 'light',
+          theme: "light",
         },
         createdAt: Date.now(),
         lastActiveAt: Date.now(),
       };
-      
+
       this.userProfiles.set(userId, profile);
     }
-    
+
     return profile;
   }
 
@@ -277,7 +275,7 @@ export class GamificationService {
     userName: string,
     packageData: ScannedPackage,
     accuracy: number,
-    speed: number
+    speed: number,
   ): {
     points: number;
     experience: number;
@@ -288,7 +286,7 @@ export class GamificationService {
   } {
     const profile = this.getUserProfile(userId, userName);
     const now = Date.now();
-    
+
     let pointsEarned = this.config.pointsPerScan;
     let experienceEarned = this.config.experiencePerScan;
     const achievementsUnlocked: Achievement[] = [];
@@ -296,18 +294,27 @@ export class GamificationService {
 
     // Bônus por sequência
     if (this.config.enableStreaks && this.isStreakActive(userId)) {
-      pointsEarned = Math.round(pointsEarned * this.config.streakBonusMultiplier);
-      experienceEarned = Math.round(experienceEarned * this.config.streakBonusMultiplier);
+      pointsEarned = Math.round(
+        pointsEarned * this.config.streakBonusMultiplier,
+      );
+      experienceEarned = Math.round(
+        experienceEarned * this.config.streakBonusMultiplier,
+      );
     }
 
     // Atualizar estatísticas
     profile.statistics.totalScans++;
-    profile.statistics.averageAccuracy = 
-      (profile.statistics.averageAccuracy * (profile.statistics.totalScans - 1) + accuracy) / profile.statistics.totalScans;
-    profile.statistics.averageSpeed = 
-      (profile.statistics.averageSpeed * (profile.statistics.totalScans - 1) + speed) / profile.statistics.totalScans;
+    profile.statistics.averageAccuracy =
+      (profile.statistics.averageAccuracy *
+        (profile.statistics.totalScans - 1) +
+        accuracy) /
+      profile.statistics.totalScans;
+    profile.statistics.averageSpeed =
+      (profile.statistics.averageSpeed * (profile.statistics.totalScans - 1) +
+        speed) /
+      profile.statistics.totalScans;
     profile.statistics.totalTime += speed;
-    
+
     // Atualizar tipo favorito
     this.updateFavoriteType(profile, packageData.type);
 
@@ -320,15 +327,15 @@ export class GamificationService {
     const oldLevel = profile.level;
     const newLevel = this.calculateLevel(profile.experience);
     const levelUp = newLevel > oldLevel;
-    
+
     if (levelUp) {
       profile.level = newLevel;
-      profile.rank = this.config.rankNames[newLevel - 1] || 'Supremo';
-      
+      profile.rank = this.config.rankNames[newLevel - 1] || "Supremo";
+
       // Registrar evento de level up
       this.registerEvent({
         id: `level_up_${now}`,
-        type: 'level_up',
+        type: "level_up",
         timestamp: now,
         userId,
         data: {
@@ -352,7 +359,7 @@ export class GamificationService {
     // Registrar evento de scan
     this.registerEvent({
       id: `scan_${now}`,
-      type: 'scan',
+      type: "scan",
       timestamp: now,
       userId,
       data: {
@@ -389,12 +396,15 @@ export class GamificationService {
   /**
    * Verifica conquistas desbloqueadas
    */
-  private checkAchievements(userId: string, profile: UserProfile): Achievement[] {
+  private checkAchievements(
+    userId: string,
+    profile: UserProfile,
+  ): Achievement[] {
     const unlockedAchievements: Achievement[] = [];
 
     for (const [achievementId, achievement] of this.achievements.entries()) {
       // Pular se já desbloqueada
-      if (profile.badges.some(badge => badge.id === achievementId)) {
+      if (profile.badges.some((badge) => badge.id === achievementId)) {
         continue;
       }
 
@@ -404,27 +414,28 @@ export class GamificationService {
       // Verificar requisitos
       for (const requirement of achievement.requirements) {
         switch (requirement.type) {
-          case 'total_scans':
+          case "total_scans":
             progress = profile.statistics.totalScans;
             shouldUnlock = progress >= requirement.value;
             break;
-          case 'daily_scans':
+          case "daily_scans":
             progress = this.getTodayScans(userId);
             shouldUnlock = progress >= requirement.value;
             break;
-          case 'perfect_session':
+          case "perfect_session":
             shouldUnlock = profile.statistics.averageAccuracy >= 99;
             progress = profile.statistics.averageAccuracy >= 99 ? 1 : 0;
             break;
-          case 'daily_streak':
+          case "daily_streak":
             progress = profile.currentStreak;
             shouldUnlock = progress >= requirement.value;
             break;
-          case 'average_speed':
-            progress = profile.statistics.averageSpeed <= requirement.value ? 1 : 0;
+          case "average_speed":
+            progress =
+              profile.statistics.averageSpeed <= requirement.value ? 1 : 0;
             shouldUnlock = profile.statistics.averageSpeed <= requirement.value;
             break;
-          case 'daily_accuracy':
+          case "daily_accuracy":
             progress = this.getDailyAccuracy(userId);
             shouldUnlock = progress >= requirement.value;
             break;
@@ -443,7 +454,7 @@ export class GamificationService {
         // Registrar evento
         this.registerEvent({
           id: `achievement_${achievementId}_${Date.now()}`,
-          type: 'achievement_unlock',
+          type: "achievement_unlock",
           timestamp: Date.now(),
           userId,
           data: {
@@ -471,10 +482,10 @@ export class GamificationService {
       let progress = 0;
 
       switch (challenge.requirements.type) {
-        case 'daily_scans':
+        case "daily_scans":
           progress = this.getTodayScans(userId);
           break;
-        case 'weekly_accuracy':
+        case "weekly_accuracy":
           progress = this.getWeeklyAccuracy(userId);
           break;
       }
@@ -502,15 +513,17 @@ export class GamificationService {
    * Atualiza leaderboard
    */
   private updateLeaderboard(userId: string, profile: UserProfile): void {
-    const existingEntry = this.leaderboard.find(entry => entry.userId === userId);
-    
+    const existingEntry = this.leaderboard.find(
+      (entry) => entry.userId === userId,
+    );
+
     const entry: LeaderboardEntry = {
       userId,
       userName: profile.name,
       score: profile.totalPoints,
       level: profile.level,
       rank: 0,
-      change: 'same',
+      change: "same",
       statistics: {
         totalScans: profile.statistics.totalScans,
         accuracy: profile.statistics.averageAccuracy,
@@ -520,15 +533,20 @@ export class GamificationService {
 
     if (existingEntry) {
       const oldScore = existingEntry.score;
-      entry.change = entry.score > oldScore ? 'up' : entry.score < oldScore ? 'down' : 'same';
-      
+      entry.change =
+        entry.score > oldScore
+          ? "up"
+          : entry.score < oldScore
+            ? "down"
+            : "same";
+
       // Remover entrada antiga
       const index = this.leaderboard.indexOf(existingEntry);
       this.leaderboard.splice(index, 1);
     }
 
     this.leaderboard.push(entry);
-    
+
     // Ordenar e atualizar ranks
     this.leaderboard.sort((a, b) => b.score - a.score);
     this.leaderboard.forEach((entry, index) => {
@@ -557,10 +575,12 @@ export class GamificationService {
     const now = Date.now();
     const lastActive = new Date(profile.lastActiveAt);
     const today = new Date(now);
-    
+
     // Verificar se o último acesso foi hoje ou ontem
-    const daysDiff = Math.floor((today.getTime() - lastActive.getTime()) / (1000 * 60 * 60 * 24));
-    
+    const daysDiff = Math.floor(
+      (today.getTime() - lastActive.getTime()) / (1000 * 60 * 60 * 24),
+    );
+
     return daysDiff <= 1;
   }
 
@@ -593,7 +613,7 @@ export class GamificationService {
    */
   private registerEvent(event: GameEvent): void {
     this.events.push(event);
-    
+
     // Manter apenas últimos 1000 eventos
     if (this.events.length > 1000) {
       this.events = this.events.slice(-1000);
@@ -628,8 +648,10 @@ export class GamificationService {
     }
 
     // Retornar conquistas com progresso do usuário
-    return Array.from(this.achievements.values()).map(achievement => {
-      const userAchievement = profile.badges.find(badge => badge.id === achievement.id);
+    return Array.from(this.achievements.values()).map((achievement) => {
+      const userAchievement = profile.badges.find(
+        (badge) => badge.id === achievement.id,
+      );
       return userAchievement || achievement;
     });
   }
@@ -662,7 +684,7 @@ export class GamificationService {
       return {
         profile,
         achievements: profile?.badges || [],
-        events: this.events.filter(event => event.userId === userId),
+        events: this.events.filter((event) => event.userId === userId),
       };
     }
 

@@ -18,7 +18,7 @@ export interface Language {
   currency: {
     code: string;
     symbol: string;
-    position: 'before' | 'after';
+    position: "before" | "after";
   };
 }
 
@@ -81,12 +81,12 @@ export interface CulturalAdaptation {
   currency: {
     code: string;
     symbol: string;
-    position: 'before' | 'after';
+    position: "before" | "after";
   };
   units: {
-    distance: 'km' | 'miles';
-    weight: 'kg' | 'lbs';
-    temperature: 'celsius' | 'fahrenheit';
+    distance: "km" | "miles";
+    weight: "kg" | "lbs";
+    temperature: "celsius" | "fahrenheit";
   };
   formats: {
     phone: string;
@@ -99,7 +99,7 @@ export interface RTLConfig {
   enabled: boolean;
   autoDetect: boolean;
   flipIcons: boolean;
-  textAlign: 'right' | 'left' | 'auto';
+  textAlign: "right" | "left" | "auto";
 }
 
 export interface FontConfig {

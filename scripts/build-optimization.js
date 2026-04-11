@@ -3,20 +3,20 @@
  * Otimizações para produção do Beep Velozz
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Configurações de otimização
 const OPTIMIZATIONS = {
   // Minificação de assets
   MINIFY_IMAGES: true,
   COMPRESS_SOUNDS: true,
-  
+
   // Bundle optimization
   TREE_SHAKING: true,
   CODE_SPLITTING: true,
   MINIFY_JS: true,
-  
+
   // Performance
   ENABLE_BUNDLING: true,
   OPTIMIZE_PACKAGES: true,
@@ -25,57 +25,60 @@ const OPTIMIZATIONS = {
 
 // Pacotes para remover em produção
 const DEV_PACKAGES = [
-  '@babel/core',
-  '@types/node',
-  '@types/react',
-  'typescript',
-  'ts-node',
-  'patch-package',
+  "@babel/core",
+  "@types/node",
+  "@types/react",
+  "typescript",
+  "ts-node",
+  "patch-package",
 ];
 
 // Pacotes para manter em produção
 const PROD_PACKAGES = [
-  'react',
-  'react-native',
-  'expo',
-  'expo-router',
-  'react-native-reanimated',
-  'nativewind',
-  'tailwindcss',
+  "react",
+  "react-native",
+  "expo",
+  "expo-router",
+  "react-native-reanimated",
+  "nativewind",
+  "tailwindcss",
 ];
 
 function optimizePackageJson() {
-  console.log('🔧 Otimizando package.json para produção...');
-  
-  const packageJsonPath = path.join(__dirname, '../package.json');
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-  
+  console.log("🔧 Otimizando package.json para produção...");
+
+  const packageJsonPath = path.join(__dirname, "../package.json");
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+
   if (OPTIMIZATIONS.REMOVE_DEV_TOOLS) {
     // Remover devDependencies para build de produção
     const optimizedPackageJson = {
       ...packageJson,
       devDependencies: undefined,
     };
-    
+
     // Manter apenas dependências essenciais
     optimizedPackageJson.dependencies = {};
-    
-    PROD_PACKAGES.forEach(pkg => {
+
+    PROD_PACKAGES.forEach((pkg) => {
       if (packageJson.dependencies[pkg]) {
         optimizedPackageJson.dependencies[pkg] = packageJson.dependencies[pkg];
       }
     });
-    
-    fs.writeFileSync(packageJsonPath, JSON.stringify(optimizedPackageJson, null, 2));
-    console.log('✅ package.json otimizado para produção');
+
+    fs.writeFileSync(
+      packageJsonPath,
+      JSON.stringify(optimizedPackageJson, null, 2),
+    );
+    console.log("✅ package.json otimizado para produção");
   }
 }
 
 function optimizeMetroConfig() {
-  console.log('🔧 Otimizando configuração Metro...');
-  
-  const metroConfigPath = path.join(__dirname, '../metro.config.cjs');
-  
+  console.log("🔧 Otimizando configuração Metro...");
+
+  const metroConfigPath = path.join(__dirname, "../metro.config.cjs");
+
   const optimizedConfig = `
 const { getDefaultConfig } = require('expo/metro-config');
 
@@ -123,16 +126,16 @@ try {
   module.exports = config;
 }
 `;
-  
+
   fs.writeFileSync(metroConfigPath, optimizedConfig);
-  console.log('✅ Configuração Metro otimizada');
+  console.log("✅ Configuração Metro otimizada");
 }
 
 function optimizeTailwindConfig() {
-  console.log('🔧 Otimizando Tailwind CSS...');
-  
-  const tailwindConfigPath = path.join(__dirname, '../tailwind.config.js');
-  
+  console.log("🔧 Otimizando Tailwind CSS...");
+
+  const tailwindConfigPath = path.join(__dirname, "../tailwind.config.js");
+
   const optimizedConfig = `
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -205,14 +208,14 @@ module.exports = {
   plugins: [],
 };
 `;
-  
+
   fs.writeFileSync(tailwindConfigPath, optimizedConfig);
-  console.log('✅ Tailwind CSS otimizado');
+  console.log("✅ Tailwind CSS otimizado");
 }
 
 function createProductionEnv() {
-  console.log('🔧 Criando variáveis de ambiente de produção...');
-  
+  console.log("🔧 Criando variáveis de ambiente de produção...");
+
   const envContent = `
 # Ambiente de Produção - Beep Velozz
 NODE_ENV=production
@@ -233,16 +236,16 @@ EXPO_PUBLIC_ENABLE_SMART_SCANNER=true
 EXPO_PUBLIC_ENABLE_ADVANCED_ANALYTICS=true
 EXPO_PUBLIC_ENABLE_PREMIUM_UI=true
 `;
-  
-  fs.writeFileSync(path.join(__dirname, '../.env.production'), envContent);
-  console.log('✅ Variáveis de ambiente de produção criadas');
+
+  fs.writeFileSync(path.join(__dirname, "../.env.production"), envContent);
+  console.log("✅ Variáveis de ambiente de produção criadas");
 }
 
 function optimizeBabelConfig() {
-  console.log('🔧 Otimizando configuração Babel...');
-  
-  const babelConfigPath = path.join(__dirname, '../babel.config.js');
-  
+  console.log("🔧 Otimizando configuração Babel...");
+
+  const babelConfigPath = path.join(__dirname, "../babel.config.js");
+
   const optimizedConfig = `
 module.exports = function(api) {
   api.cache(true);
@@ -276,14 +279,14 @@ module.exports = function(api) {
   };
 };
 `;
-  
+
   fs.writeFileSync(babelConfigPath, optimizedConfig);
-  console.log('✅ Configuração Babel otimizada');
+  console.log("✅ Configuração Babel otimizada");
 }
 
 function createBuildScript() {
-  console.log('🔧 Criando script de build otimizado...');
-  
+  console.log("🔧 Criando script de build otimizado...");
+
   const buildScript = `
 #!/bin/bash
 
@@ -312,16 +315,16 @@ npx expo-bundle-analyzer dist/main.jsbundle
 echo "✅ Build de produção concluído!"
 echo "📁 Arquivos gerados em ./dist/"
 `;
-  
-  fs.writeFileSync(path.join(__dirname, '../build-prod.sh'), buildScript);
-  fs.chmodSync(path.join(__dirname, '../build-prod.sh'), '755');
-  console.log('✅ Script de build criado');
+
+  fs.writeFileSync(path.join(__dirname, "../build-prod.sh"), buildScript);
+  fs.chmodSync(path.join(__dirname, "../build-prod.sh"), "755");
+  console.log("✅ Script de build criado");
 }
 
 // Executar otimizações
 function runOptimizations() {
-  console.log('🚀 Iniciando otimizações de build para produção...\n');
-  
+  console.log("🚀 Iniciando otimizações de build para produção...\n");
+
   try {
     optimizePackageJson();
     optimizeMetroConfig();
@@ -329,12 +332,11 @@ function runOptimizations() {
     optimizeBabelConfig();
     createProductionEnv();
     createBuildScript();
-    
-    console.log('\n✨ Todas as otimizações foram aplicadas com sucesso!');
-    console.log('📝 Para build de produção, execute: ./build-prod.sh');
-    
+
+    console.log("\n✨ Todas as otimizações foram aplicadas com sucesso!");
+    console.log("📝 Para build de produção, execute: ./build-prod.sh");
   } catch (error) {
-    console.error('❌ Erro durante otimizações:', error);
+    console.error("❌ Erro durante otimizações:", error);
     process.exit(1);
   }
 }

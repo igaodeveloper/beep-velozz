@@ -1,8 +1,15 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, Image, ActivityIndicator } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import * as Haptics from 'expo-haptics';
-import { useAppTheme } from '@/utils/useAppTheme';
+import React, { useRef, useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  Image,
+  ActivityIndicator,
+} from "react-native";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import * as Haptics from "expo-haptics";
+import { useAppTheme } from "@/utils/useAppTheme";
 
 interface PackagePhotoCaptureProps {
   maxPhotos?: number;
@@ -25,10 +32,10 @@ export default function PackagePhotoCapture({
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [enableFlash, setEnableFlash] = useState(false);
-  const [cameraFacing, setCameraFacing] = useState<'front' | 'back'>('back');
+  const [cameraFacing, setCameraFacing] = useState<"front" | "back">("back");
 
   useEffect(() => {
-    if (visible && permission?.status !== 'granted') {
+    if (visible && permission?.status !== "granted") {
       requestPermission();
     }
   }, [visible]);
@@ -48,7 +55,7 @@ export default function PackagePhotoCapture({
 
       setCapturedPhoto(photo.uri);
     } catch (error) {
-      console.error('Erro ao tirar foto:', error);
+      console.error("Erro ao tirar foto:", error);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setIsProcessing(false);
@@ -64,7 +71,7 @@ export default function PackagePhotoCapture({
       setCapturedPhoto(null);
       onClose();
     } catch (error) {
-      console.error('Erro ao confirmar foto:', error);
+      console.error("Erro ao confirmar foto:", error);
     }
   };
 
@@ -76,14 +83,37 @@ export default function PackagePhotoCapture({
     return null;
   }
 
-  if (permission.status !== 'granted') {
+  if (permission.status !== "granted") {
     return (
       <Modal visible={visible} transparent animationType="slide">
-        <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
-          <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700', marginBottom: 16, textAlign: 'center' }}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: colors.bg,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: 24,
+          }}
+        >
+          <Text
+            style={{
+              color: colors.text,
+              fontSize: 18,
+              fontWeight: "700",
+              marginBottom: 16,
+              textAlign: "center",
+            }}
+          >
             Permissão de Câmera
           </Text>
-          <Text style={{ color: colors.textMuted, fontSize: 14, textAlign: 'center', marginBottom: 24 }}>
+          <Text
+            style={{
+              color: colors.textMuted,
+              fontSize: 14,
+              textAlign: "center",
+              marginBottom: 24,
+            }}
+          >
             Precisamos de acesso à câmera para capturar fotos dos pacotes.
           </Text>
           <TouchableOpacity
@@ -96,7 +126,14 @@ export default function PackagePhotoCapture({
               marginBottom: 12,
             }}
           >
-            <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700', textAlign: 'center' }}>
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 15,
+                fontWeight: "700",
+                textAlign: "center",
+              }}
+            >
               Permitir Acesso
             </Text>
           </TouchableOpacity>
@@ -111,7 +148,14 @@ export default function PackagePhotoCapture({
               borderColor: colors.border,
             }}
           >
-            <Text style={{ color: colors.text, fontSize: 15, fontWeight: '700', textAlign: 'center' }}>
+            <Text
+              style={{
+                color: colors.text,
+                fontSize: 15,
+                fontWeight: "700",
+                textAlign: "center",
+              }}
+            >
               Cancelar
             </Text>
           </TouchableOpacity>
@@ -128,9 +172,9 @@ export default function PackagePhotoCapture({
           {/* Header */}
           <View
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
               paddingHorizontal: 16,
               paddingTop: 16,
               paddingBottom: 12,
@@ -139,10 +183,19 @@ export default function PackagePhotoCapture({
             }}
           >
             <View>
-              <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700', letterSpacing: 1 }}>
+              <Text
+                style={{
+                  color: colors.primary,
+                  fontSize: 12,
+                  fontWeight: "700",
+                  letterSpacing: 1,
+                }}
+              >
                 FOTO CAPTURADA
               </Text>
-              <Text style={{ color: colors.text, fontSize: 16, fontWeight: '700' }}>
+              <Text
+                style={{ color: colors.text, fontSize: 16, fontWeight: "700" }}
+              >
                 {packageCode}
               </Text>
             </View>
@@ -153,8 +206,8 @@ export default function PackagePhotoCapture({
                 height: 40,
                 borderRadius: 10,
                 backgroundColor: colors.surface,
-                alignItems: 'center',
-                justifyContent: 'center',
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <Text style={{ fontSize: 18 }}>✕</Text>
@@ -162,11 +215,19 @@ export default function PackagePhotoCapture({
           </View>
 
           {/* Image Preview */}
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 24 }}>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              paddingHorizontal: 16,
+              paddingVertical: 24,
+            }}
+          >
             <Image
               source={{ uri: capturedPhoto }}
               style={{
-                width: '100%',
+                width: "100%",
                 height: 400,
                 borderRadius: 14,
                 backgroundColor: colors.surface2,
@@ -192,10 +253,17 @@ export default function PackagePhotoCapture({
                 backgroundColor: colors.success,
                 borderRadius: 10,
                 paddingVertical: 14,
-                alignItems: 'center',
+                alignItems: "center",
               }}
             >
-              <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700', letterSpacing: 0.3 }}>
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 15,
+                  fontWeight: "700",
+                  letterSpacing: 0.3,
+                }}
+              >
                 ✓ Confirmar Foto
               </Text>
             </TouchableOpacity>
@@ -205,12 +273,19 @@ export default function PackagePhotoCapture({
                 backgroundColor: colors.surface,
                 borderRadius: 10,
                 paddingVertical: 14,
-                alignItems: 'center',
+                alignItems: "center",
                 borderWidth: 1,
                 borderColor: colors.border,
               }}
             >
-              <Text style={{ color: colors.text, fontSize: 15, fontWeight: '700', letterSpacing: 0.3 }}>
+              <Text
+                style={{
+                  color: colors.text,
+                  fontSize: 15,
+                  fontWeight: "700",
+                  letterSpacing: 0.3,
+                }}
+              >
                 🔄 Tirar Outra Foto
               </Text>
             </TouchableOpacity>
@@ -218,19 +293,19 @@ export default function PackagePhotoCapture({
         </View>
       ) : (
         // Camera View
-        <View style={{ flex: 1, backgroundColor: '#000' }}>
+        <View style={{ flex: 1, backgroundColor: "#000" }}>
           <CameraView
             ref={cameraRef}
             style={{ flex: 1 }}
             facing={cameraFacing}
-            flash={enableFlash ? 'on' : 'off'}
+            flash={enableFlash ? "on" : "off"}
           >
             {/* Top Controls */}
             <View
               style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
                 paddingHorizontal: 16,
                 paddingTop: 16,
                 paddingBottom: 8,
@@ -242,19 +317,33 @@ export default function PackagePhotoCapture({
                   width: 40,
                   height: 40,
                   borderRadius: 10,
-                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <Text style={{ fontSize: 18 }}>✕</Text>
               </TouchableOpacity>
 
-              <View style={{ alignItems: 'center' }}>
-                <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', letterSpacing: 1 }}>
+              <View style={{ alignItems: "center" }}>
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 12,
+                    fontWeight: "700",
+                    letterSpacing: 1,
+                  }}
+                >
                   CÂMERA
                 </Text>
-                <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600', marginTop: 2 }}>
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 14,
+                    fontWeight: "600",
+                    marginTop: 2,
+                  }}
+                >
                   {packageCode}
                 </Text>
               </View>
@@ -265,35 +354,39 @@ export default function PackagePhotoCapture({
                   width: 40,
                   height: 40,
                   borderRadius: 10,
-                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                <Text style={{ fontSize: 18 }}>{enableFlash ? '💡' : '⚡'}</Text>
+                <Text style={{ fontSize: 18 }}>
+                  {enableFlash ? "💡" : "⚡"}
+                </Text>
               </TouchableOpacity>
             </View>
 
             {/* Bottom Controls */}
             <View
               style={{
-                flexDirection: 'row',
-                justifyContent: 'space-around',
-                alignItems: 'center',
+                flexDirection: "row",
+                justifyContent: "space-around",
+                alignItems: "center",
                 paddingHorizontal: 16,
                 paddingVertical: 24,
               }}
             >
               {/* Flip Camera Button */}
               <TouchableOpacity
-                onPress={() => setCameraFacing(cameraFacing === 'back' ? 'front' : 'back')}
+                onPress={() =>
+                  setCameraFacing(cameraFacing === "back" ? "front" : "back")
+                }
                 style={{
                   width: 50,
                   height: 50,
                   borderRadius: 25,
-                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <Text style={{ fontSize: 20 }}>🔄</Text>
@@ -308,11 +401,11 @@ export default function PackagePhotoCapture({
                   height: 70,
                   borderRadius: 35,
                   backgroundColor: colors.primary,
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  alignItems: "center",
+                  justifyContent: "center",
                   opacity: isProcessing ? 0.6 : 1,
                   borderWidth: 3,
-                  borderColor: '#fff',
+                  borderColor: "#fff",
                 }}
               >
                 {isProcessing ? (
@@ -329,29 +422,29 @@ export default function PackagePhotoCapture({
             {/* Center Guide */}
             <View
               style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
+                position: "absolute",
+                top: "50%",
+                left: "50%",
                 width: 280,
                 height: 280,
                 marginLeft: -140,
                 marginTop: -140,
                 borderWidth: 2,
-                borderColor: 'rgba(255, 255, 255, 0.3)',
+                borderColor: "rgba(255, 255, 255, 0.3)",
                 borderRadius: 20,
-                backgroundColor: 'transparent',
+                backgroundColor: "transparent",
               }}
             />
             <Text
               style={{
-                position: 'absolute',
-                top: '30%',
+                position: "absolute",
+                top: "30%",
                 left: 0,
                 right: 0,
-                textAlign: 'center',
-                color: '#fff',
+                textAlign: "center",
+                color: "#fff",
                 fontSize: 13,
-                fontWeight: '600',
+                fontWeight: "600",
               }}
             >
               Enquadre o pacote dentro da área

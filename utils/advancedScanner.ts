@@ -9,7 +9,12 @@
  * - Suporte a múltiplas plataformas
  */
 
-export type ConfidenceLevel = 'critical' | 'high' | 'medium' | 'low' | 'rejected';
+export type ConfidenceLevel =
+  | "critical"
+  | "high"
+  | "medium"
+  | "low"
+  | "rejected";
 
 export interface CodePattern {
   name: string; // ex: 'Shopee BR', 'Mercado Livre 20000', etc
@@ -18,14 +23,14 @@ export interface CodePattern {
   maxLength?: number;
   checksumValidator?: (code: string) => boolean;
   marketplace: string;
-  type: 'shopee' | 'mercado_livre' | 'avulso' | 'unknown';
+  type: "shopee" | "mercado_livre" | "avulso" | "unknown";
   priority: number;
 }
 
 export interface AdvancedScanAnalysis {
   code: string;
   normalized: string;
-  type: 'shopee' | 'mercado_livre' | 'avulso' | 'unknown';
+  type: "shopee" | "mercado_livre" | "avulso" | "unknown";
   confidence: ConfidenceLevel;
   confidence_score: number; // 0-100
   matched_pattern?: string;
@@ -100,66 +105,66 @@ const ChecksumValidators = {
 const ADVANCED_PATTERNS: CodePattern[] = [
   // AVULSO - Prioridade extremamente alta
   {
-    name: 'Avulso LM',
+    name: "Avulso LM",
     regex: /^LM[0-9A-Z]{2,}$/,
     minLength: 4,
     maxLength: 20,
-    marketplace: 'Custom',
-    type: 'avulso',
+    marketplace: "Custom",
+    type: "avulso",
     priority: 100,
   },
 
   // SHOPEE - Padrões múltiplos com validação
   {
-    name: 'Shopee BR Standard',
+    name: "Shopee BR Standard",
     regex: /^BR[0-9A-Z]{6,}$/,
     minLength: 8,
     maxLength: 20,
-    checksumValidator: code => ChecksumValidators.validateMod10(code),
-    marketplace: 'Shopee',
-    type: 'shopee',
+    checksumValidator: (code) => ChecksumValidators.validateMod10(code),
+    marketplace: "Shopee",
+    type: "shopee",
     priority: 90,
   },
   {
-    name: 'Shopee EAN-13',
+    name: "Shopee EAN-13",
     regex: /^[0-9]{13}$/,
     minLength: 13,
     maxLength: 13,
-    checksumValidator: code => ChecksumValidators.validateEAN13(code),
-    marketplace: 'Shopee',
-    type: 'shopee',
+    checksumValidator: (code) => ChecksumValidators.validateEAN13(code),
+    marketplace: "Shopee",
+    type: "shopee",
     priority: 80,
   },
 
   // MERCADO LIVRE - Prefixo 20000
   {
-    name: 'Mercado Livre 20000',
+    name: "Mercado Livre 20000",
     regex: /^20000[0-9]*$/,
     minLength: 5,
     maxLength: 20,
-    marketplace: 'Mercado Livre',
-    type: 'mercado_livre',
+    marketplace: "Mercado Livre",
+    type: "mercado_livre",
     priority: 85,
   },
   // MERCADO LIVRE - Códigos de envio 466
   {
-    name: 'Mercado Livre Envio 466',
+    name: "Mercado Livre Envio 466",
     regex: /^466[0-9]{8,}$/,
     minLength: 11,
     maxLength: 20,
-    marketplace: 'Mercado Livre',
-    type: 'mercado_livre',
+    marketplace: "Mercado Livre",
+    type: "mercado_livre",
     priority: 80,
   },
 
   // Fallback genérico (mantém para outros usos, mas não será aplicado como ML)
   {
-    name: 'Generic Alphanumeric',
+    name: "Generic Alphanumeric",
     regex: /^[A-Z0-9]{4,}$/,
     minLength: 4,
     maxLength: 50,
-    marketplace: 'Unknown',
-    type: 'avulso',
+    marketplace: "Unknown",
+    type: "avulso",
     priority: 10,
   },
 ];
@@ -169,16 +174,18 @@ const ADVANCED_PATTERNS: CodePattern[] = [
  */
 export function advancedNormalizeCode(rawCode: string): string {
   console.debug(`[advancedNormalizeCode] Input: "${rawCode}"`);
-  if (!rawCode || typeof rawCode !== 'string') return '';
+  if (!rawCode || typeof rawCode !== "string") return "";
 
   // extract id from JSON payload if present
   let input = rawCode;
-  if (input.startsWith('{') && input.endsWith('}')) {
+  if (input.startsWith("{") && input.endsWith("}")) {
     try {
       const obj = JSON.parse(input);
-      if (obj && typeof obj.id === 'string') {
+      if (obj && typeof obj.id === "string") {
         input = obj.id;
-        console.debug(`[advancedNormalizeCode] extracted id from JSON: "${input}"`);
+        console.debug(
+          `[advancedNormalizeCode] extracted id from JSON: "${input}"`,
+        );
       }
     } catch {
       // ignore invalid JSON
@@ -186,10 +193,10 @@ export function advancedNormalizeCode(rawCode: string): string {
   }
 
   const trimmed = input.trim().toUpperCase();
-  if (trimmed.length === 0) return '';
+  if (trimmed.length === 0) return "";
 
   // Remove espaços extras e caracteres de controle
-  let cleaned = trimmed.replace(/[\s\0\t\r\n]/g, '');
+  let cleaned = trimmed.replace(/[\s\0\t\r\n]/g, "");
   console.debug(`[advancedNormalizeCode] Cleaned: "${cleaned}"`);
 
   // if the cleaned string doesn't start with a ML prefix, try to pull the
@@ -200,12 +207,16 @@ export function advancedNormalizeCode(rawCode: string): string {
     if (mlMatch) {
       const before = cleaned;
       cleaned = mlMatch[0];
-      console.debug(`[advancedNormalizeCode] Extracted ML fragment from "${before}" → "${cleaned}"`);
+      console.debug(
+        `[advancedNormalizeCode] Extracted ML fragment from "${before}" → "${cleaned}"`,
+      );
 
       if (/^ID./.test(cleaned)) {
         const beforeStrip = cleaned;
         cleaned = cleaned.slice(2);
-        console.debug(`[advancedNormalizeCode] Stripped ID prefix after extraction: "${beforeStrip}" → "${cleaned}"`);
+        console.debug(
+          `[advancedNormalizeCode] Stripped ID prefix after extraction: "${beforeStrip}" → "${cleaned}"`,
+        );
       }
     }
   }
@@ -214,12 +225,16 @@ export function advancedNormalizeCode(rawCode: string): string {
   for (const pattern of ADVANCED_PATTERNS) {
     const extracted = cleaned.match(pattern.regex)?.[0];
     if (extracted) {
-      console.debug(`[advancedNormalizeCode] Matched pattern "${pattern.name}": "${extracted}"`);
+      console.debug(
+        `[advancedNormalizeCode] Matched pattern "${pattern.name}": "${extracted}"`,
+      );
       return extracted;
     }
   }
 
-  console.debug(`[advancedNormalizeCode] No pattern matched, returning cleaned: "${cleaned}"`);
+  console.debug(
+    `[advancedNormalizeCode] No pattern matched, returning cleaned: "${cleaned}"`,
+  );
   return cleaned;
 }
 
@@ -233,14 +248,20 @@ export function advancedNormalizeCode(rawCode: string): string {
 export function normalizeMercadoLivreCode(rawCode: string): string {
   console.debug(`[normalizeMercadoLivreCode] Input: "${rawCode}"`);
   const normalized = advancedNormalizeCode(rawCode);
-  console.debug(`[normalizeMercadoLivreCode] Advanced normalized: "${normalized}"`);
+  console.debug(
+    `[normalizeMercadoLivreCode] Advanced normalized: "${normalized}"`,
+  );
   if (/^20000/.test(normalized) || /^466\d{8,}$/.test(normalized)) {
-    console.debug(`[normalizeMercadoLivreCode] Accepted prefix: "${normalized}"`);
+    console.debug(
+      `[normalizeMercadoLivreCode] Accepted prefix: "${normalized}"`,
+    );
     return normalized;
   }
-  console.debug(`[normalizeMercadoLivreCode] Rejected: no valid prefix in "${normalized}"`);
+  console.debug(
+    `[normalizeMercadoLivreCode] Rejected: no valid prefix in "${normalized}"`,
+  );
   // Empty string signals invalid Mercadolivre format
-  return '';
+  return "";
 }
 
 export function analyzeMercadoLivreCode(rawCode: string): AdvancedScanAnalysis {
@@ -261,11 +282,11 @@ export function analyzeMercadoLivreCode(rawCode: string): AdvancedScanAnalysis {
     return {
       code: rawCode,
       normalized,
-      type: 'unknown',
-      confidence: 'rejected',
+      type: "unknown",
+      confidence: "rejected",
       confidence_score: 0,
       is_suspicious: true,
-      anomaly_flags: ['prefix_invalido_mercadolivre'],
+      anomaly_flags: ["prefix_invalido_mercadolivre"],
       raw_analysis,
     };
   }
@@ -275,10 +296,10 @@ export function analyzeMercadoLivreCode(rawCode: string): AdvancedScanAnalysis {
 
   // Use the generic analysis but require marketplace to be Mercado Livre
   const result = analyzeCodeAdvanced(normalized);
-  if (result.type !== 'mercado_livre') {
-    result.anomaly_flags.push('não_é_mercado_livre');
+  if (result.type !== "mercado_livre") {
+    result.anomaly_flags.push("não_é_mercado_livre");
     result.is_suspicious = true;
-    result.confidence = 'low';
+    result.confidence = "low";
     result.confidence_score = Math.min(result.confidence_score, 20);
   }
 
@@ -292,7 +313,7 @@ export function analyzeCodeAdvanced(rawCode: string): AdvancedScanAnalysis {
   const normalized = advancedNormalizeCode(rawCode);
   const anomaly_flags: string[] = [];
   let confidence_score = 0;
-  let confidence: ConfidenceLevel = 'rejected';
+  let confidence: ConfidenceLevel = "rejected";
   let matched_pattern: CodePattern | undefined;
   let is_suspicious = false;
 
@@ -308,12 +329,12 @@ export function analyzeCodeAdvanced(rawCode: string): AdvancedScanAnalysis {
 
   // Validações iniciais
   if (normalized.length === 0) {
-    anomaly_flags.push('código_vazio');
+    anomaly_flags.push("código_vazio");
     return {
       code: rawCode,
       normalized,
-      type: 'unknown',
-      confidence: 'rejected',
+      type: "unknown",
+      confidence: "rejected",
       confidence_score: 0,
       is_suspicious: true,
       anomaly_flags,
@@ -322,7 +343,7 @@ export function analyzeCodeAdvanced(rawCode: string): AdvancedScanAnalysis {
   }
 
   if (!raw_analysis.has_only_alphanumeric) {
-    anomaly_flags.push('contém_caracteres_especiais_não_normalizados');
+    anomaly_flags.push("contém_caracteres_especiais_não_normalizados");
     is_suspicious = true;
   }
 
@@ -347,7 +368,7 @@ export function analyzeCodeAdvanced(rawCode: string): AdvancedScanAnalysis {
         if (pattern.checksumValidator) {
           checksum_valid = pattern.checksumValidator(normalized);
           if (!checksum_valid) {
-            anomaly_flags.push('checksum_inválido');
+            anomaly_flags.push("checksum_inválido");
             is_suspicious = true;
           }
         }
@@ -355,20 +376,20 @@ export function analyzeCodeAdvanced(rawCode: string): AdvancedScanAnalysis {
         // Calcula confiança baseado em padrão e checksum
         if (pattern.priority >= 90) {
           if (checksum_valid === false) {
-            confidence = 'low';
+            confidence = "low";
             confidence_score = 30;
           } else if (checksum_valid === true) {
-            confidence = 'critical';
+            confidence = "critical";
             confidence_score = 100;
           } else {
-            confidence = 'high';
+            confidence = "high";
             confidence_score = 85;
           }
         } else if (pattern.priority >= 75) {
-          confidence = checksum_valid === false ? 'medium' : 'high';
+          confidence = checksum_valid === false ? "medium" : "high";
           confidence_score = checksum_valid === false ? 50 : 80;
         } else {
-          confidence = 'medium';
+          confidence = "medium";
           confidence_score = 60;
         }
       }
@@ -377,21 +398,21 @@ export function analyzeCodeAdvanced(rawCode: string): AdvancedScanAnalysis {
 
   // Se múltiplos padrões coincidem, pode ser ambíguo
   if (matchedPatterns > 1) {
-    anomaly_flags.push('ambigüidade_padrão');
-    confidence = 'medium';
+    anomaly_flags.push("ambigüidade_padrão");
+    confidence = "medium";
     confidence_score = Math.max(50, confidence_score - 20);
   }
 
   // Se nenhum padrão, rejeita
   if (!matched_pattern) {
-    anomaly_flags.push('nenhum_padrão_conhecido');
+    anomaly_flags.push("nenhum_padrão_conhecido");
     is_suspicious = true;
   }
 
   return {
     code: rawCode,
     normalized,
-    type: matched_pattern?.type || 'unknown',
+    type: matched_pattern?.type || "unknown",
     confidence,
     confidence_score,
     matched_pattern: matched_pattern?.name,
@@ -428,23 +449,32 @@ function extractCodePrefix(code: string): string | null {
 export function detectAnomalies(
   analysis: AdvancedScanAnalysis,
   context?: {
-    expectedType?: 'shopee' | 'mercado_livre' | 'avulso';
+    expectedType?: "shopee" | "mercado_livre" | "avulso";
     recentCodes?: string[];
     driverId?: string;
-  }
+  },
 ): AdvancedScanAnalysis {
   if (!context) return analysis;
 
   // Se um tipo era esperado mas foi detected outro
-  if (context.expectedType && analysis.type !== context.expectedType && analysis.type !== 'unknown') {
-    analysis.anomaly_flags.push(`tipo_inesperado_esperava_${context.expectedType}`);
+  if (
+    context.expectedType &&
+    analysis.type !== context.expectedType &&
+    analysis.type !== "unknown"
+  ) {
+    analysis.anomaly_flags.push(
+      `tipo_inesperado_esperava_${context.expectedType}`,
+    );
     analysis.confidence_score = Math.max(30, analysis.confidence_score - 30);
     analysis.is_suspicious = true;
   }
 
   // Se código foi visto recentemente (possível refil acidental)
-  if (context.recentCodes && context.recentCodes.includes(analysis.normalized)) {
-    analysis.anomaly_flags.push('escanneado_recentemente');
+  if (
+    context.recentCodes &&
+    context.recentCodes.includes(analysis.normalized)
+  ) {
+    analysis.anomaly_flags.push("escanneado_recentemente");
     analysis.is_suspicious = true;
   }
 

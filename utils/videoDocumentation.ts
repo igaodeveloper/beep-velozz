@@ -3,14 +3,14 @@
  * Sistema de documentação em vídeo para auditoria e treinamento
  */
 
-import { Session, ScannedPackage } from '@/types/session';
-import { Platform } from 'react-native';
+import { Session, ScannedPackage } from "@/types/session";
+import { Platform } from "react-native";
 
 export interface VideoRecord {
   id: string;
   sessionId: string;
   packageId?: string;
-  type: 'session' | 'package' | 'training' | 'issue';
+  type: "session" | "package" | "training" | "issue";
   uri: string;
   duration: number;
   fileSize: number;
@@ -18,14 +18,14 @@ export interface VideoRecord {
   operatorId: string;
   annotations: VideoAnnotation[];
   thumbnail?: string;
-  quality: 'low' | 'medium' | 'high';
-  status: 'recording' | 'processing' | 'completed' | 'failed';
+  quality: "low" | "medium" | "high";
+  status: "recording" | "processing" | "completed" | "failed";
 }
 
 export interface VideoAnnotation {
   id: string;
   timestamp: number; // em segundos
-  type: 'note' | 'issue' | 'highlight' | 'correction';
+  type: "note" | "issue" | "highlight" | "correction";
   text: string;
   coordinates?: {
     x: number;
@@ -39,7 +39,7 @@ export interface VideoAnnotation {
 
 export interface VideoConfig {
   maxDuration: number; // segundos
-  quality: 'low' | 'medium' | 'high';
+  quality: "low" | "medium" | "high";
   compression: boolean;
   autoUpload: boolean;
   enableAudio: boolean;
@@ -57,7 +57,7 @@ class VideoDocumentationManager {
   constructor(config: Partial<VideoConfig> = {}) {
     this.config = {
       maxDuration: 300, // 5 minutos
-      quality: 'medium',
+      quality: "medium",
       compression: true,
       autoUpload: false,
       enableAudio: true,
@@ -70,14 +70,17 @@ class VideoDocumentationManager {
   /**
    * Inicia gravação de vídeo de sessão
    */
-  async startSessionRecording(sessionId: string, operatorId: string): Promise<string> {
+  async startSessionRecording(
+    sessionId: string,
+    operatorId: string,
+  ): Promise<string> {
     if (this.isRecording) {
-      throw new Error('Já existe uma gravação em andamento');
+      throw new Error("Já existe uma gravação em andamento");
     }
 
     try {
-      console.log('🎥 Iniciando gravação de sessão...');
-      
+      console.log("🎥 Iniciando gravação de sessão...");
+
       // Simulação de início de gravação
       // Na implementação real:
       // const cameraRef = await this.getCameraRef();
@@ -93,7 +96,7 @@ class VideoDocumentationManager {
       const recording: VideoRecord = {
         id: recordingId,
         sessionId,
-        type: 'session',
+        type: "session",
         uri: mockUri,
         duration: 0,
         fileSize: 0,
@@ -101,7 +104,7 @@ class VideoDocumentationManager {
         operatorId,
         annotations: [],
         quality: this.config.quality,
-        status: 'recording',
+        status: "recording",
       };
 
       this.currentRecording = recording;
@@ -111,11 +114,10 @@ class VideoDocumentationManager {
       // Inicia timer para atualizar duração
       this.startRecordingTimer();
 
-      console.log('✅ Gravação iniciada:', recordingId);
+      console.log("✅ Gravação iniciada:", recordingId);
       return recordingId;
-
     } catch (error) {
-      console.error('❌ Erro ao iniciar gravação:', error);
+      console.error("❌ Erro ao iniciar gravação:", error);
       throw error;
     }
   }
@@ -123,13 +125,17 @@ class VideoDocumentationManager {
   /**
    * Inicia gravação de vídeo para pacote específico
    */
-  async startPackageRecording(packageId: string, sessionId: string, operatorId: string): Promise<string> {
+  async startPackageRecording(
+    packageId: string,
+    sessionId: string,
+    operatorId: string,
+  ): Promise<string> {
     if (this.isRecording) {
-      throw new Error('Já existe uma gravação em andamento');
+      throw new Error("Já existe uma gravação em andamento");
     }
 
     try {
-      console.log('📦 Iniciando gravação de pacote...');
+      console.log("📦 Iniciando gravação de pacote...");
 
       const recordingId = `package_${packageId}_${Date.now()}`;
       const mockUri = `file://videos/${recordingId}.mp4`;
@@ -138,7 +144,7 @@ class VideoDocumentationManager {
         id: recordingId,
         sessionId,
         packageId,
-        type: 'package',
+        type: "package",
         uri: mockUri,
         duration: 0,
         fileSize: 0,
@@ -146,7 +152,7 @@ class VideoDocumentationManager {
         operatorId,
         annotations: [],
         quality: this.config.quality,
-        status: 'recording',
+        status: "recording",
       };
 
       this.currentRecording = recording;
@@ -155,11 +161,10 @@ class VideoDocumentationManager {
 
       this.startRecordingTimer();
 
-      console.log('✅ Gravação de pacote iniciada:', recordingId);
+      console.log("✅ Gravação de pacote iniciada:", recordingId);
       return recordingId;
-
     } catch (error) {
-      console.error('❌ Erro ao iniciar gravação de pacote:', error);
+      console.error("❌ Erro ao iniciar gravação de pacote:", error);
       throw error;
     }
   }
@@ -169,11 +174,11 @@ class VideoDocumentationManager {
    */
   async stopRecording(): Promise<VideoRecord> {
     if (!this.isRecording || !this.currentRecording) {
-      throw new Error('Nenhuma gravação em andamento');
+      throw new Error("Nenhuma gravação em andamento");
     }
 
     try {
-      console.log('⏹️ Parando gravação...');
+      console.log("⏹️ Parando gravação...");
 
       // Para o timer
       if (this.recordingTimer) {
@@ -186,20 +191,22 @@ class VideoDocumentationManager {
       // await cameraRef.stopRecording();
 
       // Simula processamento do vídeo
-      this.currentRecording.status = 'processing';
-      
+      this.currentRecording.status = "processing";
+
       // Simula compressão se habilitada
       if (this.config.compression) {
         await this.simulateCompression();
       }
 
       // Finaliza a gravação
-      this.currentRecording.status = 'completed';
+      this.currentRecording.status = "completed";
       this.currentRecording.duration = Math.floor(Math.random() * 120) + 30; // 30-150 segundos
       this.currentRecording.fileSize = Math.floor(Math.random() * 50) + 10; // 10-60MB
 
       // Gera thumbnail
-      this.currentRecording.thumbnail = await this.generateThumbnail(this.currentRecording.uri);
+      this.currentRecording.thumbnail = await this.generateThumbnail(
+        this.currentRecording.uri,
+      );
 
       // Auto upload se habilitado
       if (this.config.autoUpload) {
@@ -207,20 +214,19 @@ class VideoDocumentationManager {
       }
 
       const completedRecording = { ...this.currentRecording };
-      
+
       this.isRecording = false;
       this.currentRecording = null;
 
-      console.log('✅ Gravação finalizada:', completedRecording.id);
+      console.log("✅ Gravação finalizada:", completedRecording.id);
       return completedRecording;
-
     } catch (error) {
-      console.error('❌ Erro ao parar gravação:', error);
-      
+      console.error("❌ Erro ao parar gravação:", error);
+
       if (this.currentRecording) {
-        this.currentRecording.status = 'failed';
+        this.currentRecording.status = "failed";
       }
-      
+
       this.isRecording = false;
       this.currentRecording = null;
       throw error;
@@ -231,15 +237,15 @@ class VideoDocumentationManager {
    * Adiciona anotação ao vídeo
    */
   addAnnotation(
-    recordingId: string, 
-    type: VideoAnnotation['type'], 
-    text: string, 
-    coordinates?: VideoAnnotation['coordinates'],
-    author: string = 'system'
+    recordingId: string,
+    type: VideoAnnotation["type"],
+    text: string,
+    coordinates?: VideoAnnotation["coordinates"],
+    author: string = "system",
   ): void {
-    const recording = this.recordings.find(r => r.id === recordingId);
+    const recording = this.recordings.find((r) => r.id === recordingId);
     if (!recording) {
-      throw new Error('Gravação não encontrada');
+      throw new Error("Gravação não encontrada");
     }
 
     const annotation: VideoAnnotation = {
@@ -253,28 +259,28 @@ class VideoDocumentationManager {
     };
 
     recording.annotations.push(annotation);
-    console.log('📝 Anotação adicionada:', annotation.id);
+    console.log("📝 Anotação adicionada:", annotation.id);
   }
 
   /**
    * Obtém gravações por sessão
    */
   getRecordingsBySession(sessionId: string): VideoRecord[] {
-    return this.recordings.filter(r => r.sessionId === sessionId);
+    return this.recordings.filter((r) => r.sessionId === sessionId);
   }
 
   /**
    * Obtém gravações por operador
    */
   getRecordingsByOperator(operatorId: string): VideoRecord[] {
-    return this.recordings.filter(r => r.operatorId === operatorId);
+    return this.recordings.filter((r) => r.operatorId === operatorId);
   }
 
   /**
    * Obtém gravações por tipo
    */
-  getRecordingsByType(type: VideoRecord['type']): VideoRecord[] {
-    return this.recordings.filter(r => r.type === type);
+  getRecordingsByType(type: VideoRecord["type"]): VideoRecord[] {
+    return this.recordings.filter((r) => r.type === type);
   }
 
   /**
@@ -282,15 +288,16 @@ class VideoDocumentationManager {
    */
   searchRecordings(query: string): VideoRecord[] {
     const lowercaseQuery = query.toLowerCase();
-    
-    return this.recordings.filter(recording => 
-      recording.id.toLowerCase().includes(lowercaseQuery) ||
-      recording.sessionId.toLowerCase().includes(lowercaseQuery) ||
-      recording.packageId?.toLowerCase().includes(lowercaseQuery) ||
-      recording.operatorId.toLowerCase().includes(lowercaseQuery) ||
-      recording.annotations.some(annotation => 
-        annotation.text.toLowerCase().includes(lowercaseQuery)
-      )
+
+    return this.recordings.filter(
+      (recording) =>
+        recording.id.toLowerCase().includes(lowercaseQuery) ||
+        recording.sessionId.toLowerCase().includes(lowercaseQuery) ||
+        recording.packageId?.toLowerCase().includes(lowercaseQuery) ||
+        recording.operatorId.toLowerCase().includes(lowercaseQuery) ||
+        recording.annotations.some((annotation) =>
+          annotation.text.toLowerCase().includes(lowercaseQuery),
+        ),
     );
   }
 
@@ -298,25 +305,24 @@ class VideoDocumentationManager {
    * Exclui gravação
    */
   async deleteRecording(recordingId: string): Promise<void> {
-    const index = this.recordings.findIndex(r => r.id === recordingId);
+    const index = this.recordings.findIndex((r) => r.id === recordingId);
     if (index === -1) {
-      throw new Error('Gravação não encontrada');
+      throw new Error("Gravação não encontrada");
     }
 
     const recording = this.recordings[index];
 
     try {
       // Simula exclusão do arquivo
-      console.log('🗑️ Excluindo gravação:', recordingId);
-      
+      console.log("🗑️ Excluindo gravação:", recordingId);
+
       // Na implementação real:
       // await FileSystem.deleteAsync(recording.uri, { idempotent: true });
-      
-      this.recordings.splice(index, 1);
-      console.log('✅ Gravação excluída');
 
+      this.recordings.splice(index, 1);
+      console.log("✅ Gravação excluída");
     } catch (error) {
-      console.error('❌ Erro ao excluir gravação:', error);
+      console.error("❌ Erro ao excluir gravação:", error);
       throw error;
     }
   }
@@ -333,8 +339,8 @@ class VideoDocumentationManager {
       totalSize: number;
     };
   } {
-    const recordingsToExport = recordingIds 
-      ? this.recordings.filter(r => recordingIds.includes(r.id))
+    const recordingsToExport = recordingIds
+      ? this.recordings.filter((r) => recordingIds.includes(r.id))
       : [...this.recordings];
 
     const metadata = {
@@ -358,24 +364,34 @@ class VideoDocumentationManager {
     totalDuration: number;
     totalSize: number;
     averageDuration: number;
-    recordingsByType: Record<VideoRecord['type'], number>;
-    recordingsByQuality: Record<VideoRecord['quality'], number>;
+    recordingsByType: Record<VideoRecord["type"], number>;
+    recordingsByQuality: Record<VideoRecord["quality"], number>;
     storageUsage: number;
   } {
     const totalRecordings = this.recordings.length;
-    const totalDuration = this.recordings.reduce((sum, r) => sum + r.duration, 0);
+    const totalDuration = this.recordings.reduce(
+      (sum, r) => sum + r.duration,
+      0,
+    );
     const totalSize = this.recordings.reduce((sum, r) => sum + r.fileSize, 0);
-    const averageDuration = totalRecordings > 0 ? totalDuration / totalRecordings : 0;
+    const averageDuration =
+      totalRecordings > 0 ? totalDuration / totalRecordings : 0;
 
-    const recordingsByType = this.recordings.reduce((acc, r) => {
-      acc[r.type] = (acc[r.type] || 0) + 1;
-      return acc;
-    }, {} as Record<VideoRecord['type'], number>);
+    const recordingsByType = this.recordings.reduce(
+      (acc, r) => {
+        acc[r.type] = (acc[r.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<VideoRecord["type"], number>,
+    );
 
-    const recordingsByQuality = this.recordings.reduce((acc, r) => {
-      acc[r.quality] = (acc[r.quality] || 0) + 1;
-      return acc;
-    }, {} as Record<VideoRecord['quality'], number>);
+    const recordingsByQuality = this.recordings.reduce(
+      (acc, r) => {
+        acc[r.quality] = (acc[r.quality] || 0) + 1;
+        return acc;
+      },
+      {} as Record<VideoRecord["quality"], number>,
+    );
 
     const storageUsage = totalSize;
     const maxStorage = this.config.maxFileSize * 100; // Limite simulado
@@ -403,7 +419,10 @@ class VideoDocumentationManager {
       return { isRecording: false };
     }
 
-    const remainingTime = Math.max(0, this.config.maxDuration - this.currentRecording.duration);
+    const remainingTime = Math.max(
+      0,
+      this.config.maxDuration - this.currentRecording.duration,
+    );
 
     return {
       isRecording: true,
@@ -416,8 +435,10 @@ class VideoDocumentationManager {
    * Limpa gravações antigas
    */
   async cleanupOldRecordings(daysToKeep: number = 30): Promise<number> {
-    const cutoffDate = Date.now() - (daysToKeep * 24 * 60 * 60 * 1000);
-    const oldRecordings = this.recordings.filter(r => r.timestamp < cutoffDate);
+    const cutoffDate = Date.now() - daysToKeep * 24 * 60 * 60 * 1000;
+    const oldRecordings = this.recordings.filter(
+      (r) => r.timestamp < cutoffDate,
+    );
 
     for (const recording of oldRecordings) {
       await this.deleteRecording(recording.id);
@@ -438,10 +459,10 @@ class VideoDocumentationManager {
     this.recordingTimer = setInterval(() => {
       if (this.currentRecording) {
         this.currentRecording.duration += 1;
-        
+
         // Verifica se atingiu duração máxima
         if (this.currentRecording.duration >= this.config.maxDuration) {
-          console.log('⏰ Duração máxima atingida, parando gravação...');
+          console.log("⏰ Duração máxima atingida, parando gravação...");
           this.stopRecording().catch(console.error);
         }
       }
@@ -452,10 +473,10 @@ class VideoDocumentationManager {
    * Simula compressão de vídeo
    */
   private async simulateCompression(): Promise<void> {
-    return new Promise(resolve => {
-      console.log('🗜️ Comprimindo vídeo...');
+    return new Promise((resolve) => {
+      console.log("🗜️ Comprimindo vídeo...");
       setTimeout(() => {
-        console.log('✅ Vídeo comprimido');
+        console.log("✅ Vídeo comprimido");
         resolve();
       }, 2000);
     });
@@ -471,7 +492,7 @@ class VideoDocumentationManager {
     //   time: 1000,
     // });
     // return thumbnail.uri;
-    
+
     return `${videoUri}_thumbnail.jpg`;
   }
 
@@ -480,8 +501,8 @@ class VideoDocumentationManager {
    */
   private async uploadVideo(recording: VideoRecord): Promise<void> {
     try {
-      console.log('☁️ Fazendo upload do vídeo...');
-      
+      console.log("☁️ Fazendo upload do vídeo...");
+
       // Simulação de upload
       // Na implementação real:
       // const formData = new FormData();
@@ -494,12 +515,11 @@ class VideoDocumentationManager {
       //   method: 'POST',
       //   body: formData,
       // });
-      
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      console.log('✅ Upload concluído');
 
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      console.log("✅ Upload concluído");
     } catch (error) {
-      console.error('❌ Erro no upload:', error);
+      console.error("❌ Erro no upload:", error);
       throw error;
     }
   }
@@ -526,7 +546,7 @@ class VideoDocumentationManager {
       clearInterval(this.recordingTimer);
       this.recordingTimer = null;
     }
-    
+
     this.isRecording = false;
     this.currentRecording = null;
   }

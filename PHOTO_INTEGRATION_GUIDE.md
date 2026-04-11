@@ -9,9 +9,11 @@ Este guia demonstra como integrar a funcionalidade de captura de fotos de pacote
 ## 🎯 Componentes Criados
 
 ### 1. **PackagePhotoCapture.tsx**
+
 Componente modal para capturar fotos dos pacotes.
 
 **Recursos:**
+
 - ✅ Interface de câmera nativa
 - ✅ Controles (flash, inverter câmera)
 - ✅ Preview e confirmar foto
@@ -19,9 +21,11 @@ Componente modal para capturar fotos dos pacotes.
 - ✅ Gerenciamento de permissões
 
 ### 2. **PackagePhotoGallery.tsx**
+
 Componente para visualizar todas as fotos capturadas em uma sessão.
 
 **Recursos:**
+
 - ✅ Grid de fotos
 - ✅ Visualização em destaque
 - ✅ Deletar foto individual
@@ -29,19 +33,21 @@ Componente para visualizar todas as fotos capturadas em uma sessão.
 - ✅ Exportar PDF com fotos
 
 ### 3. **photoStorage.ts**
+
 Utilitário para gerenciar armazenamento de fotos.
 
 **Funções principais:**
+
 ```typescript
-- initPhotoStorage()           // Inicializa diretório
-- savePackagePhoto()           // Salva foto de pacote
-- getSessionPhotos()           // Obtém fotos da sessão
-- getPackagePhoto()            // Obtém foto específica
-- deletePackagePhoto()         // Deleta foto
-- deleteSessionPhotos()        // Deleta todas
-- photoToBase64()              // Converte para base64
-- getSessionPhotosSize()       // Calcula tamanho total
-- formatFileSize()             // Formata tamanho
+-initPhotoStorage() - // Inicializa diretório
+  savePackagePhoto() - // Salva foto de pacote
+  getSessionPhotos() - // Obtém fotos da sessão
+  getPackagePhoto() - // Obtém foto específica
+  deletePackagePhoto() - // Deleta foto
+  deleteSessionPhotos() - // Deleta todas
+  photoToBase64() - // Converte para base64
+  getSessionPhotosSize() - // Calcula tamanho total
+  formatFileSize(); // Formata tamanho
 ```
 
 ---
@@ -53,8 +59,8 @@ Utilitário para gerenciar armazenamento de fotos.
 No componente `ScannerView.tsx`, adicione:
 
 ```tsx
-import PackagePhotoCapture from '@/components/PackagePhotoCapture';
-import { savePackagePhoto } from '@/utils/photoStorage';
+import PackagePhotoCapture from "@/components/PackagePhotoCapture";
+import { savePackagePhoto } from "@/utils/photoStorage";
 
 export default function ScannerView({
   onScan,
@@ -65,11 +71,11 @@ export default function ScannerView({
   onEndSession,
 }: ScannerViewProps) {
   const [showPhotoCapture, setShowPhotoCapture] = useState(false);
-  const [photoCaptureCode, setPhotoCaptureCode] = useState('');
+  const [photoCaptureCode, setPhotoCaptureCode] = useState("");
 
   const handlePackageScanned = (pkg: ScannedPackage) => {
     const accepted = onScan(pkg);
-    
+
     // Perguntar se quer tirar foto após scan bem-sucedido
     if (accepted) {
       setPhotoCaptureCode(pkg.code);
@@ -83,33 +89,31 @@ export default function ScannerView({
       const savedPath = await savePackagePhoto(
         photoUri,
         photoCaptureCode,
-        sessionId // Use o ID da sessão atual
+        sessionId, // Use o ID da sessão atual
       );
-      
+
       // Atualizar o pacote com a URI da foto salva
-      const updatedPackages = packages.map(pkg => 
-        pkg.code === photoCaptureCode 
-          ? { ...pkg, photoUri: savedPath }
-          : pkg
+      const updatedPackages = packages.map((pkg) =>
+        pkg.code === photoCaptureCode ? { ...pkg, photoUri: savedPath } : pkg,
       );
-      
+
       // Se tiver callback para atualizar pacotes, use aqui
-      console.log('Foto salva em:', savedPath);
+      console.log("Foto salva em:", savedPath);
     } catch (error) {
-      console.error('Erro ao salvar foto:', error);
+      console.error("Erro ao salvar foto:", error);
     }
   };
 
   return (
     <View>
       {/* Seu ScannerView existente */}
-      
+
       {/* Adicionar modal de captura de foto */}
       <PackagePhotoCapture
         visible={showPhotoCapture}
         onClose={() => {
           setShowPhotoCapture(false);
-          setPhotoCaptureCode('');
+          setPhotoCaptureCode("");
         }}
         onPhotoCapture={handlePhotoCapture}
         packageCode={photoCaptureCode}
@@ -124,45 +128,51 @@ export default function ScannerView({
 No componente `ReportView.tsx`, adicione:
 
 ```tsx
-import PackagePhotoGallery from '@/components/PackagePhotoGallery';
-import { exportSessionWithPhotosToPDF } from '@/utils/pdfExport';
+import PackagePhotoGallery from "@/components/PackagePhotoGallery";
+import { exportSessionWithPhotosToPDF } from "@/utils/pdfExport";
 
-export default function ReportView({ session, onNewSession, onViewHistory }: ReportViewProps) {
+export default function ReportView({
+  session,
+  onNewSession,
+  onViewHistory,
+}: ReportViewProps) {
   const [showPhotoGallery, setShowPhotoGallery] = useState(false);
 
   const handleExportWithPhotos = async () => {
     try {
       await exportSessionWithPhotosToPDF(session);
     } catch (error) {
-      console.error('Erro ao exportar PDF com fotos:', error);
+      console.error("Erro ao exportar PDF com fotos:", error);
     }
   };
 
   return (
     <View>
       {/* Seu ReportView existente */}
-      
+
       {/* Adicionar botão para ver fotos */}
       <TouchableOpacity
         onPress={() => setShowPhotoGallery(true)}
         style={{
-          width: '100%',
+          width: "100%",
           paddingVertical: 12,
           paddingHorizontal: 20,
           borderRadius: 10,
           borderWidth: 1.5,
           borderColor: colors.primary,
-          alignItems: 'center',
-          justifyContent: 'center',
+          alignItems: "center",
+          justifyContent: "center",
           marginBottom: 10,
         }}
       >
-        <Text style={{
-          color: colors.primary,
-          fontSize: 15,
-          fontWeight: '600',
-          letterSpacing: 0.3,
-        }}>
+        <Text
+          style={{
+            color: colors.primary,
+            fontSize: 15,
+            fontWeight: "600",
+            letterSpacing: 0.3,
+          }}
+        >
           📸 Ver Fotos ({countPackagesWithPhotos(session)} capturadas)
         </Text>
       </TouchableOpacity>
@@ -172,21 +182,23 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
         <TouchableOpacity
           onPress={handleExportWithPhotos}
           style={{
-            width: '100%',
+            width: "100%",
             paddingVertical: 12,
             paddingHorizontal: 20,
             borderRadius: 10,
             backgroundColor: colors.primary,
-            alignItems: 'center',
-            justifyContent: 'center',
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          <Text style={{
-            color: '#ffffff',
-            fontSize: 15,
-            fontWeight: '700',
-            letterSpacing: 0.3,
-          }}>
+          <Text
+            style={{
+              color: "#ffffff",
+              fontSize: 15,
+              fontWeight: "700",
+              letterSpacing: 0.3,
+            }}
+          >
             📄 Exportar PDF com Fotos
           </Text>
         </TouchableOpacity>
@@ -205,11 +217,11 @@ export default function ReportView({ session, onNewSession, onViewHistory }: Rep
 
 // Funções auxiliares
 function countPackagesWithPhotos(session: Session): number {
-  return session.packages.filter(pkg => pkg.photoUri).length;
+  return session.packages.filter((pkg) => pkg.photoUri).length;
 }
 
 function hasPhotos(session: Session): boolean {
-  return session.packages.some(pkg => pkg.photoUri);
+  return session.packages.some((pkg) => pkg.photoUri);
 }
 ```
 
@@ -241,6 +253,7 @@ function hasPhotos(session: Session): boolean {
 ## 📁 Estrutura de Armazenamento
 
 As fotos são salvas em:
+
 ```
 /Documents/package-photos/
 ├── sessionId_packageCode_timestamp.jpg
@@ -256,7 +269,7 @@ As fotos são salvas em:
 ✅ **Performance**: Conversão lazy para base64 apenas ao exportar  
 ✅ **Armazenamento**: Estrutura organizada por sessão  
 ✅ **Limpeza**: Função para deletar fotos de sessão concluída  
-✅ **Estatísticas**: Cálculo de tamanho total e cobertura  
+✅ **Estatísticas**: Cálculo de tamanho total e cobertura
 
 ---
 
@@ -298,14 +311,17 @@ Adicione as permissões necessárias:
 ## 🐛 Troubleshooting
 
 ### Foto não salva
+
 - Verificar permissão de armazenamento
 - Verificar espaço disponível no dispositivo
 
 ### Modal não abre
+
 - Verificar se `visible` é `true`
 - Verificar permissão de câmera
 
 ### PDF não inclui fotos
+
 - Executar `exportSessionWithPhotosToPDF` ao invés de `exportSessionToPDF`
 - Certificar que fotos estão salvas
 
@@ -316,14 +332,14 @@ Adicione as permissões necessárias:
 ```tsx
 // No MainLayout ou componente pai
 
-const [sessionId, setSessionId] = useState('');
+const [sessionId, setSessionId] = useState("");
 const [showPhotoModal, setShowPhotoModal] = useState(false);
-const [photoPackageCode, setPhotoPackageCode] = useState('');
+const [photoPackageCode, setPhotoPackageCode] = useState("");
 
 const handleNewPackageScanned = async (pkg: ScannedPackage) => {
   // Lógica existente
   const accepted = addPackage(pkg);
-  
+
   // Novo: Solicitar foto
   if (accepted) {
     setPhotoPackageCode(pkg.code);
@@ -336,21 +352,21 @@ const handlePhotoCapture = async (photoUri: string) => {
     const savedUri = await savePackagePhoto(
       photoUri,
       photoPackageCode,
-      sessionId
+      sessionId,
     );
-    
+
     // Atualizar pacote com foto
     updatePackagePhoto(photoPackageCode, savedUri);
     setShowPhotoModal(false);
   } catch (error) {
-    Alert.alert('Erro', 'Não foi possível salvar a foto');
+    Alert.alert("Erro", "Não foi possível salvar a foto");
   }
 };
 
 return (
   <View>
     <ScannerView onScan={handleNewPackageScanned} />
-    
+
     <PackagePhotoCapture
       visible={showPhotoModal}
       packageCode={photoPackageCode}

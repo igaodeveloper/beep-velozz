@@ -1,8 +1,11 @@
-import React from 'react';
-import { View, useWindowDimensions } from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
-import { useResponsive } from '@/utils/useResponsive';
-import HeaderNavigation, { HeaderVariant, HeaderSize } from './HeaderNavigation';
+import React from "react";
+import { View, useWindowDimensions } from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
+import { useResponsive } from "@/utils/useResponsive";
+import HeaderNavigation, {
+  HeaderVariant,
+  HeaderSize,
+} from "./HeaderNavigation";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -28,14 +31,14 @@ interface MainLayoutProps {
   notificationCount?: number;
 }
 
-export default function MainLayout({ 
-  children, 
+export default function MainLayout({
+  children,
   maxWidth = 640,
   showHeader = false,
   headerTitle,
   headerSubtitle,
-  headerVariant = 'default',
-  headerSize = 'md',
+  headerVariant = "default",
+  headerSize = "md",
   onBackPress,
   onMenuPress,
   onSearchPress,
@@ -53,11 +56,13 @@ export default function MainLayout({
 }: MainLayoutProps) {
   const { colors } = useAppTheme();
   const responsive = useResponsive();
-  
+
   // Ajustar maxWidth baseado no dispositivo
-  const adjustedMaxWidth = responsive.isTablet ? responsive.maxWidth.xl : 
-                          responsive.isUltraWide ? responsive.maxWidth.lg :
-                          responsive.maxWidth.md;
+  const adjustedMaxWidth = responsive.isTablet
+    ? responsive.maxWidth.xl
+    : responsive.isUltraWide
+      ? responsive.maxWidth.lg
+      : responsive.maxWidth.md;
   const containerWidth = Math.min(responsive.screenWidth, adjustedMaxWidth);
 
   return (
@@ -65,15 +70,17 @@ export default function MainLayout({
       style={{
         flex: 1,
         backgroundColor: colors.bg,
-        alignItems: 'center',
+        alignItems: "center",
       }}
     >
       <View
         style={{
           flex: 1,
           width: containerWidth,
-          alignSelf: 'center',
-          paddingHorizontal: responsive.isTablet ? responsive.padding.lg : responsive.padding.md,
+          alignSelf: "center",
+          paddingHorizontal: responsive.isTablet
+            ? responsive.padding.lg
+            : responsive.padding.md,
         }}
       >
         {showHeader && (

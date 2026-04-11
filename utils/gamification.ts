@@ -3,20 +3,20 @@
  * Sistema de gamificação para engajamento e motivação de operadores
  */
 
-import { Session, OperatorStats } from '@/types/session';
-import { PackageType } from '@/types/scanner';
+import { Session, OperatorStats } from "@/types/session";
+import { PackageType } from "@/types/scanner";
 
 export interface Achievement {
   id: string;
   title: string;
   description: string;
   icon: string;
-  category: 'speed' | 'accuracy' | 'consistency' | 'milestone' | 'special';
+  category: "speed" | "accuracy" | "consistency" | "milestone" | "special";
   points: number;
   unlockedAt?: number;
   progress: number;
   maxProgress: number;
-  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  rarity: "common" | "rare" | "epic" | "legendary";
 }
 
 export interface LeaderboardEntry {
@@ -36,7 +36,12 @@ export interface LeaderboardEntry {
 
 export interface GamificationEvent {
   id: string;
-  type: 'session_complete' | 'milestone_reached' | 'achievement_unlocked' | 'streak_maintained' | 'speed_record';
+  type:
+    | "session_complete"
+    | "milestone_reached"
+    | "achievement_unlocked"
+    | "streak_maintained"
+    | "speed_record";
   operatorId: string;
   points: number;
   message: string;
@@ -85,177 +90,177 @@ class GamificationEngine {
     this.achievements = [
       // Conquistas de Velocidade
       {
-        id: 'speed_demon',
-        title: '🚀 Demônio da Velocidade',
-        description: 'Escaneie 100 pacotes em menos de 5 minutos',
-        icon: 'flash',
-        category: 'speed',
+        id: "speed_demon",
+        title: "🚀 Demônio da Velocidade",
+        description: "Escaneie 100 pacotes em menos de 5 minutos",
+        icon: "flash",
+        category: "speed",
         points: 500,
         progress: 0,
         maxProgress: 100,
-        rarity: 'rare',
+        rarity: "rare",
       },
       {
-        id: 'lightning_fast',
-        title: '⚡ Veloz como um Relâmpago',
-        description: 'Mantenha média de 20+ pacotes/minuto',
-        icon: 'bolt',
-        category: 'speed',
+        id: "lightning_fast",
+        title: "⚡ Veloz como um Relâmpago",
+        description: "Mantenha média de 20+ pacotes/minuto",
+        icon: "bolt",
+        category: "speed",
         points: 300,
         progress: 0,
         maxProgress: 1,
-        rarity: 'common',
+        rarity: "common",
       },
       {
-        id: 'speed_master',
-        title: '💨 Mestre da Velocidade',
-        description: 'Alcance 30 pacotes/minuto em uma sessão',
-        icon: 'wind',
-        category: 'speed',
+        id: "speed_master",
+        title: "💨 Mestre da Velocidade",
+        description: "Alcance 30 pacotes/minuto em uma sessão",
+        icon: "wind",
+        category: "speed",
         points: 1000,
         progress: 0,
         maxProgress: 1,
-        rarity: 'epic',
+        rarity: "epic",
       },
 
       // Conquistas de Precisão
       {
-        id: 'perfectionist',
-        title: '🎯 Perfeccionista',
-        description: 'Complete 10 sessões sem divergências',
-        icon: 'target',
-        category: 'accuracy',
+        id: "perfectionist",
+        title: "🎯 Perfeccionista",
+        description: "Complete 10 sessões sem divergências",
+        icon: "target",
+        category: "accuracy",
         points: 750,
         progress: 0,
         maxProgress: 10,
-        rarity: 'rare',
+        rarity: "rare",
       },
       {
-        id: 'eagle_eye',
-        title: '🦅 Olho de Águia',
-        description: 'Alcance 99% de acurácia em 50 sessões',
-        icon: 'eye',
-        category: 'accuracy',
+        id: "eagle_eye",
+        title: "🦅 Olho de Águia",
+        description: "Alcance 99% de acurácia em 50 sessões",
+        icon: "eye",
+        category: "accuracy",
         points: 600,
         progress: 0,
         maxProgress: 50,
-        rarity: 'epic',
+        rarity: "epic",
       },
       {
-        id: 'flawless',
-        title: '💎 Impecável',
-        description: '100 sessões consecutivas sem erros',
-        icon: 'diamond',
-        category: 'accuracy',
+        id: "flawless",
+        title: "💎 Impecável",
+        description: "100 sessões consecutivas sem erros",
+        icon: "diamond",
+        category: "accuracy",
         points: 2000,
         progress: 0,
         maxProgress: 100,
-        rarity: 'legendary',
+        rarity: "legendary",
       },
 
       // Conquistas de Consistência
       {
-        id: 'daily_hustler',
-        title: '📅 Trabalhador Diário',
-        description: 'Complete sessões por 7 dias consecutivos',
-        icon: 'calendar',
-        category: 'consistency',
+        id: "daily_hustler",
+        title: "📅 Trabalhador Diário",
+        description: "Complete sessões por 7 dias consecutivos",
+        icon: "calendar",
+        category: "consistency",
         points: 400,
         progress: 0,
         maxProgress: 7,
-        rarity: 'common',
+        rarity: "common",
       },
       {
-        id: 'marathon_runner',
-        title: '🏃 Maratonista',
-        description: 'Mantenha streak de 30 dias',
-        icon: 'medal',
-        category: 'consistency',
+        id: "marathon_runner",
+        title: "🏃 Maratonista",
+        description: "Mantenha streak de 30 dias",
+        icon: "medal",
+        category: "consistency",
         points: 1500,
         progress: 0,
         maxProgress: 30,
-        rarity: 'epic',
+        rarity: "epic",
       },
       {
-        id: 'iron_will',
-        title: '🛡️ Vontade de Ferro',
-        description: '365 dias de atividade consecutivos',
-        icon: 'shield',
-        category: 'consistency',
+        id: "iron_will",
+        title: "🛡️ Vontade de Ferro",
+        description: "365 dias de atividade consecutivos",
+        icon: "shield",
+        category: "consistency",
         points: 5000,
         progress: 0,
         maxProgress: 365,
-        rarity: 'legendary',
+        rarity: "legendary",
       },
 
       // Conquistas de Marco
       {
-        id: 'first_1000',
-        title: '🎉 Primeiro Mil',
-        description: 'Escaneie seu pacote número 1000',
-        icon: 'trophy',
-        category: 'milestone',
+        id: "first_1000",
+        title: "🎉 Primeiro Mil",
+        description: "Escaneie seu pacote número 1000",
+        icon: "trophy",
+        category: "milestone",
         points: 200,
         progress: 0,
         maxProgress: 1000,
-        rarity: 'common',
+        rarity: "common",
       },
       {
-        id: 'pack_master',
-        title: '📦 Mestre dos Pacotes',
-        description: 'Escaneie 10.000 pacotes',
-        icon: 'package',
-        category: 'milestone',
+        id: "pack_master",
+        title: "📦 Mestre dos Pacotes",
+        description: "Escaneie 10.000 pacotes",
+        icon: "package",
+        category: "milestone",
         points: 800,
         progress: 0,
         maxProgress: 10000,
-        rarity: 'rare',
+        rarity: "rare",
       },
       {
-        id: 'legend',
-        title: '👑 Lenda',
-        description: 'Escaneie 100.000 pacotes',
-        icon: 'crown',
-        category: 'milestone',
+        id: "legend",
+        title: "👑 Lenda",
+        description: "Escaneie 100.000 pacotes",
+        icon: "crown",
+        category: "milestone",
         points: 3000,
         progress: 0,
         maxProgress: 100000,
-        rarity: 'legendary',
+        rarity: "legendary",
       },
 
       // Conquistas Especiais
       {
-        id: 'variety_king',
-        title: '🌂 Rei da Variedade',
-        description: 'Escaneie todos os tipos de pacotes em uma sessão',
-        icon: 'umbrella',
-        category: 'special',
+        id: "variety_king",
+        title: "🌂 Rei da Variedade",
+        description: "Escaneie todos os tipos de pacotes em uma sessão",
+        icon: "umbrella",
+        category: "special",
         points: 350,
         progress: 0,
         maxProgress: 3,
-        rarity: 'rare',
+        rarity: "rare",
       },
       {
-        id: 'night_owl',
-        title: '🦉 Coruja Noturna',
-        description: 'Complete 10 sessões durante a noite',
-        icon: 'moon',
-        category: 'special',
+        id: "night_owl",
+        title: "🦉 Coruja Noturna",
+        description: "Complete 10 sessões durante a noite",
+        icon: "moon",
+        category: "special",
         points: 450,
         progress: 0,
         maxProgress: 10,
-        rarity: 'rare',
+        rarity: "rare",
       },
       {
-        id: 'early_bird',
-        title: '🐦 Pássaro Matinal',
-        description: 'Complete 10 sessões antes das 8h',
-        icon: 'sunny',
-        category: 'special',
+        id: "early_bird",
+        title: "🐦 Pássaro Matinal",
+        description: "Complete 10 sessões antes das 8h",
+        icon: "sunny",
+        category: "special",
         points: 450,
         progress: 0,
         maxProgress: 10,
-        rarity: 'rare',
+        rarity: "rare",
       },
     ];
   }
@@ -285,18 +290,21 @@ class GamificationEngine {
 
     // Calcula pontos básicos
     const basePoints = session.packages.length * this.config.pointsPerPackage;
-    
+
     // Bônus de velocidade
-    const sessionDuration = session.completedAt 
-      ? (new Date(session.completedAt).getTime() - new Date(session.startedAt).getTime()) / (1000 * 60)
+    const sessionDuration = session.completedAt
+      ? (new Date(session.completedAt).getTime() -
+          new Date(session.startedAt).getTime()) /
+        (1000 * 60)
       : 0;
-    const speedBonus = sessionDuration > 0 && sessionDuration < 10 
-      ? basePoints * this.config.speedBonusMultiplier 
-      : 0;
+    const speedBonus =
+      sessionDuration > 0 && sessionDuration < 10
+        ? basePoints * this.config.speedBonusMultiplier
+        : 0;
 
     // Bônus de acurácia
-    const accuracyBonus = !session.hasDivergence 
-      ? basePoints * this.config.accuracyBonusMultiplier 
+    const accuracyBonus = !session.hasDivergence
+      ? basePoints * this.config.accuracyBonusMultiplier
       : 0;
 
     // Bônus de streak
@@ -308,17 +316,19 @@ class GamificationEngine {
     operatorStats.totalPackages += session.packages.length;
     operatorStats.totalSessions += 1;
     operatorStats.totalPoints += totalPoints;
-    
+
     if (sessionDuration > 0) {
-      operatorStats.speedRecords.push(session.packages.length / sessionDuration);
+      operatorStats.speedRecords.push(
+        session.packages.length / sessionDuration,
+      );
     }
-    
+
     operatorStats.accuracyHistory.push(session.hasDivergence ? 0 : 1);
 
     // Gera eventos
     events.push({
       id: `session_${session.id}_${Date.now()}`,
-      type: 'session_complete',
+      type: "session_complete",
       operatorId,
       points: totalPoints,
       message: `Sessão completa! +${totalPoints} pontos`,
@@ -333,10 +343,10 @@ class GamificationEngine {
 
     // Verifica conquistas
     const unlockedAchievements = this.checkAchievements(operatorId, session);
-    unlockedAchievements.forEach(achievement => {
+    unlockedAchievements.forEach((achievement) => {
       events.push({
         id: `achievement_${achievement.id}_${Date.now()}`,
-        type: 'achievement_unlocked',
+        type: "achievement_unlocked",
         operatorId,
         points: achievement.points,
         message: `🏆 Conquista desbloqueada: ${achievement.title}! +${achievement.points} pontos`,
@@ -346,7 +356,7 @@ class GamificationEngine {
     });
 
     // Verifica marcos
-    this.checkMilestones(operatorId, session).forEach(milestone => {
+    this.checkMilestones(operatorId, session).forEach((milestone) => {
       events.push(milestone);
     });
 
@@ -369,7 +379,7 @@ class GamificationEngine {
     }
 
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
-    
+
     if (lastActive === yesterday) {
       operatorStats.streak += 1;
     } else if (lastActive !== today) {
@@ -379,7 +389,11 @@ class GamificationEngine {
     operatorStats.lastActiveDate = today;
 
     if (operatorStats.streak >= 7) {
-      return this.config.pointsPerPackage * session.packages.length * this.config.streakBonusMultiplier;
+      return (
+        this.config.pointsPerPackage *
+        session.packages.length *
+        this.config.streakBonusMultiplier
+      );
     }
 
     return 0;
@@ -388,20 +402,25 @@ class GamificationEngine {
   /**
    * Verifica conquistas desbloqueadas
    */
-  private checkAchievements(operatorId: string, session: Session): Achievement[] {
+  private checkAchievements(
+    operatorId: string,
+    session: Session,
+  ): Achievement[] {
     const operatorStats = this.operatorData.get(operatorId);
     const unlocked: Achievement[] = [];
 
-    this.achievements.forEach(achievement => {
+    this.achievements.forEach((achievement) => {
       if (operatorStats.achievements.includes(achievement.id)) return;
 
       let progress = 0;
       let shouldUnlock = false;
 
       switch (achievement.id) {
-        case 'speed_demon':
-          const duration = session.completedAt 
-            ? (new Date(session.completedAt).getTime() - new Date(session.startedAt).getTime()) / (1000 * 60)
+        case "speed_demon":
+          const duration = session.completedAt
+            ? (new Date(session.completedAt).getTime() -
+                new Date(session.startedAt).getTime()) /
+              (1000 * 60)
             : 0;
           if (duration > 0 && duration < 5 && session.packages.length >= 100) {
             shouldUnlock = true;
@@ -409,34 +428,41 @@ class GamificationEngine {
           progress = Math.min(session.packages.length, achievement.maxProgress);
           break;
 
-        case 'lightning_fast':
-          const avgSpeed = operatorStats.speedRecords.length > 0
-            ? operatorStats.speedRecords.reduce((sum: number, speed: number) => sum + speed, 0) / operatorStats.speedRecords.length
-            : 0;
+        case "lightning_fast":
+          const avgSpeed =
+            operatorStats.speedRecords.length > 0
+              ? operatorStats.speedRecords.reduce(
+                  (sum: number, speed: number) => sum + speed,
+                  0,
+                ) / operatorStats.speedRecords.length
+              : 0;
           if (avgSpeed >= 20) {
             shouldUnlock = true;
           }
           progress = avgSpeed >= 20 ? 1 : avgSpeed / 20;
           break;
 
-        case 'perfectionist':
-          const perfectSessions = operatorStats.accuracyHistory.filter((a: number) => a === 1).length;
+        case "perfectionist":
+          const perfectSessions = operatorStats.accuracyHistory.filter(
+            (a: number) => a === 1,
+          ).length;
           progress = perfectSessions;
           shouldUnlock = perfectSessions >= 10;
           break;
 
-        case 'first_1000':
+        case "first_1000":
           progress = operatorStats.totalPackages;
           shouldUnlock = operatorStats.totalPackages >= 1000;
           break;
 
-        case 'daily_hustler':
+        case "daily_hustler":
           progress = operatorStats.streak;
           shouldUnlock = operatorStats.streak >= 7;
           break;
 
-        case 'variety_king':
-          const packageTypes = new Set(session.packages.map(p => p.type)).size;
+        case "variety_king":
+          const packageTypes = new Set(session.packages.map((p) => p.type))
+            .size;
           progress = packageTypes;
           shouldUnlock = packageTypes >= 3;
           break;
@@ -459,31 +485,38 @@ class GamificationEngine {
   /**
    * Verifica marcos especiais
    */
-  private checkMilestones(operatorId: string, session: Session): GamificationEvent[] {
+  private checkMilestones(
+    operatorId: string,
+    session: Session,
+  ): GamificationEvent[] {
     const events: GamificationEvent[] = [];
     const operatorStats = this.operatorData.get(operatorId);
 
     // Marco de pacotes
     const milestones = [100, 500, 1000, 5000, 10000, 50000];
-    milestones.forEach(milestone => {
+    milestones.forEach((milestone) => {
       if (operatorStats.totalPackages === milestone) {
         events.push({
           id: `milestone_packages_${milestone}_${Date.now()}`,
-          type: 'milestone_reached',
+          type: "milestone_reached",
           operatorId,
           points: milestone * 2,
           message: `🎉 Marco alcançado: ${milestone} pacotes! +${milestone * 2} pontos`,
           timestamp: Date.now(),
-          metadata: { type: 'packages', value: milestone },
+          metadata: { type: "packages", value: milestone },
         });
       }
     });
 
     // Marco de streak
-    if (operatorStats.streak === 30 || operatorStats.streak === 100 || operatorStats.streak === 365) {
+    if (
+      operatorStats.streak === 30 ||
+      operatorStats.streak === 100 ||
+      operatorStats.streak === 365
+    ) {
       events.push({
         id: `milestone_streak_${operatorStats.streak}_${Date.now()}`,
-        type: 'streak_maintained',
+        type: "streak_maintained",
         operatorId,
         points: operatorStats.streak * 10,
         message: `🔥 Streak de ${operatorStats.streak} dias! +${operatorStats.streak * 10} pontos`,
@@ -502,13 +535,20 @@ class GamificationEngine {
     const entries: LeaderboardEntry[] = [];
 
     this.operatorData.forEach((stats, operatorId) => {
-      const avgSpeed = stats.speedRecords.length > 0
-        ? stats.speedRecords.reduce((sum: number, speed: number) => sum + speed, 0) / stats.speedRecords.length
-        : 0;
+      const avgSpeed =
+        stats.speedRecords.length > 0
+          ? stats.speedRecords.reduce(
+              (sum: number, speed: number) => sum + speed,
+              0,
+            ) / stats.speedRecords.length
+          : 0;
 
-      const accuracy = stats.accuracyHistory.length > 0
-        ? (stats.accuracyHistory.filter((a: number) => a === 1).length / stats.accuracyHistory.length) * 100
-        : 0;
+      const accuracy =
+        stats.accuracyHistory.length > 0
+          ? (stats.accuracyHistory.filter((a: number) => a === 1).length /
+              stats.accuracyHistory.length) *
+            100
+          : 0;
 
       entries.push({
         operatorId,
@@ -549,23 +589,27 @@ class GamificationEngine {
     const operatorStats = this.operatorData.get(operatorId);
     if (!operatorStats) return [];
 
-    return this.achievements.filter(a => operatorStats.achievements.includes(a.id));
+    return this.achievements.filter((a) =>
+      operatorStats.achievements.includes(a.id),
+    );
   }
 
   /**
    * Obtém estatísticas de um operador
    */
   getOperatorStats(operatorId: string): any {
-    return this.operatorData.get(operatorId) || {
-      totalPackages: 0,
-      totalSessions: 0,
-      totalPoints: 0,
-      streak: 0,
-      lastActiveDate: null,
-      achievements: [],
-      speedRecords: [],
-      accuracyHistory: [],
-    };
+    return (
+      this.operatorData.get(operatorId) || {
+        totalPackages: 0,
+        totalSessions: 0,
+        totalPoints: 0,
+        streak: 0,
+        lastActiveDate: null,
+        achievements: [],
+        speedRecords: [],
+        accuracyHistory: [],
+      }
+    );
   }
 
   /**
@@ -587,12 +631,18 @@ class GamificationEngine {
   /**
    * Calcula nível de um operador
    */
-  calculateOperatorLevel(operatorId: string): { level: number; currentXP: number; nextLevelXP: number; progress: number } {
+  calculateOperatorLevel(operatorId: string): {
+    level: number;
+    currentXP: number;
+    nextLevelXP: number;
+    progress: number;
+  } {
     const stats = this.getOperatorStats(operatorId);
     const totalPoints = stats.totalPoints;
 
     // Fórmula de nível: 1000 * level^1.5
-    const getXPForLevel = (level: number) => Math.floor(1000 * Math.pow(level, 1.5));
+    const getXPForLevel = (level: number) =>
+      Math.floor(1000 * Math.pow(level, 1.5));
 
     let level = 1;
     while (getXPForLevel(level + 1) <= totalPoints) {
@@ -610,7 +660,7 @@ class GamificationEngine {
    * Obtém ranking de um operador
    */
   getOperatorRank(operatorId: string): number {
-    const entry = this.leaderboard.find(e => e.operatorId === operatorId);
+    const entry = this.leaderboard.find((e) => e.operatorId === operatorId);
     return entry ? entry.rank : -1;
   }
 
@@ -621,7 +671,7 @@ class GamificationEngine {
     this.operatorData.clear();
     this.leaderboard = [];
     this.events = [];
-    this.achievements.forEach(a => {
+    this.achievements.forEach((a) => {
       a.progress = 0;
       a.unlockedAt = undefined;
     });

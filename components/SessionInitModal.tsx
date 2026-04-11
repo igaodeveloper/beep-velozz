@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,13 +12,13 @@ import {
   useWindowDimensions,
   Image,
   ActivityIndicator,
-} from 'react-native';
-import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
-import { useAppTheme } from '@/utils/useAppTheme';
-import { useResponsive } from '@/utils/useResponsive';
-import { MaterialIcons } from '@expo/vector-icons';
-import { Driver } from '@/services/firestore';
-import DriversSelector from '@/components/DriversSelector';
+} from "react-native";
+import Animated, { FadeInDown, FadeOutDown } from "react-native-reanimated";
+import { useAppTheme } from "@/utils/useAppTheme";
+import { useResponsive } from "@/utils/useResponsive";
+import { MaterialIcons } from "@expo/vector-icons";
+import { Driver } from "@/services/firestore";
+import DriversSelector from "@/components/DriversSelector";
 
 interface SessionInitModalProps {
   visible: boolean;
@@ -26,55 +26,63 @@ interface SessionInitModalProps {
     operatorName: string,
     driverName: string,
     declaredCounts: { shopee: number; mercadoLivre: number; avulso: number },
-    driverId?: string
+    driverId?: string,
   ) => void;
 }
 
-export default function SessionInitModal({ visible, onStart }: SessionInitModalProps) {
+export default function SessionInitModal({
+  visible,
+  onStart,
+}: SessionInitModalProps) {
   const { colors } = useAppTheme();
   const responsive = useResponsive();
 
-  const [operatorName, setOperatorName] = useState('');
+  const [operatorName, setOperatorName] = useState("");
   const [driverId, setDriverId] = useState<string | null>(null);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loadingDrivers, setLoadingDrivers] = useState(false);
-  const [shopeeCount, setShopeeCount] = useState('');
-  const [mercadoLivreCount, setMercadoLivreCount] = useState('');
-  const [avulsoCount, setAvulsoCount] = useState('');
+  const [shopeeCount, setShopeeCount] = useState("");
+  const [mercadoLivreCount, setMercadoLivreCount] = useState("");
+  const [avulsoCount, setAvulsoCount] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!operatorName.trim()) newErrors.operatorName = 'Campo obrigatório';
-    if (!driverId) newErrors.driverName = 'Campo obrigatório';
-    
+    if (!operatorName.trim()) newErrors.operatorName = "Campo obrigatório";
+    if (!driverId) newErrors.driverName = "Campo obrigatório";
+
     const shopee = Number(shopeeCount) || 0;
     const mercadoLivre = Number(mercadoLivreCount) || 0;
     const avulso = Number(avulsoCount) || 0;
     const total = shopee + mercadoLivre + avulso;
-    
+
     if (total < 1) {
-      newErrors.total = 'Informe pelo menos um pacote';
+      newErrors.total = "Informe pelo menos um pacote";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleStart = () => {
     if (!validate()) return;
-    const driverName = drivers.find(d => d.id === driverId)?.name || '';
+    const driverName = drivers.find((d) => d.id === driverId)?.name || "";
     const declaredCounts = {
       shopee: Number(shopeeCount) || 0,
       mercadoLivre: Number(mercadoLivreCount) || 0,
       avulso: Number(avulsoCount) || 0,
     };
-    onStart(operatorName.trim(), driverName, declaredCounts, driverId || undefined);
-    setOperatorName('');
+    onStart(
+      operatorName.trim(),
+      driverName,
+      declaredCounts,
+      driverId || undefined,
+    );
+    setOperatorName("");
     setDriverId(null);
-    setShopeeCount('');
-    setMercadoLivreCount('');
-    setAvulsoCount('');
+    setShopeeCount("");
+    setMercadoLivreCount("");
+    setAvulsoCount("");
     setErrors({});
   };
 
@@ -82,11 +90,11 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
     async function loadDrivers() {
       setLoadingDrivers(true);
       try {
-        const { fetchDriversWithCache } = await import('@/services/firestore');
+        const { fetchDriversWithCache } = await import("@/services/firestore");
         const list = await fetchDriversWithCache();
         setDrivers(list);
       } catch (e) {
-        console.warn('failed load drivers', e);
+        console.warn("failed load drivers", e);
       } finally {
         setLoadingDrivers(false);
       }
@@ -96,79 +104,96 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
 
   const handleAddDriver = async (name: string) => {
     try {
-      const { upsertDriver, fetchDriversWithCache } = await import('@/services/firestore');
+      const { upsertDriver, fetchDriversWithCache } =
+        await import("@/services/firestore");
       await upsertDriver({ name: name.trim(), active: true });
       const updated = await fetchDriversWithCache();
       setDrivers(updated);
     } catch (e) {
-      console.warn('failed to add driver', e);
+      console.warn("failed to add driver", e);
       throw e;
     }
   };
 
   const handleDeleteDriver = async (driverId: string) => {
     try {
-      const { deleteDriver, fetchDriversWithCache } = await import('@/services/firestore');
+      const { deleteDriver, fetchDriversWithCache } =
+        await import("@/services/firestore");
       await deleteDriver(driverId);
       const updated = await fetchDriversWithCache();
       setDrivers(updated);
     } catch (e) {
-      console.warn('failed to delete driver', e);
+      console.warn("failed to delete driver", e);
       throw e;
     }
   };
 
-
   return (
     <Modal visible={visible} transparent animationType="fade">
-      <SafeAreaView style={{ 
-        flex: 1, 
-        backgroundColor: 'rgba(0,0,0,0.85)', 
-        justifyContent: 'center', 
-        alignItems: 'center',
-        paddingBottom: 80 // Espaço para o navbar
-      }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.85)",
+          justifyContent: "center",
+          alignItems: "center",
+          paddingBottom: 80, // Espaço para o navbar
+        }}
+      >
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={{
-            width: '100%',
-            paddingHorizontal: responsive.isTablet ? responsive.padding.xl : responsive.padding.md,
+            width: "100%",
+            paddingHorizontal: responsive.isTablet
+              ? responsive.padding.xl
+              : responsive.padding.md,
             maxWidth: responsive.maxWidth.xxl,
-            alignSelf: 'center',
+            alignSelf: "center",
           }}
         >
           <ScrollView keyboardShouldPersistTaps="handled">
             {/* Header */}
-            <View style={{ alignItems: 'center', marginBottom: responsive.spacing.xxl, marginTop: responsive.padding.lg }}>
+            <View
+              style={{
+                alignItems: "center",
+                marginBottom: responsive.spacing.xxl,
+                marginTop: responsive.padding.lg,
+              }}
+            >
               {/* larger square container with no solid background and rounded corners */}
-              <View style={{
-                width: responsive.isTablet ? 140 : 120, 
-                height: responsive.isTablet ? 140 : 120, 
-                borderRadius: responsive.borderRadius.xxl,
-                backgroundColor: 'transparent', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                marginBottom: responsive.padding.md,
-                overflow: 'hidden' // ensure image respects corners
-              }}>
+              <View
+                style={{
+                  width: responsive.isTablet ? 140 : 120,
+                  height: responsive.isTablet ? 140 : 120,
+                  borderRadius: responsive.borderRadius.xxl,
+                  backgroundColor: "transparent",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: responsive.padding.md,
+                  overflow: "hidden", // ensure image respects corners
+                }}
+              >
                 <Image
-                  source={require('../assets/images/session.png')}
-                  style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
+                  source={require("../assets/images/session.png")}
+                  style={{ width: "100%", height: "100%", resizeMode: "cover" }}
                 />
               </View>
-              <Text style={{ 
-                color: colors.text, 
-                fontSize: responsive.fontSize.xxxl, 
-                fontWeight: '800', 
-                letterSpacing: 1 
-              }}>
+              <Text
+                style={{
+                  color: colors.text,
+                  fontSize: responsive.fontSize.xxxl,
+                  fontWeight: "800",
+                  letterSpacing: 1,
+                }}
+              >
                 beep velozz
               </Text>
-              <Text style={{ 
-                color: colors.textMuted, 
-                fontSize: responsive.fontSize.sm, 
-                marginTop: responsive.spacing.xs 
-              }}>
+              <Text
+                style={{
+                  color: colors.textMuted,
+                  fontSize: responsive.fontSize.sm,
+                  marginTop: responsive.spacing.xs,
+                }}
+              >
                 Preencha os dados antes de iniciar
               </Text>
             </View>
@@ -178,23 +203,27 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
               entering={FadeInDown.duration(320)}
               exiting={FadeOutDown.duration(220)}
               style={{
-                backgroundColor: colors.surface, 
+                backgroundColor: colors.surface,
                 borderRadius: responsive.borderRadius.xl,
-                borderWidth: 1, 
-                borderColor: colors.border, 
-                padding: responsive.isTablet ? responsive.padding.xl : responsive.padding.lg,
+                borderWidth: 1,
+                borderColor: colors.border,
+                padding: responsive.isTablet
+                  ? responsive.padding.xl
+                  : responsive.padding.lg,
               }}
             >
               {/* Operator Name */}
               <View style={{ marginBottom: responsive.padding.lg }}>
-                <Text style={{ 
-                  color: colors.textMuted, 
-                  fontSize: responsive.fontSize.xs, 
-                  fontWeight: '700', 
-                  letterSpacing: 1.5, 
-                  marginBottom: responsive.spacing.sm, 
-                  textTransform: 'uppercase' 
-                }}>
+                <Text
+                  style={{
+                    color: colors.textMuted,
+                    fontSize: responsive.fontSize.xs,
+                    fontWeight: "700",
+                    letterSpacing: 1.5,
+                    marginBottom: responsive.spacing.sm,
+                    textTransform: "uppercase",
+                  }}
+                >
                   Operador
                 </Text>
                 <TextInput
@@ -205,16 +234,22 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                   style={{
                     backgroundColor: colors.surface2,
                     borderWidth: 1,
-                    borderColor: errors.operatorName ? colors.danger : colors.border2,
+                    borderColor: errors.operatorName
+                      ? colors.danger
+                      : colors.border2,
                     borderRadius: responsive.borderRadius.md,
                     padding: responsive.padding.md,
                     color: colors.text,
                     fontSize: responsive.fontSize.md,
-                    fontWeight: '500',
+                    fontWeight: "500",
                   }}
                 />
                 {errors.operatorName && (
-                  <Text style={{ color: colors.danger, fontSize: 12, marginTop: 4 }}>{errors.operatorName}</Text>
+                  <Text
+                    style={{ color: colors.danger, fontSize: 12, marginTop: 4 }}
+                  >
+                    {errors.operatorName}
+                  </Text>
                 )}
               </View>
 
@@ -230,34 +265,38 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
 
               {/* Declared Counts */}
               <View style={{ marginBottom: responsive.padding.xxl }}>
-                <Text style={{ 
-                  color: colors.textMuted, 
-                  fontSize: responsive.fontSize.xs, 
-                  fontWeight: '700', 
-                  letterSpacing: 1.5, 
-                  marginBottom: responsive.padding.md, 
-                  textTransform: 'uppercase' 
-                }}>
+                <Text
+                  style={{
+                    color: colors.textMuted,
+                    fontSize: responsive.fontSize.xs,
+                    fontWeight: "700",
+                    letterSpacing: 1.5,
+                    marginBottom: responsive.padding.md,
+                    textTransform: "uppercase",
+                  }}
+                >
                   Qtd. Declarada por Tipo
                 </Text>
-                
+
                 <View
                   style={{
-                    flexDirection: 'row',
+                    flexDirection: "row",
                     gap: responsive.spacing.md,
                     marginBottom: responsive.padding.md,
                   }}
                 >
                   {/* Shopee */}
                   <View style={{ flex: 1 }}>
-                    <Text style={{ 
-                      color: '#fb923c', 
-                      fontSize: responsive.fontSize.xs, 
-                      fontWeight: '600', 
-                      marginBottom: responsive.spacing.sm, 
-                      textAlign: 'center', 
-                      textTransform: 'uppercase' 
-                    }}>
+                    <Text
+                      style={{
+                        color: "#fb923c",
+                        fontSize: responsive.fontSize.xs,
+                        fontWeight: "600",
+                        marginBottom: responsive.spacing.sm,
+                        textAlign: "center",
+                        textTransform: "uppercase",
+                      }}
+                    >
                       🟧 Shopee
                     </Text>
                     <TextInput
@@ -269,27 +308,31 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                       style={{
                         backgroundColor: colors.surface2,
                         borderWidth: 1,
-                        borderColor: errors.shopee ? colors.danger : colors.border2,
+                        borderColor: errors.shopee
+                          ? colors.danger
+                          : colors.border2,
                         borderRadius: responsive.borderRadius.md,
                         padding: responsive.padding.md,
                         color: colors.text,
                         fontSize: responsive.fontSize.xxl,
-                        fontWeight: '700',
-                        textAlign: 'center',
+                        fontWeight: "700",
+                        textAlign: "center",
                       }}
                     />
                   </View>
-                  
+
                   {/* Mercado Livre */}
                   <View style={{ flex: 1 }}>
-                    <Text style={{ 
-                      color: '#ffe600', 
-                      fontSize: responsive.fontSize.xs, 
-                      fontWeight: '600', 
-                      marginBottom: responsive.spacing.sm, 
-                      textAlign: 'center', 
-                      textTransform: 'uppercase' 
-                    }}>
+                    <Text
+                      style={{
+                        color: "#ffe600",
+                        fontSize: responsive.fontSize.xs,
+                        fontWeight: "600",
+                        marginBottom: responsive.spacing.sm,
+                        textAlign: "center",
+                        textTransform: "uppercase",
+                      }}
+                    >
                       🟨 Mercado Livre
                     </Text>
                     <TextInput
@@ -301,27 +344,31 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                       style={{
                         backgroundColor: colors.surface2,
                         borderWidth: 1,
-                        borderColor: errors.mercadoLivre ? colors.danger : colors.border2,
+                        borderColor: errors.mercadoLivre
+                          ? colors.danger
+                          : colors.border2,
                         borderRadius: responsive.borderRadius.md,
                         padding: responsive.padding.md,
                         color: colors.text,
                         fontSize: responsive.fontSize.xxl,
-                        fontWeight: '700',
-                        textAlign: 'center',
+                        fontWeight: "700",
+                        textAlign: "center",
                       }}
                     />
                   </View>
-                  
+
                   {/* Avulso */}
                   <View style={{ flex: 1 }}>
-                    <Text style={{ 
-                      color: colors.success, 
-                      fontSize: responsive.fontSize.xs, 
-                      fontWeight: '600', 
-                      marginBottom: responsive.spacing.sm, 
-                      textAlign: 'center', 
-                      textTransform: 'uppercase' 
-                    }}>
+                    <Text
+                      style={{
+                        color: colors.success,
+                        fontSize: responsive.fontSize.xs,
+                        fontWeight: "600",
+                        marginBottom: responsive.spacing.sm,
+                        textAlign: "center",
+                        textTransform: "uppercase",
+                      }}
+                    >
                       🟩 Avulso
                     </Text>
                     <TextInput
@@ -333,46 +380,65 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                       style={{
                         backgroundColor: colors.surface2,
                         borderWidth: 1,
-                        borderColor: errors.avulso ? colors.danger : colors.border2,
+                        borderColor: errors.avulso
+                          ? colors.danger
+                          : colors.border2,
                         borderRadius: responsive.borderRadius.md,
                         padding: responsive.padding.md,
                         color: colors.text,
                         fontSize: responsive.fontSize.xxl,
-                        fontWeight: '700',
-                        textAlign: 'center',
+                        fontWeight: "700",
+                        textAlign: "center",
                       }}
                     />
                   </View>
                 </View>
 
                 {/* Total */}
-                <View style={{
-                  backgroundColor: colors.surface2,
-                  borderRadius: responsive.borderRadius.md,
-                  padding: responsive.padding.md,
-                  borderWidth: 1,
-                  borderColor: colors.border2,
-                  alignItems: 'center',
-                }}>
-                  <Text style={{ 
-                    color: colors.textMuted, 
-                    fontSize: responsive.fontSize.xs, 
-                    fontWeight: '600', 
-                    marginBottom: responsive.spacing.xs 
-                  }}>
+                <View
+                  style={{
+                    backgroundColor: colors.surface2,
+                    borderRadius: responsive.borderRadius.md,
+                    padding: responsive.padding.md,
+                    borderWidth: 1,
+                    borderColor: colors.border2,
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: colors.textMuted,
+                      fontSize: responsive.fontSize.xs,
+                      fontWeight: "600",
+                      marginBottom: responsive.spacing.xs,
+                    }}
+                  >
                     TOTAL DECLARADO
                   </Text>
-                  <Text style={{ 
-                    color: colors.primary, 
-                    fontSize: responsive.fontSize.xxxl, 
-                    fontWeight: '800',
-                  }}>
-                    {(Number(shopeeCount) || 0) + (Number(mercadoLivreCount) || 0) + (Number(avulsoCount) || 0)}
+                  <Text
+                    style={{
+                      color: colors.primary,
+                      fontSize: responsive.fontSize.xxxl,
+                      fontWeight: "800",
+                    }}
+                  >
+                    {(Number(shopeeCount) || 0) +
+                      (Number(mercadoLivreCount) || 0) +
+                      (Number(avulsoCount) || 0)}
                   </Text>
                 </View>
-                
+
                 {errors.total && (
-                  <Text style={{ color: colors.danger, fontSize: 12, marginTop: 8, textAlign: 'center' }}>{errors.total}</Text>
+                  <Text
+                    style={{
+                      color: colors.danger,
+                      fontSize: 12,
+                      marginTop: 8,
+                      textAlign: "center",
+                    }}
+                  >
+                    {errors.total}
+                  </Text>
                 )}
               </View>
 
@@ -383,19 +449,23 @@ export default function SessionInitModal({ visible, onStart }: SessionInitModalP
                 style={{
                   backgroundColor: colors.primary,
                   borderRadius: responsive.borderRadius.md,
-                  padding: responsive.isTablet ? responsive.padding.xl : responsive.padding.lg,
-                  alignItems: 'center',
-                  width: '100%',
+                  padding: responsive.isTablet
+                    ? responsive.padding.xl
+                    : responsive.padding.lg,
+                  alignItems: "center",
+                  width: "100%",
                   maxWidth: responsive.maxWidth.xl,
-                  alignSelf: 'center',
+                  alignSelf: "center",
                 }}
               >
-                <Text style={{ 
-                  color: colors.secondary, 
-                  fontSize: responsive.fontSize.xl, 
-                  fontWeight: '800', 
-                  letterSpacing: 1 
-                }}>
+                <Text
+                  style={{
+                    color: colors.secondary,
+                    fontSize: responsive.fontSize.xl,
+                    fontWeight: "800",
+                    letterSpacing: 1,
+                  }}
+                >
                   INICIAR CONFERÊNCIA
                 </Text>
               </TouchableOpacity>

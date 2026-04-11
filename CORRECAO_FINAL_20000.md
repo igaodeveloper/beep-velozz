@@ -5,10 +5,11 @@
 **Culpado Principal**: Whitelist de códigos permitidos em `scannerController.ts`
 
 A variável `private allowedCodes?: Set<string>` estava sendo verificada em `processScan()` na linha 173:
+
 ```typescript
 if (this.allowedCodes && !this.allowedCodes.has(normalizedCode)) {
   // REJEITAVA o código se não estava na whitelist
-  return { success: false, reason: 'wrong_driver' };
+  return { success: false, reason: "wrong_driver" };
 }
 ```
 
@@ -17,16 +18,22 @@ Embora este método **nunca fosse chamado** (`setAllowedCodes()` nunca era invoc
 ## ✅ Solução Aplicada
 
 ### 1. Removido o Check de Whitelist
+
 **Arquivo**: `utils/scannerController.ts` (linhas 173-189)
+
 - Removido o bloco inteiro de verificação de `allowedCodes`
 - Códigos 20000 agora passam diretamente para identificação
 
 ### 2. Removida Propriedade Não Utilizada
+
 **Arquivo**: `utils/scannerController.ts` (linha 66)
+
 - `private allowedCodes?: Set<string>;` → Removida
 
 ### 3. Removido Método Órfão
+
 **Arquivo**: `utils/scannerController.ts` (linhas 109-111)
+
 - `public setAllowedCodes(codes: string[])` → Removida função inteira
 
 ## 🔧 Alterações Anteriores (Mantidas)
@@ -47,6 +54,7 @@ Além disso, as seguintes correções feitas anteriormente continuam ativas:
 ## ✅ Resultado Final
 
 Agora o scanner **ACEITA** todos esses códigos como Mercado Livre:
+
 - ✅ `20000`
 - ✅ `200001`
 - ✅ `20000123`
@@ -74,12 +82,12 @@ identifyPackage() → type: 'mercado_livre'
 
 ## 📊 Resumo de Arquivos Modificados
 
-| Arquivo | Mudança | Linha(s) |
-|---------|---------|----------|
-| `utils/scannerController.ts` | Removida whitelist | 63-189 |
-| `utils/advancedScanner.ts` | Regex flexível | 137 |
-| `src/utils/scannerParser.ts` | Regex flexível | 23 |
-| `utils/scannerIdentification.ts` | Prefixos únicos | 26-61 |
+| Arquivo                          | Mudança            | Linha(s) |
+| -------------------------------- | ------------------ | -------- |
+| `utils/scannerController.ts`     | Removida whitelist | 63-189   |
+| `utils/advancedScanner.ts`       | Regex flexível     | 137      |
+| `src/utils/scannerParser.ts`     | Regex flexível     | 23       |
+| `utils/scannerIdentification.ts` | Prefixos únicos    | 26-61    |
 
 ---
 

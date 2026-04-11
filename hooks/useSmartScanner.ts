@@ -3,11 +3,14 @@
  * Integra detecção de padrões, sugestões e aprendizado contínuo
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { PackageType } from '@/types/scanner';
-import { ScannedPackage } from '@/types/session';
-import { SmartSuggestion, PredictiveAnalysis } from '@/types/aiPatternRecognition';
-import { aiEngineService } from '@/services/aiEngineService';
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { PackageType } from "@/types/scanner";
+import { ScannedPackage } from "@/types/session";
+import {
+  SmartSuggestion,
+  PredictiveAnalysis,
+} from "@/types/aiPatternRecognition";
+import { aiEngineService } from "@/services/aiEngineService";
 
 interface UseSmartScannerOptions {
   sessionId: string;
@@ -66,41 +69,50 @@ export function useSmartScanner(options: UseSmartScannerOptions) {
 
     // Carregar insights do operador
     const insights = aiEngineService.getOperatorInsights();
-    setState(prev => ({ ...prev, operatorInsights: insights }));
-  }, [sessionId, operatorId, enablePatternDetection, enableSmartSuggestions, enableOperatorLearning]);
+    setState((prev) => ({ ...prev, operatorInsights: insights }));
+  }, [
+    sessionId,
+    operatorId,
+    enablePatternDetection,
+    enableSmartSuggestions,
+    enableOperatorLearning,
+  ]);
 
   // Processar novo scan
-  const processScan = useCallback(async (
-    code: string,
-    actualType: PackageType,
-    predictedType?: PackageType,
-    processingTime?: number
-  ) => {
-    setState(prev => ({ ...prev, isProcessing: true }));
+  const processScan = useCallback(
+    async (
+      code: string,
+      actualType: PackageType,
+      predictedType?: PackageType,
+      processingTime?: number,
+    ) => {
+      setState((prev) => ({ ...prev, isProcessing: true }));
 
-    try {
-      const result = await aiEngineService.processScan(
-        code,
-        actualType,
-        predictedType,
-        processingTime
-      );
+      try {
+        const result = await aiEngineService.processScan(
+          code,
+          actualType,
+          predictedType,
+          processingTime,
+        );
 
-      setState(prev => ({
-        ...prev,
-        currentSuggestions: result.suggestions,
-        detectedPatterns: result.patterns,
-        insights: result.insights,
-        isProcessing: false,
-      }));
+        setState((prev) => ({
+          ...prev,
+          currentSuggestions: result.suggestions,
+          detectedPatterns: result.patterns,
+          insights: result.insights,
+          isProcessing: false,
+        }));
 
-      return result;
-    } catch (error) {
-      console.error('Error processing scan:', error);
-      setState(prev => ({ ...prev, isProcessing: false }));
-      return null;
-    }
-  }, []);
+        return result;
+      } catch (error) {
+        console.error("Error processing scan:", error);
+        setState((prev) => ({ ...prev, isProcessing: false }));
+        return null;
+      }
+    },
+    [],
+  );
 
   // Prediz tipo de pacote
   const predictPackageType = useCallback((code: string) => {
@@ -110,19 +122,19 @@ export function useSmartScanner(options: UseSmartScannerOptions) {
   // Gera análise preditiva
   const generatePredictiveAnalysis = useCallback(() => {
     const analysis = aiEngineService.generatePredictiveAnalysis();
-    setState(prev => ({ ...prev, predictiveAnalysis: analysis }));
+    setState((prev) => ({ ...prev, predictiveAnalysis: analysis }));
     return analysis;
   }, []);
 
   // Atualiza insights do operador
   const refreshOperatorInsights = useCallback(() => {
     const insights = aiEngineService.getOperatorInsights();
-    setState(prev => ({ ...prev, operatorInsights: insights }));
+    setState((prev) => ({ ...prev, operatorInsights: insights }));
   }, []);
 
   // Limpa sugestões atuais
   const clearSuggestions = useCallback(() => {
-    setState(prev => ({ ...prev, currentSuggestions: [] }));
+    setState((prev) => ({ ...prev, currentSuggestions: [] }));
   }, []);
 
   // Obtém estado atual do motor
@@ -132,11 +144,13 @@ export function useSmartScanner(options: UseSmartScannerOptions) {
 
   // Memoizar valores computados
   const hasHighConfidenceSuggestions = useMemo(() => {
-    return state.currentSuggestions.some(s => s.confidence > 0.8);
+    return state.currentSuggestions.some((s) => s.confidence > 0.8);
   }, [state.currentSuggestions]);
 
   const topSuggestion = useMemo(() => {
-    return state.currentSuggestions.length > 0 ? state.currentSuggestions[0] : null;
+    return state.currentSuggestions.length > 0
+      ? state.currentSuggestions[0]
+      : null;
   }, [state.currentSuggestions]);
 
   const hasPatternsDetected = useMemo(() => {
@@ -167,9 +181,11 @@ export function useSmartScanner(options: UseSmartScannerOptions) {
 
     // Configuração
     configure: aiEngineService.configure.bind(aiEngineService),
-    
+
     // Exportação/Importação
-    exportLearningData: aiEngineService.exportLearningData.bind(aiEngineService),
-    importLearningData: aiEngineService.importLearningData.bind(aiEngineService),
+    exportLearningData:
+      aiEngineService.exportLearningData.bind(aiEngineService),
+    importLearningData:
+      aiEngineService.importLearningData.bind(aiEngineService),
   };
 }

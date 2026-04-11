@@ -5,19 +5,21 @@
 ### O que foi adicionado:
 
 1. **Estado de Controle**
+
    ```typescript
    const [showScanningPanel, setShowScanningPanel] = useState(true);
    ```
 
 2. **Animação Suave**
+
    ```typescript
    const panelSlideAnim = useSharedValue(0);
-   
+
    useEffect(() => {
-     panelSlideAnim.value = withTiming(
-       showScanningPanel ? 0 : 1, 
-       { duration: 300, easing: ReEasing.inOut(ReEasing.ease) }
-     );
+     panelSlideAnim.value = withTiming(showScanningPanel ? 0 : 1, {
+       duration: 300,
+       easing: ReEasing.inOut(ReEasing.ease),
+     });
    }, [showScanningPanel]);
    ```
 
@@ -35,18 +37,21 @@
 ### Como funciona:
 
 #### Estado Visível (Padrão):
+
 - ✅ Painel totalmente visível
 - ✅ Botão mostra ícone `eye-off`
 - ✅ Status "Escaneando Ativamente" visível
 - ✅ Grid de progresso e controles totalmente acessíveis
 
 #### Estado Oculto:
+
 - 🔄 Painel desliza para baixo (200-180px dependendo do dispositivo)
 - 🔄 Redução de escala e opacidade para efeito visual
 - 🔄 Botão mostra ícone `eye`
 - 🔄 Apenas o cabeçalho com status e botões permanece visível
 
 ### Localização:
+
 - **Arquivo**: `components/IndustrialScannerView.tsx`
 - **Linha**: ~887 (Animated.View do painel)
 - **Botão**: Linha ~977 (TouchableOpacity com ícone)
@@ -54,15 +59,18 @@
 ### Benefícios:
 
 ✅ **Experiência do usuário aprimorada**
+
 - Usuário pode focar apenas na câmera quando desejar
 - Painel não obstrui a visualização durante escaneamento intenso
 
 ✅ **Controle intuitivo**
+
 - Botão sempre acessível no cabeçalho
 - Ícones universais (eye/eye-off)
 - Feedback visual imediato
 
 ✅ **Performance otimizada**
+
 - Animações usando react-native-reanimated
 - 60fps garantido com useSharedValue
 - Transições suaves sem impactar o escaneamento
@@ -78,7 +86,7 @@ O painel começa visível por padrão. Para ocultar/mostrar:
 ### Compatibilidade:
 
 - ✅ **Smartphones**: Animação de 180px
-- ✅ **Tablets**: Animação de 200px  
+- ✅ **Tablets**: Animação de 200px
 - ✅ **Tema claro/escuro**: Botão adaptativo
 - ✅ **Orientações**: Funciona em portrait e landscape
 

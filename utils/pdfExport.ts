@@ -1,8 +1,8 @@
-﻿import { Session } from '@/types/session';
-import { getSessionMetrics } from './session';
-import { getSessionPhotos, photoToBase64 } from './photoStorage';
-import * as Print from 'expo-print';
-import { Share } from 'react-native';
+﻿import { Session } from "@/types/session";
+import { getSessionMetrics } from "./session";
+import { getSessionPhotos, photoToBase64 } from "./photoStorage";
+import * as Print from "expo-print";
+import { Share } from "react-native";
 
 /**
  * Gera HTML para um relatório PDF profissional, minimalista e moderno
@@ -12,9 +12,9 @@ function generateReportHTML(session: Session): string {
   const hasDivergence = session.hasDivergence;
   const divergenceValue = session.packages.length - session.declaredCount;
 
-  const statusBgColor = hasDivergence ? '#fef3c7' : '#d1fae5';
-  const statusTextColor = hasDivergence ? '#b45309' : '#065f46';
-  const statusIcon = hasDivergence ? '⚠️' : '✅';
+  const statusBgColor = hasDivergence ? "#fef3c7" : "#d1fae5";
+  const statusTextColor = hasDivergence ? "#b45309" : "#065f46";
+  const statusIcon = hasDivergence ? "⚠️" : "✅";
 
   return `
     <!DOCTYPE html>
@@ -329,11 +329,11 @@ function generateReportHTML(session: Session): string {
           <div class="icon">${statusIcon}</div>
           <div class="status-banner-text">
             <div class="status-banner-title">
-              ${hasDivergence ? 'Relatório com Divergência' : 'Conformidade Total'}
+              ${hasDivergence ? "Relatório com Divergência" : "Conformidade Total"}
             </div>
             <div class="status-banner-content">
               ${metrics.total} pacotes conferidos / ${session.declaredCount} declarados
-              ${hasDivergence ? `(Diferença: ${divergenceValue > 0 ? '+' : ''}${divergenceValue})` : ''}
+              ${hasDivergence ? `(Diferença: ${divergenceValue > 0 ? "+" : ""}${divergenceValue})` : ""}
             </div>
           </div>
         </div>
@@ -345,7 +345,7 @@ function generateReportHTML(session: Session): string {
             <div class="info-grid">
               <div class="info-item">
                 <div class="info-label">Data</div>
-                <div class="info-value">${new Date(session.startedAt).toLocaleDateString('pt-BR')}</div>
+                <div class="info-value">${new Date(session.startedAt).toLocaleDateString("pt-BR")}</div>
               </div>
               <div class="info-item">
                 <div class="info-label">Operador</div>
@@ -371,11 +371,11 @@ function generateReportHTML(session: Session): string {
               </div>
               <div class="summary-box-item">
                 <div class="summary-box-label">Valor Total</div>
-                <div class="summary-box-value">R$ ${metrics.valueTotal.toFixed(2).replace('.', ',')}</div>
+                <div class="summary-box-value">R$ ${metrics.valueTotal.toFixed(2).replace(".", ",")}</div>
               </div>
               <div class="summary-box-item">
                 <div class="summary-box-label">Conformidade</div>
-                <div class="summary-box-value">${hasDivergence ? ((metrics.total / session.declaredCount) * 100).toFixed(0) : '100'}%</div>
+                <div class="summary-box-value">${hasDivergence ? ((metrics.total / session.declaredCount) * 100).toFixed(0) : "100"}%</div>
               </div>
             </div>
           </div>
@@ -387,24 +387,25 @@ function generateReportHTML(session: Session): string {
               <div class="metric-card">
                 <div class="metric-label">🟠 Shopee</div>
                 <div class="metric-value">${metrics.shopee}</div>
-                <div class="metric-subtitle">R$ ${metrics.valueShopee.toFixed(2).replace('.', ',')}</div>
+                <div class="metric-subtitle">R$ ${metrics.valueShopee.toFixed(2).replace(".", ",")}</div>
               </div>
               <div class="metric-card">
                 <div class="metric-label">🟡 Mercado Livre</div>
                 <div class="metric-value">${metrics.mercadoLivre}</div>
-                <div class="metric-subtitle">R$ ${metrics.valueMercadoLivre.toFixed(2).replace('.', ',')}</div>
+                <div class="metric-subtitle">R$ ${metrics.valueMercadoLivre.toFixed(2).replace(".", ",")}</div>
               </div>
               <div class="metric-card">
                 <div class="metric-label">🔵 Avulsos</div>
                 <div class="metric-value">${metrics.avulsos}</div>
-                <div class="metric-subtitle">R$ ${metrics.valueAvulsos.toFixed(2).replace('.', ',')}</div>
+                <div class="metric-subtitle">R$ ${metrics.valueAvulsos.toFixed(2).replace(".", ",")}</div>
               </div>
             </div>
           </div>
           
           <!-- Listagem de Pacotes -->
-          ${session.packages.length > 0
-            ? `
+          ${
+            session.packages.length > 0
+              ? `
           <div class="section">
             <div class="section-title">Pacotes Conferenciados (${session.packages.length})</div>
             <div class="package-list">
@@ -414,25 +415,25 @@ function generateReportHTML(session: Session): string {
                 <div class="package-item">
                   <div>
                     <span>#${idx + 1}</span>
-                    <span class="package-badge ${pkg.type === 'shopee' ? 'shopee' : pkg.type === 'mercado_livre' ? 'ml' : 'avulso'}">
-                      ${pkg.type === 'shopee' ? 'Shopee' : pkg.type === 'mercado_livre' ? 'ML' : 'Avulso'}
+                    <span class="package-badge ${pkg.type === "shopee" ? "shopee" : pkg.type === "mercado_livre" ? "ml" : "avulso"}">
+                      ${pkg.type === "shopee" ? "Shopee" : pkg.type === "mercado_livre" ? "ML" : "Avulso"}
                     </span>
                   </div>
                   <div style="font-weight: 600;">${pkg.code}</div>
-                  <div style="color: #1f2937; font-weight: 700;">R$ ${(pkg.value || 0).toFixed(2).replace('.', ',')}</div>
+                  <div style="color: #1f2937; font-weight: 700;">R$ ${(pkg.value || 0).toFixed(2).replace(".", ",")}</div>
                 </div>
-              `
+              `,
                 )
-                .join('')}
+                .join("")}
             </div>
           </div>
             `
-            : ''
+              : ""
           }
         </div>
         
         <div class="footer">
-          <p>Relatório gerado em ${new Date().toLocaleString('pt-BR')}</p>
+          <p>Relatório gerado em ${new Date().toLocaleString("pt-BR")}</p>
           <p>Beep Velozz © 2024 - Sistema de Conferência de Pacotes</p>
         </div>
       </div>
@@ -459,7 +460,7 @@ export async function exportSessionToPDF(session: Session): Promise<void> {
       title: `Relatório de Conferência - ${session.operatorName}`,
     });
   } catch (error) {
-    console.error('Erro ao exportar PDF:', error);
+    console.error("Erro ao exportar PDF:", error);
     throw error;
   }
 }
@@ -467,7 +468,9 @@ export async function exportSessionToPDF(session: Session): Promise<void> {
 /**
  * Exporta uma sessão com fotos para PDF
  */
-export async function exportSessionWithPhotosToPDF(session: Session): Promise<void> {
+export async function exportSessionWithPhotosToPDF(
+  session: Session,
+): Promise<void> {
   try {
     const html = await generateReportHTMLWithPhotos(session);
     const result = await Print.printToFileAsync({
@@ -480,7 +483,7 @@ export async function exportSessionWithPhotosToPDF(session: Session): Promise<vo
       title: `Relatório com Fotos - ${session.operatorName}`,
     });
   } catch (error) {
-    console.error('Erro ao exportar PDF com fotos:', error);
+    console.error("Erro ao exportar PDF com fotos:", error);
     throw error;
   }
 }
@@ -493,9 +496,9 @@ async function generateReportHTMLWithPhotos(session: Session): Promise<string> {
   const hasDivergence = session.hasDivergence;
   const divergenceValue = session.packages.length - session.declaredCount;
 
-  const statusBgColor = hasDivergence ? '#fef3c7' : '#dcfce7';
-  const statusTextColor = hasDivergence ? '#b45309' : '#166534';
-  const statusIcon = hasDivergence ? '⚠️' : '✅';
+  const statusBgColor = hasDivergence ? "#fef3c7" : "#dcfce7";
+  const statusTextColor = hasDivergence ? "#b45309" : "#166534";
+  const statusIcon = hasDivergence ? "⚠️" : "✅";
 
   // Obter fotos
   const sessionPhotos = await getSessionPhotos(session.id);
@@ -505,7 +508,8 @@ async function generateReportHTMLWithPhotos(session: Session): Promise<string> {
   const photosBase64: Record<string, string> = {};
   for (const [code, photo] of photoMap.entries()) {
     try {
-      photosBase64[code] = `data:image/jpeg;base64,${await photoToBase64(photo.uri)}`;
+      photosBase64[code] =
+        `data:image/jpeg;base64,${await photoToBase64(photo.uri)}`;
     } catch (error) {
       console.warn(`Erro ao converter foto de ${code}:`, error);
     }
@@ -722,11 +726,11 @@ async function generateReportHTMLWithPhotos(session: Session): Promise<string> {
           <div class="icon">${statusIcon}</div>
           <div class="status-banner-text">
             <div class="status-banner-title">
-              ${hasDivergence ? 'Relatório com Divergência' : 'Conformidade Total'}
+              ${hasDivergence ? "Relatório com Divergência" : "Conformidade Total"}
             </div>
             <div class="status-banner-content">
               ${metrics.total} pacotes conferidos / ${session.declaredCount} declarados
-              ${hasDivergence ? `(Diferença: ${divergenceValue > 0 ? '+' : ''}${divergenceValue})` : ''}
+              ${hasDivergence ? `(Diferença: ${divergenceValue > 0 ? "+" : ""}${divergenceValue})` : ""}
             </div>
           </div>
         </div>
@@ -738,7 +742,7 @@ async function generateReportHTMLWithPhotos(session: Session): Promise<string> {
             <div class="info-grid">
               <div class="info-item">
                 <div class="info-label">Data</div>
-                <div class="info-value">${new Date(session.startedAt).toLocaleDateString('pt-BR')}</div>
+                <div class="info-value">${new Date(session.startedAt).toLocaleDateString("pt-BR")}</div>
               </div>
               <div class="info-item">
                 <div class="info-label">Operador</div>
@@ -764,25 +768,25 @@ async function generateReportHTMLWithPhotos(session: Session): Promise<string> {
               <div class="package-with-photo">
                 <div class="package-header">
                   <span class="package-code">#${idx + 1} - ${pkg.code}</span>
-                  <span class="package-badge ${pkg.type === 'shopee' ? 'shopee' : pkg.type === 'mercado_livre' ? 'ml' : 'avulso'}">
-                    ${pkg.type === 'shopee' ? 'Shopee' : pkg.type === 'mercado_livre' ? 'ML' : 'Avulso'}
+                  <span class="package-badge ${pkg.type === "shopee" ? "shopee" : pkg.type === "mercado_livre" ? "ml" : "avulso"}">
+                    ${pkg.type === "shopee" ? "Shopee" : pkg.type === "mercado_livre" ? "ML" : "Avulso"}
                   </span>
                 </div>
-                <div style="color: #1f2937; font-weight: 700; font-size: 13px;">R$ ${(pkg.value || 0).toFixed(2).replace('.', ',')}</div>
+                <div style="color: #1f2937; font-weight: 700; font-size: 13px;">R$ ${(pkg.value || 0).toFixed(2).replace(".", ",")}</div>
                 ${
                   photosBase64[pkg.code]
                     ? `<img src="${photosBase64[pkg.code]}" class="package-photo" alt="Foto - ${pkg.code}" /><div class="photo-label">✓ Foto capturada</div>`
                     : '<div class="photo-label" style="color: #a3a3a3;">⊘ Sem foto capturada</div>'
                 }
               </div>
-            `
+            `,
               )
-              .join('')}
+              .join("")}
           </div>
         </div>
         
         <div class="footer">
-          <p>Relatório gerado em ${new Date().toLocaleString('pt-BR')}</p>
+          <p>Relatório gerado em ${new Date().toLocaleString("pt-BR")}</p>
           <p>Beep Velozz © 2024 - Sistema de Conferência de Pacotes</p>
         </div>
       </div>
@@ -794,13 +798,17 @@ async function generateReportHTMLWithPhotos(session: Session): Promise<string> {
 /**
  * Exporta múltiplas sessões para um PDF consolidado
  */
-export async function exportMultipleSessionsToPDF(sessions: Session[]): Promise<void> {
+export async function exportMultipleSessionsToPDF(
+  sessions: Session[],
+): Promise<void> {
   if (sessions.length === 0) {
-    throw new Error('Nenhuma sessão para exportar');
+    throw new Error("Nenhuma sessão para exportar");
   }
 
   try {
-    const htmlPages = sessions.map((session) => generateReportHTML(session)).join('<div style="page-break-after: always;"></div>');
+    const htmlPages = sessions
+      .map((session) => generateReportHTML(session))
+      .join('<div style="page-break-after: always;"></div>');
 
     const html = `
       <!DOCTYPE html>
@@ -827,14 +835,7 @@ export async function exportMultipleSessionsToPDF(sessions: Session[]): Promise<
       title: `Relatórios Consolidados - ${sessions.length} sessões`,
     });
   } catch (error) {
-    console.error('Erro ao exportar PDFs consolidados:', error);
+    console.error("Erro ao exportar PDFs consolidados:", error);
     throw error;
   }
 }
-
-
-
-
-
-
-

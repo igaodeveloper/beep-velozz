@@ -86,9 +86,9 @@ Edite `utils/scannerIdentification.ts`:
 const PREFIX_MAPPINGS: PrefixMapping[] = [
   // ... existing mappings ...
   {
-    prefixes: ['NOVO_PREFIXO'],
-    type: 'novo_marketplace',
-    audioKey: 'beep_d',
+    prefixes: ["NOVO_PREFIXO"],
+    type: "novo_marketplace",
+    audioKey: "beep_d",
   },
 ];
 ```
@@ -165,8 +165,8 @@ controller.getState(); // ScannerState.ACTIVE | LIMIT_REACHED | PAUSED
 
 // Obter estatísticas
 const stats = controller.getStats();
-console.log(stats.counts);      // Contagem atual
-console.log(stats.progress);    // Progresso por tipo
+console.log(stats.counts); // Contagem atual
+console.log(stats.progress); // Progresso por tipo
 console.log(stats.limitReached); // Quais tipos atingiram limite
 ```
 
@@ -196,7 +196,7 @@ if (this.processingLock) {
 private _isDuplicate(normalizedCode: string): boolean {
   const lastScan = this.internalState.lastValidScan;
   if (!lastScan) return false;
-  
+
   const timeSinceLastScan = Date.now() - lastScan.timestamp;
   return (
     lastScan.code === normalizedCode &&
@@ -244,7 +244,7 @@ function MyComponent() {
 
   const handleScan = async (code: string) => {
     const result = await scanner.processScan(code);
-    
+
     if (result.success) {
       console.log(`Escaneado: ${result.code} (${result.type})`);
     } else {
@@ -257,7 +257,7 @@ function MyComponent() {
       <Text>Contagens: {JSON.stringify(scanner.counts)}</Text>
       <Text>Estado: {scanner.state}</Text>
       <Text>Limite atingido: {scanner.isLimitReached}</Text>
-      
+
       <TouchableOpacity onPress={() => scanner.reset()}>
         <Text>Reset Scanner</Text>
       </TouchableOpacity>
@@ -269,7 +269,7 @@ function MyComponent() {
 ### 2. Com Controller Direto
 
 ```typescript
-import { IndustrialScannerController } from '@/utils/scannerController';
+import { IndustrialScannerController } from "@/utils/scannerController";
 
 const controller = new IndustrialScannerController({
   maxAllowedScans: {
@@ -280,11 +280,11 @@ const controller = new IndustrialScannerController({
 });
 
 // Processar scan
-const result = await controller.processScan('BR123456789');
+const result = await controller.processScan("BR123456789");
 
 if (result.success) {
-  console.log('Tipo:', result.type);
-  console.log('Código:', result.code);
+  console.log("Tipo:", result.type);
+  console.log("Código:", result.code);
 }
 
 // Reset
@@ -332,9 +332,9 @@ controller.reset();
 interface ScanResult {
   success: boolean;
   code: string;
-  type?: PackageType;           // 'shopee' | 'mercado_livre' | 'avulso' | 'unknown'
+  type?: PackageType; // 'shopee' | 'mercado_livre' | 'avulso' | 'unknown'
   isDuplicate?: boolean;
-  reason?: 'limit_reached' | 'duplicate' | 'invalid' | 'rate_limited';
+  reason?: "limit_reached" | "duplicate" | "invalid" | "rate_limited";
   timestamp: number;
 }
 ```
@@ -350,7 +350,7 @@ import { useIndustrialScanner } from '@/utils/useIndustrialScanner';
 
 export function ScannerScreen() {
   const [scans, setScans] = useState<any[]>([]);
-  
+
   const scanner = useIndustrialScanner({
     maxAllowedScans: {
       shopee: 10,
@@ -367,19 +367,19 @@ export function ScannerScreen() {
   return (
     <View style={{ flex: 1 }}>
       {/* Camera/Input aqui */}
-      
+
       {/* Status */}
       <Text>Estado: {scanner.state}</Text>
       <Text>Shopee: {scanner.counts.shopee}/10</Text>
       <Text>Mercado Livre: {scanner.counts.mercado_livre}/5</Text>
       <Text>Avulso: {scanner.counts.avulso}/3</Text>
-      
+
       {scanner.isLimitReached && (
         <Text style={{ color: 'red' }}>LIMITE ATINGIDO!</Text>
       )}
 
       {/* Reset Button */}
-      <TouchableOpacity 
+      <TouchableOpacity
         onPress={() => {
           scanner.reset();
           setScans([]);

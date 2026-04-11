@@ -3,22 +3,22 @@
  * Para feedback visual em tempo real
  */
 
-import React, { useEffect, useRef } from 'react';
-import { View, Animated, StyleSheet } from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
+import React, { useEffect, useRef } from "react";
+import { View, Animated, StyleSheet } from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
 
 interface PulseIndicatorProps {
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   color?: string;
-  intensity?: 'light' | 'medium' | 'strong';
+  intensity?: "light" | "medium" | "strong";
   duration?: number;
   isActive?: boolean;
 }
 
 export default function PulseIndicator({
-  size = 'medium',
+  size = "medium",
   color,
-  intensity = 'medium',
+  intensity = "medium",
   duration = 1500,
   isActive = true,
 }: PulseIndicatorProps) {
@@ -28,11 +28,11 @@ export default function PulseIndicator({
 
   const getSize = () => {
     switch (size) {
-      case 'small':
+      case "small":
         return 12;
-      case 'medium':
+      case "medium":
         return 20;
-      case 'large':
+      case "large":
         return 32;
       default:
         return 20;
@@ -41,11 +41,11 @@ export default function PulseIndicator({
 
   const getIntensityScale = () => {
     switch (intensity) {
-      case 'light':
+      case "light":
         return 1.2;
-      case 'medium':
+      case "medium":
         return 1.5;
-      case 'strong':
+      case "strong":
         return 2;
       default:
         return 1.5;
@@ -54,11 +54,11 @@ export default function PulseIndicator({
 
   const getIntensityOpacity = () => {
     switch (intensity) {
-      case 'light':
+      case "light":
         return 0.3;
-      case 'medium':
+      case "medium":
         return 0.2;
-      case 'strong':
+      case "strong":
         return 0.1;
       default:
         return 0.2;
@@ -98,7 +98,7 @@ export default function PulseIndicator({
             useNativeDriver: true,
           }),
         ]),
-      ])
+      ]),
     );
 
     pulseAnimation.start();
@@ -139,7 +139,7 @@ export default function PulseIndicator({
           },
         ]}
       />
-      
+
       {/* Core dot */}
       <View
         style={[
@@ -149,9 +149,9 @@ export default function PulseIndicator({
             height: getSize(),
             borderRadius: getSize() / 2,
             backgroundColor: pulseColor,
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
             marginTop: -getSize() / 2,
             marginLeft: -getSize() / 2,
           },
@@ -163,17 +163,17 @@ export default function PulseIndicator({
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
   },
   pulseRing: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
   },
   coreDot: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,

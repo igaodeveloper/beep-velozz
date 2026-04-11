@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from "firebase/app";
 import {
   getFirestore,
   collection,
@@ -15,20 +15,20 @@ import {
   enableNetwork,
   disableNetwork,
   onSnapshot,
-} from 'firebase/firestore';
+} from "firebase/firestore";
 import {
   getAuth,
   signInWithEmailAndPassword,
   onAuthStateChanged,
   signOut,
   User,
-} from 'firebase/auth';
-import * as SecureStore from 'expo-secure-store';
+} from "firebase/auth";
+import * as SecureStore from "expo-secure-store";
 
 // the values below should be provided through Expo config (app.json/app.config.js) or
 // environment variables (EXPO_PUBLIC_FIREBASE_*). during development you can also
 // inject them via `expo start --config` or by reading from Constants.manifest.extra.
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
 
 function getExpoValue(key: string): string | undefined {
   // Expo SDK 48+ uses expoConfig whereas older releases use manifest.
@@ -37,7 +37,7 @@ function getExpoValue(key: string): string | undefined {
   // as a last resort, try reading from app.json directly (build-time constant)
   if (!extra[key]) {
     try {
-      const appJson = require('../app.json');
+      const appJson = require("../app.json");
       if (appJson.expo && appJson.expo.extra) {
         return appJson.expo.extra[key];
       }
@@ -50,28 +50,33 @@ function getExpoValue(key: string): string | undefined {
 
 const firebaseConfig = {
   apiKey:
-    process.env.EXPO_PUBLIC_FIREBASE_API_KEY || getExpoValue('firebaseApiKey'),
+    process.env.EXPO_PUBLIC_FIREBASE_API_KEY || getExpoValue("firebaseApiKey"),
   authDomain:
-    process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || getExpoValue('firebaseAuthDomain'),
+    process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN ||
+    getExpoValue("firebaseAuthDomain"),
   projectId:
-    process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || getExpoValue('firebaseProjectId'),
+    process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID ||
+    getExpoValue("firebaseProjectId"),
   storageBucket:
-    process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || getExpoValue('firebaseStorageBucket'),
+    process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET ||
+    getExpoValue("firebaseStorageBucket"),
   messagingSenderId:
     process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ||
-    getExpoValue('firebaseMessagingSenderId'),
+    getExpoValue("firebaseMessagingSenderId"),
   appId:
-    process.env.EXPO_PUBLIC_FIREBASE_APP_ID || getExpoValue('firebaseAppId'),
+    process.env.EXPO_PUBLIC_FIREBASE_APP_ID || getExpoValue("firebaseAppId"),
 };
 
 // initialize once
 function ensureFirebaseConfig(cfg: Record<string, any>) {
-  const missing = Object.entries(cfg).filter(([, v]) => !v).map(([k])=>k);
+  const missing = Object.entries(cfg)
+    .filter(([, v]) => !v)
+    .map(([k]) => k);
   if (missing.length) {
     throw new Error(
-      `Missing Firebase configuration keys: ${missing.join(', ')}. ` +
-      `Set EXPO_PUBLIC_FIREBASE_<KEY> env vars or add the values under expo.extra ` +
-      `in app.json (firebaseApiKey, firebaseProjectId, etc.).`
+      `Missing Firebase configuration keys: ${missing.join(", ")}. ` +
+        `Set EXPO_PUBLIC_FIREBASE_<KEY> env vars or add the values under expo.extra ` +
+        `in app.json (firebaseApiKey, firebaseProjectId, etc.).`,
     );
   }
 }
@@ -89,7 +94,7 @@ const MAX_NETWORK_ERRORS = 3;
 export async function checkNetworkStatus(): Promise<boolean> {
   try {
     // Try a simple read operation to check connectivity
-    const testDoc = doc(db, '_health', 'ping');
+    const testDoc = doc(db, "_health", "ping");
     await getDoc(testDoc);
     isOnline = true;
     networkErrorCount = 0;
@@ -97,15 +102,18 @@ export async function checkNetworkStatus(): Promise<boolean> {
   } catch (error: any) {
     networkErrorCount++;
     isOnline = false;
-    console.warn(`[Firestore] Network check failed (${networkErrorCount}/${MAX_NETWORK_ERRORS}):`, error.message);
-    
+    console.warn(
+      `[Firestore] Network check failed (${networkErrorCount}/${MAX_NETWORK_ERRORS}):`,
+      error.message,
+    );
+
     // If we've had multiple failures, disable network to reduce errors
     if (networkErrorCount >= MAX_NETWORK_ERRORS) {
       try {
         await disableNetwork(db);
-        console.log('[Firestore] Network disabled due to repeated failures');
+        console.log("[Firestore] Network disabled due to repeated failures");
       } catch (disableError) {
-        console.warn('[Firestore] Failed to disable network:', disableError);
+        console.warn("[Firestore] Failed to disable network:", disableError);
       }
     }
     return false;
@@ -119,11 +127,11 @@ export async function tryReconnect(): Promise<boolean> {
       await enableNetwork(db);
       const success = await checkNetworkStatus();
       if (success) {
-        console.log('[Firestore] Successfully reconnected');
+        console.log("[Firestore] Successfully reconnected");
         return true;
       }
     } catch (error) {
-      console.warn('[Firestore] Failed to reconnect:', error);
+      console.warn("[Firestore] Failed to reconnect:", error);
     }
   }
   return false;
@@ -132,26 +140,34 @@ export async function tryReconnect(): Promise<boolean> {
 // Wrapper for Firestore operations with retry logic
 async function withRetry<T>(
   operation: () => Promise<T>,
-  maxRetries: number = 2
+  maxRetries: number = 2,
 ): Promise<T> {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await operation();
     } catch (error: any) {
-      console.warn(`[Firestore] Operation failed (attempt ${attempt + 1}/${maxRetries + 1}):`, error.message);
-      
+      console.warn(
+        `[Firestore] Operation failed (attempt ${attempt + 1}/${maxRetries + 1}):`,
+        error.message,
+      );
+
       // If it's a network error and we have retries left, wait and try again
-      if (error.code === 'unavailable' || error.code === 'timeout' && attempt < maxRetries) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+      if (
+        error.code === "unavailable" ||
+        (error.code === "timeout" && attempt < maxRetries)
+      ) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, 1000 * (attempt + 1)),
+        );
         continue;
       }
-      
+
       // If it's the last attempt or not a network error, throw
       throw error;
     }
   }
-  
-  throw new Error('Operation failed after all retries');
+
+  throw new Error("Operation failed after all retries");
 }
 
 // --- helpers for our domain -------------------------------------------------
@@ -168,13 +184,13 @@ export interface Operator {
   active?: boolean;
 }
 
-export type PackageType = 'shopee' | 'mercado_livre' | 'avulso';
+export type PackageType = "shopee" | "mercado_livre" | "avulso";
 
 export interface PackageRecord {
   code: string;
   type: PackageType;
   assignedDriverId: string;
-  status?: 'pending' | 'scanned' | 'delivered';
+  status?: "pending" | "scanned" | "delivered";
   createdAt?: any; // Firestore timestamp
   scannedAt?: any;
 }
@@ -182,14 +198,14 @@ export interface PackageRecord {
 // low-level fetch
 export async function fetchDrivers(): Promise<Driver[]> {
   return withRetry(async () => {
-    const col = collection(db, 'drivers');
-    const snap = await getDocs(query(col, where('active', '==', true)));
-    return snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+    const col = collection(db, "drivers");
+    const snap = await getDocs(query(col, where("active", "==", true)));
+    return snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
   });
 }
 
 // caching helpers (used for offline / fast startup)
-const DRIVERS_CACHE_KEY = 'drivers_cache';
+const DRIVERS_CACHE_KEY = "drivers_cache";
 
 async function cacheDrivers(drivers: Driver[]) {
   try {
@@ -209,32 +225,35 @@ export async function getCachedDrivers(): Promise<Driver[]> {
 // high-level that returns cached data immediately and refreshes in background
 export async function fetchDriversWithCache(): Promise<Driver[]> {
   const cached = await getCachedDrivers();
-  
+
   // Try to refresh in background, but don't fail if offline
   fetchDrivers()
-    .then(d => {
+    .then((d) => {
       cacheDrivers(d);
       // If we were offline and now got data, try to reconnect
       if (!isOnline && d.length > 0) {
         tryReconnect();
       }
     })
-    .catch(error => {
-      console.warn('[Firestore] Background refresh failed, using cache:', error.message);
+    .catch((error) => {
+      console.warn(
+        "[Firestore] Background refresh failed, using cache:",
+        error.message,
+      );
       checkNetworkStatus(); // Update network status
     });
-    
+
   if (cached.length) {
     return cached;
   }
-  
+
   // If no cache, try fresh with retry
   try {
     const fresh = await fetchDrivers();
     await cacheDrivers(fresh);
     return fresh;
   } catch (error) {
-    console.error('[Firestore] No cache and fresh fetch failed:', error);
+    console.error("[Firestore] No cache and fresh fetch failed:", error);
     throw error;
   }
 }
@@ -242,19 +261,21 @@ export async function fetchDriversWithCache(): Promise<Driver[]> {
 // fetch operators (similar)
 export async function fetchOperators(): Promise<Operator[]> {
   return withRetry(async () => {
-    const col = collection(db, 'operators');
-    const snap = await getDocs(query(col, where('active', '==', true)));
-    return snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+    const col = collection(db, "operators");
+    const snap = await getDocs(query(col, where("active", "==", true)));
+    return snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
   });
 }
 
 // fetch packages that belong to a driver
-export async function fetchPackagesForDriver(driverId: string): Promise<PackageRecord[]> {
+export async function fetchPackagesForDriver(
+  driverId: string,
+): Promise<PackageRecord[]> {
   return withRetry(async () => {
-    const col = collection(db, 'packages');
-    const q = query(col, where('assignedDriverId', '==', driverId));
+    const col = collection(db, "packages");
+    const q = query(col, where("assignedDriverId", "==", driverId));
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+    return snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
   });
 }
 
@@ -263,17 +284,19 @@ async function cachePackages(driverId: string, pkgs: PackageRecord[]) {
   try {
     await SecureStore.setItemAsync(
       `${PACKAGES_CACHE_PREFIX}${driverId}`,
-      JSON.stringify(pkgs)
+      JSON.stringify(pkgs),
     );
   } catch {}
 }
 
-const PACKAGES_CACHE_PREFIX = 'packages_cache_';
+const PACKAGES_CACHE_PREFIX = "packages_cache_";
 
-export async function getCachedPackages(driverId: string): Promise<PackageRecord[]> {
+export async function getCachedPackages(
+  driverId: string,
+): Promise<PackageRecord[]> {
   try {
     const raw = await SecureStore.getItemAsync(
-      `${PACKAGES_CACHE_PREFIX}${driverId}`
+      `${PACKAGES_CACHE_PREFIX}${driverId}`,
     );
     return raw ? JSON.parse(raw) : [];
   } catch {
@@ -282,11 +305,11 @@ export async function getCachedPackages(driverId: string): Promise<PackageRecord
 }
 
 export async function fetchPackagesForDriverWithCache(
-  driverId: string
+  driverId: string,
 ): Promise<PackageRecord[]> {
   const cached = await getCachedPackages(driverId);
   fetchPackagesForDriver(driverId)
-    .then(p => cachePackages(driverId, p))
+    .then((p) => cachePackages(driverId, p))
     .catch(() => {});
   if (cached.length) {
     return cached;
@@ -297,17 +320,20 @@ export async function fetchPackagesForDriverWithCache(
 }
 
 // mark a package as scanned (with optional extra data)
-export async function markPackageScanned(packageCode: string, driverId: string) {
+export async function markPackageScanned(
+  packageCode: string,
+  driverId: string,
+) {
   return withRetry(async () => {
-    const col = collection(db, 'packages');
-    const q = query(col, where('code', '==', packageCode));
+    const col = collection(db, "packages");
+    const q = query(col, where("code", "==", packageCode));
     const snap = await getDocs(q);
     if (snap.empty) {
-      throw new Error('package-not-found');
+      throw new Error("package-not-found");
     }
     const docRef = snap.docs[0].ref;
     await updateDoc(docRef, {
-      status: 'scanned',
+      status: "scanned",
       scannedAt: serverTimestamp(),
     });
   });
@@ -316,17 +342,17 @@ export async function markPackageScanned(packageCode: string, driverId: string) 
 // create / update an operator or driver (used by admin screens)
 export async function upsertDriver(driver: Partial<Driver> & { id?: string }) {
   if (driver.id) {
-    const ref = doc(db, 'drivers', driver.id);
+    const ref = doc(db, "drivers", driver.id);
     await setDoc(ref, driver, { merge: true });
     return driver.id;
   }
-  const ref = await addDoc(collection(db, 'drivers'), driver);
+  const ref = await addDoc(collection(db, "drivers"), driver);
   return ref.id;
 }
 
 // soft delete driver (mark as inactive)
 export async function deleteDriver(driverId: string) {
-  const ref = doc(db, 'drivers', driverId);
+  const ref = doc(db, "drivers", driverId);
   await updateDoc(ref, { active: false });
   // refresh cache
   const updated = await fetchDrivers();
@@ -334,18 +360,16 @@ export async function deleteDriver(driverId: string) {
 }
 
 // --------------------------------------------------
-// AUTH helpers (firestore authentication is optional) 
+// AUTH helpers (firestore authentication is optional)
 // --------------------------------------------------
 
-export function onAuthStateChange(
-  callback: (user: User | null) => void
-) {
+export function onAuthStateChange(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
 }
 
 export async function loginOperator(
   email: string,
-  password: string
+  password: string,
 ): Promise<User> {
   const res = await signInWithEmailAndPassword(auth, email, password);
   return res.user;
@@ -360,7 +384,9 @@ export { isOnline };
 
 // Initialize network monitoring
 checkNetworkStatus().catch(() => {
-  console.log('[Firestore] Initial network check failed, starting in offline mode');
+  console.log(
+    "[Firestore] Initial network check failed, starting in offline mode",
+  );
 });
 
 // ...add more helpers as needed (sessions, counts, etc.)

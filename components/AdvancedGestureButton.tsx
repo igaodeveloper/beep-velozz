@@ -1,15 +1,11 @@
-import React, { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-} from 'react-native';
+import React, { useState, useRef } from "react";
+import { View, Text, StyleSheet } from "react-native";
 import {
   PanGestureHandler,
   TapGestureHandler,
   LongPressGestureHandler,
   State,
-} from 'react-native-gesture-handler';
+} from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -20,9 +16,9 @@ import Animated, {
   runOnJS,
   Extrapolate,
   cancelAnimation,
-} from 'react-native-reanimated';
-import { useAppTheme } from '@/utils/useAppTheme';
-import { advancedHaptics } from '@/utils/advancedHaptics';
+} from "react-native-reanimated";
+import { useAppTheme } from "@/utils/useAppTheme";
+import { advancedHaptics } from "@/utils/advancedHaptics";
 
 interface AdvancedGestureButtonProps {
   children: React.ReactNode;
@@ -72,7 +68,7 @@ export function AdvancedGestureButton({
   const translateY = useSharedValue(0);
   const rotation = useSharedValue(0);
   const longPressProgress = useSharedValue(0);
-  
+
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Animação de ripple effect
@@ -101,25 +97,25 @@ export function AdvancedGestureButton({
   // Gesture handler para pan (swipe)
   const onPanGestureEvent = (event: any) => {
     if (disabled) return;
-    
+
     translateX.value = event.translationX;
     translateY.value = event.translationY;
-    
+
     // Adiciona rotação sutil baseada no movimento
     rotation.value = interpolate(
       Math.abs(event.translationX),
       [0, 100],
       [0, 0.05],
-      Extrapolate.CLAMP
+      Extrapolate.CLAMP,
     );
   };
 
   const onPanGestureEnd = (event: any) => {
     if (disabled) return;
-    
+
     const swipeX = event.translationX;
     const swipeY = event.translationY;
-    
+
     // Detecta swipe directions
     if (Math.abs(swipeX) > Math.abs(swipeY)) {
       if (Math.abs(swipeX) > swipeThreshold) {
@@ -142,7 +138,7 @@ export function AdvancedGestureButton({
         }
       }
     }
-    
+
     // Reset animations
     translateX.value = withSpring(0);
     translateY.value = withSpring(0);
@@ -152,11 +148,11 @@ export function AdvancedGestureButton({
   // Gesture handler para tap
   const onTapStart = () => {
     if (disabled) return;
-    
+
     if (pressAnimation) {
       buttonScale.value = withSpring(0.95);
     }
-    
+
     if (rippleEffect) {
       rippleScale.value = withTiming(1, { duration: 600 });
     }
@@ -164,22 +160,23 @@ export function AdvancedGestureButton({
 
   const onTapEnd = () => {
     if (disabled) return;
-    
+
     const currentTime = Date.now();
     const timeSinceLastTap = currentTime - lastTapTime;
-    
+
     if (timeSinceLastTap < doubleTapDelay && onDoubleTap) {
       // Double tap detected
       onDoubleTap();
-      if (hapticFeedback) advancedHaptics.trigger({ type: 'success', pattern: 'double' });
+      if (hapticFeedback)
+        advancedHaptics.trigger({ type: "success", pattern: "double" });
     } else if (onPress) {
       // Single tap
       onPress();
       if (hapticFeedback) advancedHaptics.onButtonPress();
     }
-    
+
     setLastTapTime(currentTime);
-    
+
     // Reset animations
     buttonScale.value = withSpring(1);
     setTimeout(() => {
@@ -190,14 +187,14 @@ export function AdvancedGestureButton({
   // Gesture handler para long press
   const onLongPressStart = () => {
     if (disabled) return;
-    
+
     if (pressAnimation) {
       buttonScale.value = withSpring(0.9);
     }
-    
+
     // Start long press progress
     longPressProgress.value = withTiming(1, { duration: longPressDelay });
-    
+
     // Start timer
     if (longPressTimerRef.current) {
       clearTimeout(longPressTimerRef.current);
@@ -212,23 +209,22 @@ export function AdvancedGestureButton({
 
   const onLongPressActive = () => {
     if (disabled) return;
-    
+
     // Vibration effect during long press
-    buttonScale.value = withTiming(
-      0.85 + Math.random() * 0.1,
-      { duration: 50 }
-    );
+    buttonScale.value = withTiming(0.85 + Math.random() * 0.1, {
+      duration: 50,
+    });
   };
 
   const onLongPressEnd = () => {
     if (disabled) return;
-    
+
     // Clear timer
     if (longPressTimerRef.current) {
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
     }
-    
+
     // Reset animations
     buttonScale.value = withSpring(1);
     longPressProgress.value = withTiming(0, { duration: 200 });
@@ -249,7 +245,7 @@ export function AdvancedGestureButton({
         minDurationMs={longPressDelay}
       >
         <Animated.View>
-          <PanGestureHandler 
+          <PanGestureHandler
             onGestureEvent={onPanGestureEvent}
             onHandlerStateChange={(event) => {
               if (event.nativeEvent.state === State.END) {
@@ -290,7 +286,7 @@ export function AdvancedGestureButton({
                       ]}
                     />
                   )}
-                  
+
                   {/* Long Press Progress */}
                   <Animated.View
                     style={[
@@ -301,11 +297,9 @@ export function AdvancedGestureButton({
                       },
                     ]}
                   />
-                  
+
                   {/* Content */}
-                  <View style={styles.content}>
-                    {children}
-                  </View>
+                  <View style={styles.content}>{children}</View>
                 </Animated.View>
               </TapGestureHandler>
             </Animated.View>
@@ -357,33 +351,28 @@ export function SwipeCard({
   const onSwipeGestureEvent = (event: any) => {
     translateX.value = event.translationX;
     translateY.value = event.translationY;
-    
+
     // Adiciona rotação baseada no movimento horizontal
     rotate.value = interpolate(
       event.translationX,
       [-200, 200],
       [-0.2, 0.2],
-      Extrapolate.CLAMP
+      Extrapolate.CLAMP,
     );
-    
+
     // Adiciona escala baseada na distância
     const distance = Math.sqrt(
-      Math.pow(event.translationX, 2) + Math.pow(event.translationY, 2)
+      Math.pow(event.translationX, 2) + Math.pow(event.translationY, 2),
     );
-    scale.value = interpolate(
-      distance,
-      [0, 300],
-      [1, 0.9],
-      Extrapolate.CLAMP
-    );
+    scale.value = interpolate(distance, [0, 300], [1, 0.9], Extrapolate.CLAMP);
   };
 
   const onSwipeGestureEnd = (event: any) => {
     const swipeX = event.translationX;
     const swipeY = event.translationY;
-    
+
     let actionTriggered = false;
-    
+
     // Detecta swipe directions
     if (Math.abs(swipeX) > Math.abs(swipeY)) {
       if (Math.abs(swipeX) > threshold) {
@@ -406,7 +395,7 @@ export function SwipeCard({
         }
       }
     }
-    
+
     if (actionTriggered && !snapBack) {
       // Anima para fora da tela
       opacity.value = withTiming(0, { duration: 300 });
@@ -422,7 +411,7 @@ export function SwipeCard({
   };
 
   return (
-    <PanGestureHandler 
+    <PanGestureHandler
       onGestureEvent={onSwipeGestureEvent}
       onHandlerStateChange={(event) => {
         if (event.nativeEvent.state === State.END) {
@@ -439,30 +428,30 @@ export function SwipeCard({
 
 const styles = StyleSheet.create({
   container: {
-    position: 'relative',
-    overflow: 'hidden',
+    position: "relative",
+    overflow: "hidden",
   },
   button: {
     borderRadius: 12,
     borderWidth: 1,
     minHeight: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-    overflow: 'hidden',
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+    overflow: "hidden",
   },
   ripple: {
-    position: 'absolute',
+    position: "absolute",
     width: 100,
     height: 100,
     borderRadius: 50,
-    top: '50%',
-    left: '50%',
+    top: "50%",
+    left: "50%",
     marginTop: -50,
     marginLeft: -50,
   },
   progressBar: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
@@ -475,7 +464,7 @@ const styles = StyleSheet.create({
   swipeCard: {
     borderRadius: 12,
     minHeight: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

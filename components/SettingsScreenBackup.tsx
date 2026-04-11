@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,9 +6,9 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-} from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
-import MainLayout from '@/components/MainLayout';
+} from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
+import MainLayout from "@/components/MainLayout";
 import {
   Moon,
   Sun,
@@ -18,10 +18,15 @@ import {
   HelpCircle,
   ChevronRight,
   Palette,
-} from 'lucide-react-native';
-import SimpleThemeSelector from './SimpleThemeSelector';
+} from "lucide-react-native";
+import SimpleThemeSelector from "./SimpleThemeSelector";
 
-type SettingsSection = 'root' | 'notifications' | 'privacy' | 'storage' | 'support';
+type SettingsSection =
+  | "root"
+  | "notifications"
+  | "privacy"
+  | "storage"
+  | "support";
 
 interface SettingsItemProps {
   icon: any;
@@ -31,21 +36,34 @@ interface SettingsItemProps {
   rightComponent?: React.ReactNode;
 }
 
-function SettingsItem({ icon: Icon, title, subtitle, onPress, rightComponent }: SettingsItemProps) {
+function SettingsItem({
+  icon: Icon,
+  title,
+  subtitle,
+  onPress,
+  rightComponent,
+}: SettingsItemProps) {
   const { colors } = useAppTheme();
 
   return (
     <TouchableOpacity
-      style={[styles.settingsItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+      style={[
+        styles.settingsItem,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+      ]}
       onPress={onPress}
       activeOpacity={0.7}
     >
       <View style={styles.itemLeft}>
         <Icon size={20} color={colors.textMuted} style={styles.itemIcon} />
         <View style={styles.itemText}>
-          <Text style={[styles.itemTitle, { color: colors.text }]}>{title}</Text>
+          <Text style={[styles.itemTitle, { color: colors.text }]}>
+            {title}
+          </Text>
           {subtitle && (
-            <Text style={[styles.itemSubtitle, { color: colors.textMuted }]}>{subtitle}</Text>
+            <Text style={[styles.itemSubtitle, { color: colors.textMuted }]}>
+              {subtitle}
+            </Text>
           )}
         </View>
       </View>
@@ -58,134 +76,163 @@ interface SettingsScreenProps {
   onOpenThemeSelector?: () => void;
 }
 
-export default function SettingsScreen({ onOpenThemeSelector }: SettingsScreenProps) {
+export default function SettingsScreen({
+  onOpenThemeSelector,
+}: SettingsScreenProps) {
   const { colors, isDark, theme, themeName, setThemeName } = useAppTheme();
-  const [scannerHapticsEnabled, setScannerHapticsEnabled] = React.useState(true);
+  const [scannerHapticsEnabled, setScannerHapticsEnabled] =
+    React.useState(true);
   const [scannerSoundEnabled, setScannerSoundEnabled] = React.useState(true);
   const [autoCloseSessions, setAutoCloseSessions] = React.useState(false);
   const [autoCloseHours, setAutoCloseHours] = React.useState(4);
-  const [activeSection, setActiveSection] = React.useState<SettingsSection>('root');
+  const [activeSection, setActiveSection] =
+    React.useState<SettingsSection>("root");
   const [showThemeSelector, setShowThemeSelector] = useState(false);
 
-  if (activeSection === 'notifications') {
+  if (activeSection === "notifications") {
     return (
       <MainLayout>
-        <NotificationSettingsScreen onBack={() => setActiveSection('root')} />
+        <NotificationSettingsScreen onBack={() => setActiveSection("root")} />
       </MainLayout>
     );
   }
 
-  if (activeSection === 'privacy') {
+  if (activeSection === "privacy") {
     return (
       <MainLayout>
-        <PrivacySecuritySettingsScreen onBack={() => setActiveSection('root')} />
+        <PrivacySecuritySettingsScreen
+          onBack={() => setActiveSection("root")}
+        />
       </MainLayout>
     );
   }
 
-  if (activeSection === 'storage') {
+  if (activeSection === "storage") {
     return (
       <MainLayout>
-        <StorageSettingsScreen onBack={() => setActiveSection('root')} />
+        <StorageSettingsScreen onBack={() => setActiveSection("root")} />
       </MainLayout>
     );
   }
 
-  if (activeSection === 'support') {
+  if (activeSection === "support") {
     return (
       <MainLayout>
-        <HelpSupportSettingsScreen onBack={() => setActiveSection('root')} />
+        <HelpSupportSettingsScreen onBack={() => setActiveSection("root")} />
       </MainLayout>
     );
   }
 
   return (
     <MainLayout>
-      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Configurações</Text>
-        <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>
-          Personalize sua experiência
-        </Text>
-      </View>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
+            Configurações
+          </Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>
+            Personalize sua experiência
+          </Text>
+        </View>
 
-      <View style={styles.section}>
-        <SettingsItem
-          icon={Palette}
-          title="Personalizar Tema"
-          subtitle={`Tema atual: ${theme?.name || 'Claro'}`}
-          onPress={() => setShowThemeSelector(true)}
-        />
-      </View>
+        <View style={styles.section}>
+          <SettingsItem
+            icon={Palette}
+            title="Personalizar Tema"
+            subtitle={`Tema atual: ${theme?.name || "Claro"}`}
+            onPress={() => setShowThemeSelector(true)}
+          />
+        </View>
 
-      <View style={styles.section}>
-        <SettingsItem
-          icon={Bell}
-          title="Feedback tátil no scanner"
-          subtitle={scannerHapticsEnabled ? 'Vibração ao ler códigos' : 'Sem vibração nas leituras'}
-          onPress={() => setScannerHapticsEnabled((prev) => !prev)}
-          rightComponent={
-            <Switch
-              value={scannerHapticsEnabled}
-              onValueChange={() => setScannerHapticsEnabled((prev) => !prev)}
-              trackColor={{ false: colors.border, true: colors.primary + '40' }}
-              thumbColor={scannerHapticsEnabled ? colors.primary : colors.textFaint}
-            />
-          }
-        />
-        <SettingsItem
-          icon={Bell}
-          title="Som de confirmação"
-          subtitle={scannerSoundEnabled ? 'Bip ao escanear com sucesso' : 'Leitura silenciosa'}
-          onPress={() => setScannerSoundEnabled((prev) => !prev)}
-          rightComponent={
-            <Switch
-              value={scannerSoundEnabled}
-              onValueChange={() => setScannerSoundEnabled((prev) => !prev)}
-              trackColor={{ false: colors.border, true: colors.primary + '40' }}
-              thumbColor={scannerSoundEnabled ? colors.primary : colors.textFaint}
-            />
-          }
-        />
-      </View>
+        <View style={styles.section}>
+          <SettingsItem
+            icon={Bell}
+            title="Feedback tátil no scanner"
+            subtitle={
+              scannerHapticsEnabled
+                ? "Vibração ao ler códigos"
+                : "Sem vibração nas leituras"
+            }
+            onPress={() => setScannerHapticsEnabled((prev) => !prev)}
+            rightComponent={
+              <Switch
+                value={scannerHapticsEnabled}
+                onValueChange={() => setScannerHapticsEnabled((prev) => !prev)}
+                trackColor={{
+                  false: colors.border,
+                  true: colors.primary + "40",
+                }}
+                thumbColor={
+                  scannerHapticsEnabled ? colors.primary : colors.textFaint
+                }
+              />
+            }
+          />
+          <SettingsItem
+            icon={Bell}
+            title="Som de confirmação"
+            subtitle={
+              scannerSoundEnabled
+                ? "Bip ao escanear com sucesso"
+                : "Leitura silenciosa"
+            }
+            onPress={() => setScannerSoundEnabled((prev) => !prev)}
+            rightComponent={
+              <Switch
+                value={scannerSoundEnabled}
+                onValueChange={() => setScannerSoundEnabled((prev) => !prev)}
+                trackColor={{
+                  false: colors.border,
+                  true: colors.primary + "40",
+                }}
+                thumbColor={
+                  scannerSoundEnabled ? colors.primary : colors.textFaint
+                }
+              />
+            }
+          />
+        </View>
 
-      <View style={styles.section}>
-        <SettingsItem
-          icon={Bell}
-          title="Notificações"
-          subtitle="Gerenciar alertas e sons"
-          onPress={() => setActiveSection('notifications')}
-        />
-        <SettingsItem
-          icon={Shield}
-          title="Privacidade e Segurança"
-          subtitle="Proteger seus dados"
-          onPress={() => setActiveSection('privacy')}
-        />
-      </View>
+        <View style={styles.section}>
+          <SettingsItem
+            icon={Bell}
+            title="Notificações"
+            subtitle="Gerenciar alertas e sons"
+            onPress={() => setActiveSection("notifications")}
+          />
+          <SettingsItem
+            icon={Shield}
+            title="Privacidade e Segurança"
+            subtitle="Proteger seus dados"
+            onPress={() => setActiveSection("privacy")}
+          />
+        </View>
 
-      <View style={styles.section}>
-        <SettingsItem
-          icon={Database}
-          title="Armazenamento"
-          subtitle="Gerenciar espaço e backup"
-          onPress={() => setActiveSection('storage')}
-        />
-        <SettingsItem
-          icon={HelpCircle}
-          title="Ajuda e Suporte"
-          subtitle="Central de ajuda e contato"
-          onPress={() => setActiveSection('support')}
-        />
-      </View>
+        <View style={styles.section}>
+          <SettingsItem
+            icon={Database}
+            title="Armazenamento"
+            subtitle="Gerenciar espaço e backup"
+            onPress={() => setActiveSection("storage")}
+          />
+          <SettingsItem
+            icon={HelpCircle}
+            title="Ajuda e Suporte"
+            subtitle="Central de ajuda e contato"
+            onPress={() => setActiveSection("support")}
+          />
+        </View>
 
-      <View style={styles.footer}>
-        <Text style={[styles.footerText, { color: colors.textFaint }]}>
-          Beep Velozz v1.0.0
-        </Text>
-        <Text style={[styles.footerText, { color: colors.textFaint }]}>
-          © 2024 - Todos os direitos reservados
-        </Text>
+        <View style={styles.footer}>
+          <Text style={[styles.footerText, { color: colors.textFaint }]}>
+            Beep Velozz v1.0.0
+          </Text>
+          <Text style={[styles.footerText, { color: colors.textFaint }]}>
+            © 2024 - Todos os direitos reservados
+          </Text>
         </View>
       </ScrollView>
     </MainLayout>
@@ -202,7 +249,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 8,
   },
   headerSubtitle: {
@@ -214,17 +261,17 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   settingsItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
     marginBottom: 12,
   },
   itemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   itemIcon: {
@@ -235,7 +282,7 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 2,
   },
   itemSubtitle: {
@@ -244,12 +291,12 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 24,
-    alignItems: 'center',
-    marginTop: 'auto',
+    alignItems: "center",
+    marginTop: "auto",
   },
   footerText: {
     fontSize: 12,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 4,
   },
 });
@@ -258,15 +305,27 @@ interface DetailScreenProps {
   onBack: () => void;
 }
 
-function DetailHeader({ title, subtitle, onBack }: { title: string; subtitle: string; onBack: () => void }) {
+function DetailHeader({
+  title,
+  subtitle,
+  onBack,
+}: {
+  title: string;
+  subtitle: string;
+  onBack: () => void;
+}) {
   const { colors } = useAppTheme();
   return (
     <View style={styles.header}>
       <TouchableOpacity onPress={onBack} style={{ marginBottom: 12 }}>
-        <Text style={{ color: colors.primary, fontSize: 18 }}>{'← Voltar'}</Text>
+        <Text style={{ color: colors.primary, fontSize: 18 }}>
+          {"← Voltar"}
+        </Text>
       </TouchableOpacity>
       <Text style={[styles.headerTitle, { color: colors.text }]}>{title}</Text>
-      <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>{subtitle}</Text>
+      <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>
+        {subtitle}
+      </Text>
     </View>
   );
 }
@@ -274,7 +333,8 @@ function DetailHeader({ title, subtitle, onBack }: { title: string; subtitle: st
 function NotificationSettingsScreen({ onBack }: DetailScreenProps) {
   const { colors } = useAppTheme();
   const [sessionAlertsEnabled, setSessionAlertsEnabled] = React.useState(true);
-  const [divergenceAlertsEnabled, setDivergenceAlertsEnabled] = React.useState(true);
+  const [divergenceAlertsEnabled, setDivergenceAlertsEnabled] =
+    React.useState(true);
   const [dailySummaryEnabled, setDailySummaryEnabled] = React.useState(false);
 
   return (
@@ -295,8 +355,10 @@ function NotificationSettingsScreen({ onBack }: DetailScreenProps) {
             <Switch
               value={sessionAlertsEnabled}
               onValueChange={() => setSessionAlertsEnabled((prev) => !prev)}
-              trackColor={{ false: colors.border, true: colors.primary + '40' }}
-              thumbColor={sessionAlertsEnabled ? colors.primary : colors.textFaint}
+              trackColor={{ false: colors.border, true: colors.primary + "40" }}
+              thumbColor={
+                sessionAlertsEnabled ? colors.primary : colors.textFaint
+              }
             />
           }
         />
@@ -309,8 +371,10 @@ function NotificationSettingsScreen({ onBack }: DetailScreenProps) {
             <Switch
               value={divergenceAlertsEnabled}
               onValueChange={() => setDivergenceAlertsEnabled((prev) => !prev)}
-              trackColor={{ false: colors.border, true: colors.primary + '40' }}
-              thumbColor={divergenceAlertsEnabled ? colors.primary : colors.textFaint}
+              trackColor={{ false: colors.border, true: colors.primary + "40" }}
+              thumbColor={
+                divergenceAlertsEnabled ? colors.primary : colors.textFaint
+              }
             />
           }
         />
@@ -323,8 +387,10 @@ function NotificationSettingsScreen({ onBack }: DetailScreenProps) {
             <Switch
               value={dailySummaryEnabled}
               onValueChange={() => setDailySummaryEnabled((prev) => !prev)}
-              trackColor={{ false: colors.border, true: colors.primary + '40' }}
-              thumbColor={dailySummaryEnabled ? colors.primary : colors.textFaint}
+              trackColor={{ false: colors.border, true: colors.primary + "40" }}
+              thumbColor={
+                dailySummaryEnabled ? colors.primary : colors.textFaint
+              }
             />
           }
         />
@@ -356,7 +422,7 @@ function PrivacySecuritySettingsScreen({ onBack }: DetailScreenProps) {
             <Switch
               value={analyticsEnabled}
               onValueChange={() => setAnalyticsEnabled((prev) => !prev)}
-              trackColor={{ false: colors.border, true: colors.primary + '40' }}
+              trackColor={{ false: colors.border, true: colors.primary + "40" }}
               thumbColor={analyticsEnabled ? colors.primary : colors.textFaint}
             />
           }
@@ -370,7 +436,7 @@ function PrivacySecuritySettingsScreen({ onBack }: DetailScreenProps) {
             <Switch
               value={anonymizeDrivers}
               onValueChange={() => setAnonymizeDrivers((prev) => !prev)}
-              trackColor={{ false: colors.border, true: colors.primary + '40' }}
+              trackColor={{ false: colors.border, true: colors.primary + "40" }}
               thumbColor={anonymizeDrivers ? colors.primary : colors.textFaint}
             />
           }
@@ -384,33 +450,29 @@ function StorageSettingsScreen({ onBack }: DetailScreenProps) {
   const { colors } = useAppTheme();
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.bg }]}>
-      <DetailHeader
-        title="Armazenamento"
-        subtitle="Entenda o que o Beep Velozz guarda no seu dispositivo."
-        onBack={onBack}
-      />
+    <>
+      <ScrollView style={[styles.container, { backgroundColor: colors.bg }]}>
+        <DetailHeader
+          title="Armazenamento"
+          subtitle="Entenda o que o Beep Velozz guarda no seu dispositivo."
+          onBack={onBack}
+        />
 
-      <View style={styles.section}>
-        <SettingsItem
-          icon={Database}
-          title="Sessões locais"
-          subtitle="Histórico de conferências salvo no dispositivo para acesso offline"
-        />
-        <SettingsItem
-          icon={Database}
-          title="Fotos de pacotes"
-          subtitle="Imagens associadas às sessões para fins de auditoria"
-        />
-      </View>
-    </ScrollView>
-    
-    <SimpleThemeSelector
-      visible={showThemeSelector}
-      onClose={() => setShowThemeSelector(false)}
-    />
-  </MainLayout>
-);
+        <View style={styles.section}>
+          <SettingsItem
+            icon={Database}
+            title="Sessões locais"
+            subtitle="Histórico de conferências salvo no dispositivo para acesso offline"
+          />
+          <SettingsItem
+            icon={Database}
+            title="Fotos de pacotes"
+            subtitle="Imagens associadas às sessões para fins de auditoria"
+          />
+        </View>
+      </ScrollView>
+    </>
+  );
 }
 
 function HelpSupportSettingsScreen({ onBack }: DetailScreenProps) {
@@ -439,4 +501,3 @@ function HelpSupportSettingsScreen({ onBack }: DetailScreenProps) {
     </ScrollView>
   );
 }
-

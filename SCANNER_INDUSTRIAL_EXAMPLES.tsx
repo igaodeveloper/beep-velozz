@@ -7,18 +7,18 @@
 // EXEMPLO 1: Uso Básico com Hook
 // ============================================================================
 
-import React from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
-import { useIndustrialScanner } from '@/utils/useIndustrialScanner';
-import { IndustrialScannerController } from '@/utils/scannerController';
+import React from "react";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { useIndustrialScanner } from "@/utils/useIndustrialScanner";
+import { IndustrialScannerController } from "@/utils/scannerController";
 import {
   normalizeCode,
   identifyPackage,
   validateCode,
   extractPrefix,
   getPackageTypeLabel,
-} from '@/utils/scannerIdentification';
-import { ScannerState, ScanResult } from '@/types/scanner';
+} from "@/utils/scannerIdentification";
+import { ScannerState, ScanResult } from "@/types/scanner";
 
 function BasicScannerExample() {
   const scanner = useIndustrialScanner({
@@ -34,20 +34,27 @@ function BasicScannerExample() {
     const result = await scanner.processScan(code);
 
     if (result.success) {
-      Alert.alert('Sucesso', `✅ ${result.code} - Tipo: ${result.type}`);
+      Alert.alert("Sucesso", `✅ ${result.code} - Tipo: ${result.type}`);
     } else {
-      Alert.alert('Erro', `❌ ${result.reason}`);
+      Alert.alert("Erro", `❌ ${result.reason}`);
     }
   };
 
   return (
     <View>
-      <Text>Shopee: {scanner.counts.shopee}/{scanner.limits.shopee}</Text>
-      <Text>Mercado Livre: {scanner.counts.mercado_livre}/{scanner.limits.mercado_livre}</Text>
-      <Text>Avulso: {scanner.counts.avulso}/{scanner.limits.avulso}</Text>
+      <Text>
+        Shopee: {scanner.counts.shopee}/{scanner.limits.shopee}
+      </Text>
+      <Text>
+        Mercado Livre: {scanner.counts.mercado_livre}/
+        {scanner.limits.mercado_livre}
+      </Text>
+      <Text>
+        Avulso: {scanner.counts.avulso}/{scanner.limits.avulso}
+      </Text>
 
       {scanner.isLimitReached && (
-        <Text style={{ color: 'red' }}>⚠️ LIMITE ATINGIDO</Text>
+        <Text style={{ color: "red" }}>⚠️ LIMITE ATINGIDO</Text>
       )}
 
       <TouchableOpacity onPress={() => scanner.reset()}>
@@ -68,23 +75,23 @@ function ControllerExample() {
       avulso: 20,
     },
     onStateChange: (state) => {
-      console.log('Scanner state changed:', state);
+      console.log("Scanner state changed:", state);
       if (state === ScannerState.LIMIT_REACHED) {
-        console.log('⚠️ Limite atingido!');
+        console.log("⚠️ Limite atingido!");
       }
     },
     onStatsUpdate: (stats) => {
-      console.log('Stats updated:', stats);
+      console.log("Stats updated:", stats);
     },
   });
 
   // Processar múltiplos códigos
   const processMultipleCodes = async () => {
-    const codes = ['BR123456', '20000987654', 'LM99887766'];
+    const codes = ["BR123456", "20000987654", "LM99887766"];
 
     for (const code of codes) {
       const result = await scanner.processScan(code);
-      console.log(`${code}: ${result.success ? 'OK' : 'FALHOU'}`);
+      console.log(`${code}: ${result.success ? "OK" : "FALHOU"}`);
 
       if (!result.success) {
         console.log(`Razão: ${result.reason}`);
@@ -106,14 +113,14 @@ function ControllerExample() {
 // ============================================================================
 function IdentificationExample() {
   const testCodes = [
-    'BR123456789',       // Shopee
-    '20000987654321',    // Mercado Livre
-    'LM-ABC-123',        // Avulso
-    '14555777888',       // Avulso
-    'UNKNOWN12345',      // Desconhecido
+    "BR123456789", // Shopee
+    "20000987654321", // Mercado Livre
+    "LM-ABC-123", // Avulso
+    "14555777888", // Avulso
+    "UNKNOWN12345", // Desconhecido
   ];
 
-  testCodes.forEach(rawCode => {
+  testCodes.forEach((rawCode) => {
     const normalized = normalizeCode(rawCode);
     const valid = validateCode(normalized);
     const identification = identifyPackage(normalized);
@@ -164,8 +171,8 @@ function AuditingExample() {
   };
 
   const generateReport = () => {
-    const successful = scanHistory.filter(r => r.success).length;
-    const duplicates = scanHistory.filter(r => r.isDuplicate).length;
+    const successful = scanHistory.filter((r) => r.success).length;
+    const duplicates = scanHistory.filter((r) => r.isDuplicate).length;
     const errors = scanHistory.length - successful;
 
     return {
@@ -173,7 +180,7 @@ function AuditingExample() {
       successful,
       errors,
       duplicates,
-      successRate: ((successful / scanHistory.length) * 100).toFixed(2) + '%',
+      successRate: ((successful / scanHistory.length) * 100).toFixed(2) + "%",
       lastScan: scanHistory[scanHistory.length - 1],
     };
   };
@@ -194,7 +201,7 @@ function AuditingExample() {
 async function ErrorHandlingExample() {
   const scanner = new IndustrialScannerController({
     maxAllowedScans: {
-      shopee: 3,           // Limite baixo para teste
+      shopee: 3, // Limite baixo para teste
       mercado_livre: 2,
       avulso: 2,
     },
@@ -202,10 +209,10 @@ async function ErrorHandlingExample() {
 
   // Teste todos os cenários de erro
   const testScenarios = [
-    { code: '', expectedReason: 'invalid' },
-    { code: 'BR123456', expectedReason: null }, // Valid
-    { code: 'BR123456', expectedReason: 'duplicate' }, // Duplicate
-    { code: 'UNKNOWN', expectedReason: null }, // Valid but unknown
+    { code: "", expectedReason: "invalid" },
+    { code: "BR123456", expectedReason: null }, // Valid
+    { code: "BR123456", expectedReason: "duplicate" }, // Duplicate
+    { code: "UNKNOWN", expectedReason: null }, // Valid but unknown
   ];
 
   for (const scenario of testScenarios) {
@@ -213,7 +220,7 @@ async function ErrorHandlingExample() {
 
     console.assert(
       !scenario.expectedReason || result.reason === scenario.expectedReason,
-      `Esperado ${scenario.expectedReason}, obtido ${result.reason}`
+      `Esperado ${scenario.expectedReason}, obtido ${result.reason}`,
     );
   }
 
@@ -221,9 +228,12 @@ async function ErrorHandlingExample() {
   for (let i = 0; i < 5; i++) {
     const result = await scanner.processScan(`BR${i}23456`);
     if (i < 3) {
-      console.assert(result.success, 'Deveria ter sucesso antes do limite');
+      console.assert(result.success, "Deveria ter sucesso antes do limite");
     } else {
-      console.assert(result.reason === 'limit_reached', 'Deveria atingir limite');
+      console.assert(
+        result.reason === "limit_reached",
+        "Deveria atingir limite",
+      );
     }
   }
 }
@@ -243,22 +253,24 @@ function MonitoringExample() {
       console.log(`[STATE] ${state}`);
     },
     onStatsUpdate: (stats) => {
-      console.log(`[STATS] Total: ${stats.validScans}, Duplicatas: ${stats.duplicates}`);
+      console.log(
+        `[STATS] Total: ${stats.validScans}, Duplicatas: ${stats.duplicates}`,
+      );
     },
   });
 
   const monitorScan = async (code: string) => {
     console.log(`[SCAN] Processando: ${code}`);
-    console.time('scan-duration');
+    console.time("scan-duration");
 
     const result = await scanner.processScan(code);
 
-    console.timeEnd('scan-duration');
+    console.timeEnd("scan-duration");
     console.log(`[RESULT] Success: ${result.success}, Razão: ${result.reason}`);
 
     // Estado atual
     const stats = scanner.getStats();
-    console.log('[PROGRESS]', {
+    console.log("[PROGRESS]", {
       shopee: `${stats.counts.shopee}/${stats.limits.shopee}`,
       mercado_livre: `${stats.counts.mercado_livre}/${stats.limits.mercado_livre}`,
       avulso: `${stats.counts.avulso}/${stats.limits.avulso}`,
@@ -312,13 +324,13 @@ function MigrationExample() {
       console.log(`Limite atingido: ${scanner.isLimitReached}`);
     } else if (result.isDuplicate) {
       // Era duplicata
-      console.log('Código já escaneado');
-    } else if (result.reason === 'limit_reached') {
+      console.log("Código já escaneado");
+    } else if (result.reason === "limit_reached") {
       // Limite atingido
-      console.log('Limite de ' + result.type + ' foi atingido');
+      console.log("Limite de " + result.type + " foi atingido");
     } else {
       // Outro erro
-      console.log('Erro: ' + result.reason);
+      console.log("Erro: " + result.reason);
     }
   };
 

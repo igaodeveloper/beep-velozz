@@ -1,7 +1,9 @@
 # ✅ CORREÇÕES APLICADAS - Scanner Mercado Livre
 
 ## 🎯 Problema Identificado
+
 O scanner não estava:
+
 - ❌ Lendo códigos Mercado Livre (2200D, 4482D)
 - ❌ Bipando quando identificava o tipo
 - ❌ Carregando os arquivos de som
@@ -10,12 +12,14 @@ O scanner não estava:
 
 ## 🔧 Soluções Implementadas
 
-### 1️⃣ **Validação de Reticle Desabilitada** 
+### 1️⃣ **Validação de Reticle Desabilitada**
+
 📁 [components/ScannerView.tsx](components/ScannerView.tsx#L305)
 
 **Problema**: Códigos fora do reticle visual eram rejeitados silenciosamente
 
 **Antes**:
+
 ```tsx
 if (event?.bounds && !isCodeInReticleArea(event.bounds)) {
   // Rejeita código
@@ -24,6 +28,7 @@ if (event?.bounds && !isCodeInReticleArea(event.bounds)) {
 ```
 
 **Depois**:
+
 ```tsx
 // DESABILITADO: Aceita qualquer código lido
 handleScannedCode(event?.data);
@@ -34,9 +39,11 @@ handleScannedCode(event?.data);
 ---
 
 ### 2️⃣ **Padrões Mercado Livre Adicionados**
+
 📁 [utils/scannerIdentification.ts](utils/scannerIdentification.ts#L26)
 
 **Adicionados novos prefixos**:
+
 ```ts
 {
   prefix: '2200D',
@@ -59,21 +66,24 @@ handleScannedCode(event?.data);
 ---
 
 ### 3️⃣ **Caminho de Arquivos de Som Corrigido**
+
 📁 [utils/sound.ts](utils/sound.ts#L18)
 
 **Antes**:
+
 ```tsx
 const SOUND_FILES = {
-  beep: require('../assets/sounds/beep.mp3'),  // ❌ Caminho relativo
-  error: require('../assets/sounds/error.mp3'),
+  beep: require("../assets/sounds/beep.mp3"), // ❌ Caminho relativo
+  error: require("../assets/sounds/error.mp3"),
 };
 ```
 
 **Depois**:
+
 ```tsx
 const SOUND_FILES = {
-  beep: require('@/assets/sounds/beep.mp3'),   // ✅ Alias @/
-  error: require('@/assets/sounds/error.mp3'),
+  beep: require("@/assets/sounds/beep.mp3"), // ✅ Alias @/
+  error: require("@/assets/sounds/error.mp3"),
 };
 ```
 
@@ -82,20 +92,22 @@ const SOUND_FILES = {
 ---
 
 ### 4️⃣ **Pré-carregamento de Sons Adicionado**
+
 📁 [components/ScannerView.tsx](components/ScannerView.tsx#L432)
 
 **Novo useEffect**:
+
 ```tsx
 useEffect(() => {
-  console.log('[ScannerView] 🎵 Inicializando sistema de áudio...');
-  preloadSounds().catch(err => {
-    console.error('[ScannerView] ❌ Erro ao carregar sons:', err);
+  console.log("[ScannerView] 🎵 Inicializando sistema de áudio...");
+  preloadSounds().catch((err) => {
+    console.error("[ScannerView] ❌ Erro ao carregar sons:", err);
   });
 
   return () => {
-    console.log('[ScannerView] 🎵 Limpando áudio...');
-    unloadSounds().catch(err => {
-      console.error('[ScannerView] ❌ Erro ao descarregar sons:', err);
+    console.log("[ScannerView] 🎵 Limpando áudio...");
+    unloadSounds().catch((err) => {
+      console.error("[ScannerView] ❌ Erro ao descarregar sons:", err);
     });
   };
 }, []);
@@ -108,32 +120,36 @@ useEffect(() => {
 ## 🧪 COMO TESTAR AGORA
 
 ### Teste Rápido
+
 Dentro do app, no console:
 
 ```javascript
 // 1. Verificar normalização
-import { normalizeCode } from '@/utils/scannerIdentification';
-console.log(normalizeCode('2200D 1241459785')); 
+import { normalizeCode } from "@/utils/scannerIdentification";
+console.log(normalizeCode("2200D 1241459785"));
 // Esperado: "2200D1241459785"
 
 // 2. Verificar identificação
-import { identifyPackage } from '@/utils/scannerIdentification';
-console.log(identifyPackage('2200D1241459785'));
+import { identifyPackage } from "@/utils/scannerIdentification";
+console.log(identifyPackage("2200D1241459785"));
 // Esperado: { type: 'mercado_livre', matched: true, confidence: 'high' }
 
 // 3. Verificar áudio
-import { playBeepB } from '@/utils/sound';
+import { playBeepB } from "@/utils/sound";
 await playBeepB();
 // Esperado: 🔊 Som toca (bipar)
 ```
 
 ### Teste Real
+
 Escaneie ou digite:
+
 ```
 2200D1241459785
 ```
 
 **Esperado**:
+
 - ✅ Console mostra: `[ScannerView] 🎯 IDENTIFICADO: type="mercado_livre"`
 - ✅ Console mostra: `[ScannerAudio] ▶️ BEEP_B (Mercado Livre)`
 - ✅ Som emitido: 🔔 Bip diferente do Shopee/Avulso
@@ -166,21 +182,22 @@ QR Code Escaneado
 
 ## 🎯 O Que Funciona Agora
 
-| Feature | Status |
-|---------|--------|
-| Ler QR codes com câmera | ✅ |
-| Normalizar códigos | ✅ |
-| Identificar Mercado Livre (2200D, 4482D) | ✅ |
-| Mapear para áudio BEEP_B | ✅ |
-| Carregar arquivos de som | ✅ |
-| Reproduzir som ao escanear | ✅ |
-| Input manual de códigos | ✅ |
+| Feature                                  | Status |
+| ---------------------------------------- | ------ |
+| Ler QR codes com câmera                  | ✅     |
+| Normalizar códigos                       | ✅     |
+| Identificar Mercado Livre (2200D, 4482D) | ✅     |
+| Mapear para áudio BEEP_B                 | ✅     |
+| Carregar arquivos de som                 | ✅     |
+| Reproduzir som ao escanear               | ✅     |
+| Input manual de códigos                  | ✅     |
 
 ---
 
 ## 📱 Próximos Passos
 
 1. **Limpe o cache da app**:
+
    ```bash
    npm run start:clean
    ```
@@ -221,12 +238,12 @@ Depois teste novamente com código: `2200D1241459785`
 
 ## 📝 Mudanças Resumidas
 
-| Arquivo | Mudança |
-|---------|---------|
-| `ScannerView.tsx` | ✅ Validação reticle removida |
-| `ScannerView.tsx` | ✅ preloadSounds() adicionado |
+| Arquivo                    | Mudança                               |
+| -------------------------- | ------------------------------------- |
+| `ScannerView.tsx`          | ✅ Validação reticle removida         |
+| `ScannerView.tsx`          | ✅ preloadSounds() adicionado         |
 | `scannerIdentification.ts` | ✅ Prefixos 2200D e 4482D adicionados |
-| `sound.ts` | ✅ Caminho corrigido para `@/assets` |
+| `sound.ts`                 | ✅ Caminho corrigido para `@/assets`  |
 
 ---
 

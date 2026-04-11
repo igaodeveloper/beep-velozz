@@ -4,9 +4,9 @@
  * Ensures proper initialization, cleanup, and error handling
  */
 
-import { useEffect, useRef } from 'react';
-import { AppState, AppStateStatus, Platform } from 'react-native';
-import { envConfig, isProduction } from '@/src/config/envConfig';
+import { useEffect, useRef } from "react";
+import { AppState, AppStateStatus, Platform } from "react-native";
+import { envConfig, isProduction } from "@/src/config/envConfig";
 
 /**
  * Centralized error handler for production
@@ -34,14 +34,15 @@ class ProductionErrorHandler {
 
     // Unhandled promise rejections
     const unhandledRejectionHandler = (reason: any) => {
-      const error = reason instanceof Error ? reason : new Error(String(reason));
+      const error =
+        reason instanceof Error ? reason : new Error(String(reason));
       this.logError(error);
     };
 
-    process.on('unhandledRejection', unhandledRejectionHandler);
+    process.on("unhandledRejection", unhandledRejectionHandler);
 
     this.isInitialized = true;
-    console.log('✅ Production error handling initialized');
+    console.log("✅ Production error handling initialized");
   }
 
   /**
@@ -66,7 +67,7 @@ class ProductionErrorHandler {
    */
   private sendToMonitoring(error: Error): void {
     // TODO: Implement integration with Sentry or similar
-    console.log('📡 Error sent to monitoring:', error.message);
+    console.log("📡 Error sent to monitoring:", error.message);
   }
 
   /**
@@ -89,7 +90,7 @@ class ProductionErrorHandler {
  * Handles app state changes (foreground/background)
  */
 class AppLifecycleManager {
-  private appState = 'active' as AppStateStatus;
+  private appState = "active" as AppStateStatus;
   private listeners: Map<string, (state: AppStateStatus) => void> = new Map();
   private subscription: any = null;
 
@@ -99,8 +100,11 @@ class AppLifecycleManager {
   initialize(): void {
     if (this.subscription) return;
 
-    this.subscription = AppState.addEventListener('change', this.handleAppStateChange);
-    console.log('✅ App lifecycle management initialized');
+    this.subscription = AppState.addEventListener(
+      "change",
+      this.handleAppStateChange,
+    );
+    console.log("✅ App lifecycle management initialized");
   }
 
   /**
@@ -110,12 +114,12 @@ class AppLifecycleManager {
     const prevState = this.appState;
     this.appState = state;
 
-    if (state === 'active' && prevState !== 'active') {
-      this.notifyListeners('foreground');
-      console.log('📱 App came to foreground');
-    } else if (state !== 'active' && prevState === 'active') {
-      this.notifyListeners('background');
-      console.log('📱 App went to background');
+    if (state === "active" && prevState !== "active") {
+      this.notifyListeners("foreground");
+      console.log("📱 App came to foreground");
+    } else if (state !== "active" && prevState === "active") {
+      this.notifyListeners("background");
+      console.log("📱 App went to background");
     }
   };
 
@@ -124,7 +128,7 @@ class AppLifecycleManager {
    */
   onStateChange(
     name: string,
-    callback: (state: AppStateStatus) => void
+    callback: (state: AppStateStatus) => void,
   ): () => void {
     this.listeners.set(name, callback);
 
@@ -137,7 +141,7 @@ class AppLifecycleManager {
   /**
    * Notify all listeners
    */
-  private notifyListeners(event: 'foreground' | 'background'): void {
+  private notifyListeners(event: "foreground" | "background"): void {
     this.listeners.forEach((callback) => {
       try {
         callback(this.appState);
@@ -199,9 +203,9 @@ class ResourceCleanupManager {
 
     // Unsubscribe from subscriptions
     this.subscriptions.forEach((sub) => {
-      if (typeof sub?.unsubscribe === 'function') {
+      if (typeof sub?.unsubscribe === "function") {
         sub.unsubscribe();
-      } else if (typeof sub?.remove === 'function') {
+      } else if (typeof sub?.remove === "function") {
         sub.remove();
       }
     });
@@ -212,12 +216,12 @@ class ResourceCleanupManager {
       try {
         fn();
       } catch (error) {
-        console.error('Error during cleanup:', error);
+        console.error("Error during cleanup:", error);
       }
     });
     this.cleanup = [];
 
-    console.log('✅ Resource cleanup completed');
+    console.log("✅ Resource cleanup completed");
   }
 }
 
@@ -259,13 +263,13 @@ export const useProductionCleanup = (componentName: string) => {
  */
 export const useAppStateChange = (
   onForeground?: () => void,
-  onBackground?: () => void
+  onBackground?: () => void,
 ) => {
   useEffect(() => {
-    const unsubscribe = lifecycleManager.onStateChange('app-state', (state) => {
-      if (state === 'active' && onForeground) {
+    const unsubscribe = lifecycleManager.onStateChange("app-state", (state) => {
+      if (state === "active" && onForeground) {
         onForeground();
-      } else if (state !== 'active' && onBackground) {
+      } else if (state !== "active" && onBackground) {
         onBackground();
       }
     });
@@ -279,7 +283,7 @@ export const useAppStateChange = (
  * Call this once at app startup
  */
 export const initializeProduction = (): void => {
-  console.log('🚀 Initializing production environment...');
+  console.log("🚀 Initializing production environment...");
 
   // Initialize error handling
   errorHandler.initialize();
@@ -289,11 +293,11 @@ export const initializeProduction = (): void => {
 
   // Set up crash reporting if in production
   if (isProduction()) {
-    console.log('📡 Crash reporting initialized');
+    console.log("📡 Crash reporting initialized");
     // TODO: Initialize Sentry or similar
   }
 
-  console.log('✅ Production environment ready');
+  console.log("✅ Production environment ready");
 };
 
 /**
@@ -301,12 +305,12 @@ export const initializeProduction = (): void => {
  * Call this before app termination
  */
 export const cleanupProduction = (): void => {
-  console.log('🧹 Cleaning up production environment...');
+  console.log("🧹 Cleaning up production environment...");
 
   cleanupManager.executeCleanup();
   lifecycleManager.cleanup();
 
-  console.log('✅ Production cleanup completed');
+  console.log("✅ Production cleanup completed");
 };
 
 /**

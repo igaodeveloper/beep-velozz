@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
-import { Session, ScannedPackage } from '../types/session';
-import { useAppTheme, ThemeColors } from '../utils/useAppTheme';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
+} from "react-native";
+import { Session, ScannedPackage } from "../types/session";
+import { useAppTheme, ThemeColors } from "../utils/useAppTheme";
 
 interface QualityCheckProps {
   session: Session;
@@ -17,36 +23,41 @@ export default function QualityCheck({
   onClose,
 }: QualityCheckProps) {
   const { colors } = useAppTheme();
-  const [notes, setNotes] = useState<string>('');
-  const [rejectReason, setRejectReason] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'review' | 'approve' | 'reject'>('review');
+  const [notes, setNotes] = useState<string>("");
+  const [rejectReason, setRejectReason] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<"review" | "approve" | "reject">(
+    "review",
+  );
 
   const hasDuplicatePackages = session.packages.some(
     (p: ScannedPackage, i: number) =>
-      session.packages.findIndex((x: ScannedPackage) => x.code === p.code) !== i
+      session.packages.findIndex((x: ScannedPackage) => x.code === p.code) !==
+      i,
   );
 
   const percentage =
     session.declaredCount > 0
       ? ((session.packages.length / session.declaredCount) * 100).toFixed(0)
-      : '0';
+      : "0";
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <View
         style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
+          flexDirection: "row",
+          justifyContent: "space-between",
           padding: 16,
           borderBottomWidth: 1,
           borderBottomColor: colors.surface2,
         }}
       >
         <View>
-          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>
+          <Text
+            style={{ color: colors.primary, fontSize: 12, fontWeight: "700" }}
+          >
             CONTROLE DE QUALIDADE
           </Text>
-          <Text style={{ color: colors.text, fontSize: 20, fontWeight: '800' }}>
+          <Text style={{ color: colors.text, fontSize: 20, fontWeight: "800" }}>
             Avaliação de Sessão
           </Text>
         </View>
@@ -73,30 +84,30 @@ export default function QualityCheck({
           />
         </View>
 
-        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+        <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
           <TabButton
             label="Revisar"
-            active={activeTab === 'review'}
-            onPress={() => setActiveTab('review')}
+            active={activeTab === "review"}
+            onPress={() => setActiveTab("review")}
             colors={colors}
           />
           <TabButton
             label="Aprovar"
-            active={activeTab === 'approve'}
-            onPress={() => setActiveTab('approve')}
+            active={activeTab === "approve"}
+            onPress={() => setActiveTab("approve")}
             colors={colors}
             color={colors.success}
           />
           <TabButton
             label="Rejeitar"
-            active={activeTab === 'reject'}
-            onPress={() => setActiveTab('reject')}
+            active={activeTab === "reject"}
+            onPress={() => setActiveTab("reject")}
             colors={colors}
             color="#ef4444"
           />
         </View>
 
-        {activeTab === 'review' && (
+        {activeTab === "review" && (
           <View
             style={{
               backgroundColor: colors.surface,
@@ -105,7 +116,10 @@ export default function QualityCheck({
             }}
           >
             <QualityCheckItem label="Códigos legíveis" checked />
-            <QualityCheckItem label="Sem duplicatas" checked={!hasDuplicatePackages} />
+            <QualityCheckItem
+              label="Sem duplicatas"
+              checked={!hasDuplicatePackages}
+            />
             <QualityCheckItem label="Documentação" checked={!!session.notes} />
 
             <Text style={{ marginTop: 16 }}>
@@ -114,8 +128,14 @@ export default function QualityCheck({
           </View>
         )}
 
-        {activeTab === 'approve' && (
-          <View style={{ backgroundColor: colors.surface, padding: 16, borderRadius: 12 }}>
+        {activeTab === "approve" && (
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              padding: 16,
+              borderRadius: 12,
+            }}
+          >
             <TextInput
               style={{
                 backgroundColor: colors.surface2,
@@ -136,18 +156,24 @@ export default function QualityCheck({
                 backgroundColor: colors.success,
                 padding: 14,
                 borderRadius: 8,
-                alignItems: 'center',
+                alignItems: "center",
               }}
             >
-              <Text style={{ color: '#fff', fontWeight: '700' }}>
+              <Text style={{ color: "#fff", fontWeight: "700" }}>
                 Aprovar Sessão
               </Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {activeTab === 'reject' && (
-          <View style={{ backgroundColor: colors.surface, padding: 16, borderRadius: 12 }}>
+        {activeTab === "reject" && (
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              padding: 16,
+              borderRadius: 12,
+            }}
+          >
             <TextInput
               style={{
                 backgroundColor: colors.surface2,
@@ -156,7 +182,7 @@ export default function QualityCheck({
                 borderRadius: 8,
                 marginBottom: 16,
                 borderWidth: 1,
-                borderColor: '#ef4444',
+                borderColor: "#ef4444",
               }}
               placeholder="Motivo da rejeição..."
               value={rejectReason}
@@ -168,13 +194,13 @@ export default function QualityCheck({
               disabled={!rejectReason.trim()}
               onPress={() => onReject(rejectReason)}
               style={{
-                backgroundColor: rejectReason.trim() ? '#ef4444' : '#ccc',
+                backgroundColor: rejectReason.trim() ? "#ef4444" : "#ccc",
                 padding: 14,
                 borderRadius: 8,
-                alignItems: 'center',
+                alignItems: "center",
               }}
             >
-              <Text style={{ color: '#fff', fontWeight: '700' }}>
+              <Text style={{ color: "#fff", fontWeight: "700" }}>
                 Rejeitar Sessão
               </Text>
             </TouchableOpacity>
@@ -206,9 +232,9 @@ function TabButton({ label, active, onPress, colors, color }: TabButtonProps) {
     >
       <Text
         style={{
-          textAlign: 'center',
-          color: active ? '#fff' : colors.text,
-          fontWeight: '700',
+          textAlign: "center",
+          color: active ? "#fff" : colors.text,
+          fontWeight: "700",
         }}
       >
         {label}
@@ -224,9 +250,11 @@ interface QualityCheckItemProps {
 
 function QualityCheckItem({ label, checked }: QualityCheckItemProps) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8 }}>
-      <Text style={{ marginRight: 8 }}>{checked ? '✓' : '✗'}</Text>
-      <Text style={{ color: checked ? '#10b981' : '#ef4444' }}>{label}</Text>
+    <View
+      style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8 }}
+    >
+      <Text style={{ marginRight: 8 }}>{checked ? "✓" : "✗"}</Text>
+      <Text style={{ color: checked ? "#10b981" : "#ef4444" }}>{label}</Text>
     </View>
   );
 }
@@ -238,7 +266,13 @@ interface InfoRowProps {
 
 function InfoRow({ label, value }: InfoRowProps) {
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+    <View
+      style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: 8,
+      }}
+    >
       <Text>{label}</Text>
       <Text>{value}</Text>
     </View>

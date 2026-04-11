@@ -1,4 +1,4 @@
-import { PackageType } from './scanner';
+import { PackageType } from "./scanner";
 
 export interface ScannedPackage {
   id: string;

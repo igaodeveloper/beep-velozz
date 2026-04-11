@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -7,13 +7,24 @@ import {
   TouchableOpacity,
   ViewStyle,
   TextStyle,
-} from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
-import * as Haptics from 'expo-haptics';
+} from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
+import * as Haptics from "expo-haptics";
 
-export type CardVariant = 'default' | 'elevated' | 'outlined' | 'glass' | 'gradient';
-export type CardSize = 'sm' | 'md' | 'lg' | 'xl';
-export type CardStatus = 'default' | 'loading' | 'disabled' | 'success' | 'error' | 'warning';
+export type CardVariant =
+  | "default"
+  | "elevated"
+  | "outlined"
+  | "glass"
+  | "gradient";
+export type CardSize = "sm" | "md" | "lg" | "xl";
+export type CardStatus =
+  | "default"
+  | "loading"
+  | "disabled"
+  | "success"
+  | "error"
+  | "warning";
 
 interface ModernCardProps {
   title?: string;
@@ -44,9 +55,9 @@ export default function ModernCard({
   icon,
   children,
   onPress,
-  variant = 'default',
-  size = 'md',
-  status = 'default',
+  variant = "default",
+  size = "md",
+  status = "default",
   fullWidth = false,
   style,
   contentStyle,
@@ -65,8 +76,8 @@ export default function ModernCard({
 
   useEffect(() => {
     if (animated) {
-      const targetOpacity = status === 'disabled' ? 0.5 : 1;
-      const targetShadow = variant === 'elevated' ? 1 : 0;
+      const targetOpacity = status === "disabled" ? 0.5 : 1;
+      const targetShadow = variant === "elevated" ? 1 : 0;
 
       Animated.timing(opacityAnim, {
         toValue: targetOpacity,
@@ -83,7 +94,7 @@ export default function ModernCard({
   }, [status, variant, animated]);
 
   const handlePressIn = () => {
-    if (status === 'disabled' || !onPress) return;
+    if (status === "disabled" || !onPress) return;
 
     if (hapticFeedback) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -100,7 +111,7 @@ export default function ModernCard({
   };
 
   const handlePressOut = () => {
-    if (status === 'disabled' || !onPress) return;
+    if (status === "disabled" || !onPress) return;
 
     if (animated) {
       Animated.spring(scaleAnim, {
@@ -115,8 +126,8 @@ export default function ModernCard({
   const getCardStyle = (): ViewStyle => {
     const baseStyle: ViewStyle = {
       borderRadius: getBorderRadius(),
-      overflow: 'hidden',
-      opacity: status === 'disabled' ? 0.5 : 1,
+      overflow: "hidden",
+      opacity: status === "disabled" ? 0.5 : 1,
     };
 
     const variantStyles = {
@@ -136,20 +147,20 @@ export default function ModernCard({
         elevation: 3,
       },
       outlined: {
-        backgroundColor: 'transparent',
+        backgroundColor: "transparent",
         borderWidth: 2,
         borderColor: colors.border,
       },
       glass: {
-        backgroundColor: colors.surface + '40',
+        backgroundColor: colors.surface + "40",
         borderWidth: 1,
-        borderColor: colors.border + '60',
-        backdropFilter: 'blur(10px)',
+        borderColor: colors.border + "60",
+        backdropFilter: "blur(10px)",
       },
       gradient: {
-        backgroundColor: colors.primary + '10',
+        backgroundColor: colors.primary + "10",
         borderWidth: 1,
-        borderColor: colors.primary + '30',
+        borderColor: colors.primary + "30",
         shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,
@@ -182,12 +193,15 @@ export default function ModernCard({
     return {
       ...baseStyle,
       ...variantStyles[variant],
-      ...(status !== 'default' && statusStyles[status]),
+      ...(status !== "default" && statusStyles[status]),
       ...style,
     };
   };
 
-  const getPadding = (): { paddingHorizontal: number; paddingVertical: number } => {
+  const getPadding = (): {
+    paddingHorizontal: number;
+    paddingVertical: number;
+  } => {
     const paddingMap = {
       sm: { paddingHorizontal: 16, paddingVertical: 12 },
       md: { paddingHorizontal: 20, paddingVertical: 16 },
@@ -222,7 +236,9 @@ export default function ModernCard({
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             {icon && (
-              <View style={[styles.iconContainer, { marginRight: title ? 12 : 0 }]}>
+              <View
+                style={[styles.iconContainer, { marginRight: title ? 12 : 0 }]}
+              >
                 {React.cloneElement(icon as React.ReactElement<any>, {
                   width: getIconSize(),
                   height: getIconSize(),
@@ -246,7 +262,10 @@ export default function ModernCard({
                 <Text
                   style={[
                     styles.subtitle,
-                    { color: colors.textMuted, fontSize: getSubtitleFontSize() },
+                    {
+                      color: colors.textMuted,
+                      fontSize: getSubtitleFontSize(),
+                    },
                     subtitleStyle,
                   ]}
                 >
@@ -276,21 +295,14 @@ export default function ModernCard({
       )}
 
       {/* Children */}
-      {children && (
-        <View style={styles.childrenContainer}>
-          {children}
-        </View>
-      )}
+      {children && <View style={styles.childrenContainer}>{children}</View>}
     </View>
   );
 
-  if (onPress && status !== 'disabled') {
+  if (onPress && status !== "disabled") {
     return (
       <Animated.View
-        style={[
-          { width: fullWidth ? '100%' : 'auto' },
-          animatedStyle,
-        ]}
+        style={[{ width: fullWidth ? "100%" : "auto" }, animatedStyle]}
       >
         <TouchableOpacity
           style={getCardStyle()}
@@ -310,7 +322,7 @@ export default function ModernCard({
     <Animated.View
       style={[
         getCardStyle(),
-        { width: fullWidth ? '100%' : 'auto' },
+        { width: fullWidth ? "100%" : "auto" },
         animatedStyle,
       ]}
     >
@@ -340,36 +352,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
     marginBottom: 8,
   },
   headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   iconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   textContainer: {
     flex: 1,
   },
   title: {
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 2,
   },
   subtitle: {
-    fontWeight: '400',
+    fontWeight: "400",
   },
   description: {
-    fontWeight: '400',
+    fontWeight: "400",
     lineHeight: 18,
     marginTop: 4,
   },
@@ -379,16 +391,16 @@ const styles = StyleSheet.create({
 });
 
 export const CardVariants = {
-  default: 'default',
-  elevated: 'elevated',
-  outlined: 'outlined',
-  glass: 'glass',
-  gradient: 'gradient',
+  default: "default",
+  elevated: "elevated",
+  outlined: "outlined",
+  glass: "glass",
+  gradient: "gradient",
 } as const;
 
 export const CardSizes = {
-  sm: 'sm',
-  md: 'md',
-  lg: 'lg',
-  xl: 'xl',
+  sm: "sm",
+  md: "md",
+  lg: "lg",
+  xl: "xl",
 } as const;

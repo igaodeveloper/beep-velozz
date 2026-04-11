@@ -3,18 +3,21 @@
  * Scanner otimizado para operação crítica com performance máxima
  */
 
-import { performanceOptimizer } from './performanceOptimizer';
-import { identifyPackage, identifyPackageUltraFast } from '@/utils/scannerIdentification';
-import { smartClassifier } from './smartClassifierService';
-import { cacheService } from './cacheService';
-import { PackageType } from '@/types/scanner';
+import { performanceOptimizer } from "./performanceOptimizer";
+import {
+  identifyPackage,
+  identifyPackageUltraFast,
+} from "@/utils/scannerIdentification";
+import { smartClassifier } from "./smartClassifierService";
+import { cacheService } from "./cacheService";
+import { PackageType } from "@/types/scanner";
 
 interface ScanResult {
   code: string;
   type: PackageType;
   confidence: number;
   processingTime: number;
-  method: 'camera' | 'manual' | 'qr';
+  method: "camera" | "manual" | "qr";
   success: boolean;
   reasoning?: string;
 }
@@ -67,17 +70,19 @@ class UltraFastScanner {
     try {
       // Preload patterns críticos
       await this.preloadCriticalPatterns();
-      
+
       // Inicializa cache crítico
       await this.initializeCriticalCache();
-      
+
       // Otimiza garbage collection
       this.optimizeMemoryUsage();
-      
+
       this.isInitialized = true;
-      console.log('[UltraFastScanner] Initialized with zero-delay optimization');
+      console.log(
+        "[UltraFastScanner] Initialized with zero-delay optimization",
+      );
     } catch (error) {
-      console.error('[UltraFastScanner] Initialization error:', error);
+      console.error("[UltraFastScanner] Initialization error:", error);
     }
   }
 
@@ -86,36 +91,43 @@ class UltraFastScanner {
    */
   async scan(
     code: string,
-    method: 'camera' | 'manual' | 'qr' = 'camera',
+    method: "camera" | "manual" | "qr" = "camera",
     options: {
       useML?: boolean;
       useCache?: boolean;
       timeout?: number;
-    } = {}
+    } = {},
   ): Promise<ScanResult> {
     const startTime = Date.now();
-    
+
     try {
       // Validação imediata (0.1ms)
       if (!code || code.trim().length < 4) {
-        return this.createErrorResult(code, 'Código inválido', startTime);
+        return this.createErrorResult(code, "Código inválido", startTime);
       }
 
-      const normalizedCode = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-      
+      const normalizedCode = code
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "");
+
       // Cache crítico ultra-rápido (0.2ms)
       if (options.useCache !== false) {
         const cached = this.getCriticalCachedResult(normalizedCode);
         if (cached) {
-          this.updateMetrics('cache_hit', Date.now() - startTime);
+          this.updateMetrics("cache_hit", Date.now() - startTime);
           return { ...cached, processingTime: Date.now() - startTime };
         }
       }
 
       // Identificação ultra-rápida (0.5ms)
       const identification = await performanceOptimizer.executeCritical(
-        () => this.performUltraFastIdentification(normalizedCode, options.useML !== false),
-        options.timeout || 10 // 10ms timeout máximo
+        () =>
+          this.performUltraFastIdentification(
+            normalizedCode,
+            options.useML !== false,
+          ),
+        options.timeout || 10, // 10ms timeout máximo
       );
 
       const result: ScanResult = {
@@ -124,16 +136,21 @@ class UltraFastScanner {
         confidence: identification.confidence,
         processingTime: Date.now() - startTime,
         method,
-        success: identification.type !== 'unknown',
-        ...(identification.reasoning && { reasoning: identification.reasoning }),
+        success: identification.type !== "unknown",
+        ...(identification.reasoning && {
+          reasoning: identification.reasoning,
+        }),
       };
 
       // Cache para próximas operações
       this.setCriticalCache(normalizedCode, result);
-      
+
       // Atualiza métricas
-      this.updateMetrics(result.success ? 'success' : 'error', result.processingTime);
-      
+      this.updateMetrics(
+        result.success ? "success" : "error",
+        result.processingTime,
+      );
+
       // Adiciona ao histórico
       this.addToHistory(result);
 
@@ -143,10 +160,13 @@ class UltraFastScanner {
       }
 
       return result;
-
     } catch (error) {
-      console.error('[UltraFastScanner] Scan error:', error);
-      return this.createErrorResult(code, error instanceof Error ? error.message : 'Erro desconhecido', startTime);
+      console.error("[UltraFastScanner] Scan error:", error);
+      return this.createErrorResult(
+        code,
+        error instanceof Error ? error.message : "Erro desconhecido",
+        startTime,
+      );
     }
   }
 
@@ -155,7 +175,7 @@ class UltraFastScanner {
    */
   private async performUltraFastIdentification(
     code: string,
-    useML: boolean
+    useML: boolean,
   ): Promise<{ type: PackageType; confidence: number; reasoning?: string }> {
     // Estratégia 1: Pattern matching direto (0.1ms)
     const patternResult = this.directPatternMatching(code);
@@ -165,16 +185,20 @@ class UltraFastScanner {
 
     // Estratégia 2: Função ultra-fast (0.2ms)
     const ultraFastResult = identifyPackageUltraFast(code);
-    if (ultraFastResult.matched && ultraFastResult.confidence !== 'low') {
-      const result: { type: PackageType; confidence: number; reasoning?: string } = {
+    if (ultraFastResult.matched && ultraFastResult.confidence !== "low") {
+      const result: {
+        type: PackageType;
+        confidence: number;
+        reasoning?: string;
+      } = {
         type: ultraFastResult.type,
-        confidence: ultraFastResult.confidence === 'high' ? 0.9 : 0.7,
+        confidence: ultraFastResult.confidence === "high" ? 0.9 : 0.7,
       };
-      
+
       if (ultraFastResult.description) {
         result.reasoning = ultraFastResult.description;
       }
-      
+
       return result;
     }
 
@@ -183,9 +207,9 @@ class UltraFastScanner {
       try {
         const mlResult = await performanceOptimizer.executeCritical(
           () => smartClassifier.classifyCode(code),
-          20
+          20,
         );
-        
+
         if (mlResult.confidence > 0.8) {
           return {
             type: mlResult.type,
@@ -200,55 +224,66 @@ class UltraFastScanner {
 
     // Estratégia 4: Identificação padrão (1ms)
     const standardResult = identifyPackage(code);
-    const result: { type: PackageType; confidence: number; reasoning?: string } = {
+    const result: {
+      type: PackageType;
+      confidence: number;
+      reasoning?: string;
+    } = {
       type: standardResult.type,
-      confidence: standardResult.confidence === 'high' ? 0.8 : 
-                 standardResult.confidence === 'medium' ? 0.6 : 0.4,
+      confidence:
+        standardResult.confidence === "high"
+          ? 0.8
+          : standardResult.confidence === "medium"
+            ? 0.6
+            : 0.4,
     };
-    
+
     if (standardResult.description) {
       result.reasoning = standardResult.description;
     }
-    
+
     return result;
   }
 
   /**
    * Pattern matching direto para casos mais comuns
    */
-  private directPatternMatching(code: string): { type: PackageType; confidence: number } {
+  private directPatternMatching(code: string): {
+    type: PackageType;
+    confidence: number;
+  } {
     // Mercado Livre - padrões mais comuns
-    if (code.startsWith('20000') && code.length >= 11) {
-      return { type: 'mercado_livre', confidence: 0.95 };
+    if (code.startsWith("20000") && code.length >= 11) {
+      return { type: "mercado_livre", confidence: 0.95 };
     }
-    if (code.startsWith('466') && code.length >= 11) {
-      return { type: 'mercado_livre', confidence: 0.9 };
+    if (code.startsWith("466") && code.length >= 11) {
+      return { type: "mercado_livre", confidence: 0.9 };
     }
-    
+
     // Shopee
-    if (code.startsWith('BR') && code.length >= 8) {
-      return { type: 'shopee', confidence: 0.95 };
+    if (code.startsWith("BR") && code.length >= 8) {
+      return { type: "shopee", confidence: 0.95 };
     }
-    
+
     // Avulso
-    if (code.startsWith('LM') && code.length >= 4) {
-      return { type: 'avulso', confidence: 0.9 };
+    if (code.startsWith("LM") && code.length >= 4) {
+      return { type: "avulso", confidence: 0.9 };
     }
-    if (code.startsWith('14') && code.length >= 4) {
-      return { type: 'avulso', confidence: 0.85 };
+    if (code.startsWith("14") && code.length >= 4) {
+      return { type: "avulso", confidence: 0.85 };
     }
-    
+
     // Numérico longo (provável ML)
     if (/^\d{8,}$/.test(code)) {
-      return { type: 'mercado_livre', confidence: 0.7 };
+      return { type: "mercado_livre", confidence: 0.7 };
     }
-    
+
     // Começa com letra (provável avulso)
     if (/^[A-Z]/.test(code)) {
-      return { type: 'avulso', confidence: 0.6 };
+      return { type: "avulso", confidence: 0.6 };
     }
-    
-    return { type: 'unknown', confidence: 0.1 };
+
+    return { type: "unknown", confidence: 0.1 };
   }
 
   /**
@@ -266,7 +301,7 @@ class UltraFastScanner {
         this.criticalCache.delete(firstKey);
       }
     }
-    
+
     this.criticalCache.set(code, { ...result });
   }
 
@@ -275,11 +310,11 @@ class UltraFastScanner {
    */
   private async preloadCriticalPatterns(): Promise<void> {
     const criticalPatterns = [
-      { code: '20000', type: 'mercado_livre' as PackageType },
-      { code: '466', type: 'mercado_livre' as PackageType },
-      { code: 'BR', type: 'shopee' as PackageType },
-      { code: 'LM', type: 'avulso' as PackageType },
-      { code: '14', type: 'avulso' as PackageType },
+      { code: "20000", type: "mercado_livre" as PackageType },
+      { code: "466", type: "mercado_livre" as PackageType },
+      { code: "BR", type: "shopee" as PackageType },
+      { code: "LM", type: "avulso" as PackageType },
+      { code: "14", type: "avulso" as PackageType },
     ];
 
     criticalPatterns.forEach(({ code, type }) => {
@@ -293,7 +328,7 @@ class UltraFastScanner {
   private async initializeCriticalCache(): Promise<void> {
     try {
       // Tenta carregar do cache persistente
-      const cached = await cacheService.get('ultra_fast_scanner_cache');
+      const cached = await cacheService.get("ultra_fast_scanner_cache");
       if (cached) {
         Object.entries(cached).forEach(([key, value]) => {
           this.criticalCache.set(key, value as ScanResult);
@@ -320,17 +355,17 @@ class UltraFastScanner {
    * Ativa modo ultra performance
    */
   private activateUltraPerformance(): void {
-    console.log('[UltraFastScanner] Activating ultra performance mode');
-    
+    console.log("[UltraFastScanner] Activating ultra performance mode");
+
     // Força performance máxima no optimizer
     performanceOptimizer.forceMaxPerformance();
-    
+
     // Limpa cache não essencial
     this.criticalCache.clear();
-    
+
     // Reduz histórico
     this.scanHistory = this.scanHistory.slice(-100);
-    
+
     // Restaura após 10 segundos
     setTimeout(() => {
       performanceOptimizer.restoreNormalMode();
@@ -340,22 +375,27 @@ class UltraFastScanner {
   /**
    * Atualiza métricas
    */
-  private updateMetrics(type: 'success' | 'error' | 'cache_hit', processingTime: number): void {
+  private updateMetrics(
+    type: "success" | "error" | "cache_hit",
+    processingTime: number,
+  ): void {
     this.metrics.totalScans++;
-    
-    if (type === 'success') {
-      const successCount = this.scanHistory.filter(r => r.success).length;
+
+    if (type === "success") {
+      const successCount = this.scanHistory.filter((r) => r.success).length;
       this.metrics.successRate = (successCount / this.metrics.totalScans) * 100;
-    } else if (type === 'error') {
-      const errorCount = this.scanHistory.filter(r => !r.success).length;
+    } else if (type === "error") {
+      const errorCount = this.scanHistory.filter((r) => !r.success).length;
       this.metrics.errorRate = (errorCount / this.metrics.totalScans) * 100;
-    } else if (type === 'cache_hit') {
+    } else if (type === "cache_hit") {
       const cacheHits = this.scanHistory.length - this.criticalCache.size;
       this.metrics.cacheHitRate = (cacheHits / this.metrics.totalScans) * 100;
     }
-    
+
     // Calcula tempo médio
-    this.metrics.averageTime = this.scanHistory.reduce((sum, r) => sum + r.processingTime, 0) / this.scanHistory.length;
+    this.metrics.averageTime =
+      this.scanHistory.reduce((sum, r) => sum + r.processingTime, 0) /
+      this.scanHistory.length;
   }
 
   /**
@@ -363,7 +403,7 @@ class UltraFastScanner {
    */
   private addToHistory(result: ScanResult): void {
     this.scanHistory.push(result);
-    
+
     // Persiste cache crítico periodicamente
     if (this.scanHistory.length % 10 === 0) {
       this.persistCriticalCache();
@@ -376,9 +416,9 @@ class UltraFastScanner {
   private async persistCriticalCache(): Promise<void> {
     try {
       const cacheData = Object.fromEntries(this.criticalCache);
-      await cacheService.set('ultra_fast_scanner_cache', cacheData, {
+      await cacheService.set("ultra_fast_scanner_cache", cacheData, {
         ttl: 30 * 60 * 1000, // 30 minutos
-        priority: 'high',
+        priority: "high",
       });
     } catch (error) {
       // Silently fail
@@ -388,13 +428,17 @@ class UltraFastScanner {
   /**
    * Cria resultado de erro
    */
-  private createErrorResult(code: string, error: string, startTime: number): ScanResult {
+  private createErrorResult(
+    code: string,
+    error: string,
+    startTime: number,
+  ): ScanResult {
     return {
       code,
-      type: 'unknown',
+      type: "unknown",
       confidence: 0,
       processingTime: Date.now() - startTime,
-      method: 'camera',
+      method: "camera",
       success: false,
       reasoning: error,
     };
@@ -408,19 +452,21 @@ class UltraFastScanner {
     options: {
       useML?: boolean;
       concurrency?: number;
-    } = {}
+    } = {},
   ): Promise<ScanResult[]> {
     const concurrency = options.concurrency || 5;
     const results: ScanResult[] = [];
-    
+
     // Processa em batches para não bloquear
     for (let i = 0; i < codes.length; i += concurrency) {
       const batch = codes.slice(i, i + concurrency);
-      const batchPromises = batch.map(code => this.scan(code, 'camera', options));
+      const batchPromises = batch.map((code) =>
+        this.scan(code, "camera", options),
+      );
       const batchResults = await Promise.all(batchPromises);
       results.push(...batchResults);
     }
-    
+
     return results;
   }
 
@@ -442,9 +488,11 @@ class UltraFastScanner {
    * Verifica performance atual
    */
   isPerformingWell(): boolean {
-    return this.metrics.averageTime < this.PERFORMANCE_THRESHOLD &&
-           this.metrics.successRate > 90 &&
-           this.metrics.cacheHitRate > 70;
+    return (
+      this.metrics.averageTime < this.PERFORMANCE_THRESHOLD &&
+      this.metrics.successRate > 90 &&
+      this.metrics.cacheHitRate > 70
+    );
   }
 
   /**
@@ -454,7 +502,7 @@ class UltraFastScanner {
     this.criticalCache.clear();
     this.scanHistory = [];
     this.metrics = this.initializeMetrics();
-    console.log('[UltraFastScanner] All caches cleared');
+    console.log("[UltraFastScanner] All caches cleared");
   }
 
   /**
@@ -463,7 +511,7 @@ class UltraFastScanner {
   destroy(): void {
     this.clearAllCaches();
     this.isInitialized = false;
-    console.log('[UltraFastScanner] Scanner destroyed');
+    console.log("[UltraFastScanner] Scanner destroyed");
   }
 }
 

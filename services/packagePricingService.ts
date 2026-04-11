@@ -5,9 +5,9 @@
  * Implements caching and fallback strategies
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axiosClient from '@/src/api/axiosClient';
-import { envConfig } from '@/src/config/envConfig';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axiosClient from "@/src/api/axiosClient";
+import { envConfig } from "@/src/config/envConfig";
 
 export interface PackagePricing {
   type: string;
@@ -26,9 +26,30 @@ export interface PricingConfig {
 
 const DEFAULT_PRICING: PricingConfig = {
   packages: [
-    { type: 'shopee', displayName: 'Shopee', value: 6, currency: 'BRL', active: true, updatedAt: Date.now() },
-    { type: 'mercado_livre', displayName: 'Mercado Livre', value: 8, currency: 'BRL', active: true, updatedAt: Date.now() },
-    { type: 'avulso', displayName: 'Avulso', value: 8, currency: 'BRL', active: true, updatedAt: Date.now() },
+    {
+      type: "shopee",
+      displayName: "Shopee",
+      value: 6,
+      currency: "BRL",
+      active: true,
+      updatedAt: Date.now(),
+    },
+    {
+      type: "mercado_livre",
+      displayName: "Mercado Livre",
+      value: 8,
+      currency: "BRL",
+      active: true,
+      updatedAt: Date.now(),
+    },
+    {
+      type: "avulso",
+      displayName: "Avulso",
+      value: 8,
+      currency: "BRL",
+      active: true,
+      updatedAt: Date.now(),
+    },
   ],
   version: 1,
   fetchedAt: Date.now(),
@@ -36,7 +57,7 @@ const DEFAULT_PRICING: PricingConfig = {
 
 class PackagePricingService {
   private cache: PricingConfig | null = null;
-  private cacheKey = 'beepvelozz_package_pricing';
+  private cacheKey = "beepvelozz_package_pricing";
   private lastFetchTime = 0;
   private isFetching = false;
 
@@ -48,7 +69,7 @@ class PackagePricingService {
       const cached = await AsyncStorage.getItem(this.cacheKey);
       if (cached) {
         this.cache = JSON.parse(cached);
-        console.log('📦 Package pricing loaded from cache');
+        console.log("📦 Package pricing loaded from cache");
 
         // Try to fetch fresh pricing in background
         this.refreshPricingInBackground();
@@ -56,10 +77,10 @@ class PackagePricingService {
         // No cache, load defaults
         this.cache = DEFAULT_PRICING;
         await this.savePricingToCache(this.cache);
-        console.log('📦 Package pricing initialized with defaults');
+        console.log("📦 Package pricing initialized with defaults");
       }
     } catch (error) {
-      console.error('❌ Failed to initialize pricing service:', error);
+      console.error("❌ Failed to initialize pricing service:", error);
       this.cache = DEFAULT_PRICING;
     }
   }
@@ -76,9 +97,12 @@ class PackagePricingService {
    */
   getPriceForType(type: string): number {
     const pricing = this.cache?.packages.find(
-      (p) => p.type.toLowerCase() === type.toLowerCase() && p.active
+      (p) => p.type.toLowerCase() === type.toLowerCase() && p.active,
     );
-    return pricing?.value || DEFAULT_PRICING.packages.find(p => p.type === 'avulso')!.value;
+    return (
+      pricing?.value ||
+      DEFAULT_PRICING.packages.find((p) => p.type === "avulso")!.value
+    );
   }
 
   /**
@@ -86,9 +110,9 @@ class PackagePricingService {
    */
   getDisplayName(type: string): string {
     const pricing = this.cache?.packages.find(
-      (p) => p.type.toLowerCase() === type.toLowerCase()
+      (p) => p.type.toLowerCase() === type.toLowerCase(),
     );
-    return pricing?.displayName || 'Desconhecido';
+    return pricing?.displayName || "Desconhecido";
   }
 
   /**
@@ -96,14 +120,14 @@ class PackagePricingService {
    */
   async refreshPricing(): Promise<void> {
     if (this.isFetching) {
-      console.log('⏳ Pricing refresh already in progress');
+      console.log("⏳ Pricing refresh already in progress");
       return;
     }
 
     try {
       this.isFetching = true;
       const response = await axiosClient.get<{ packages: PackagePricing[] }>(
-        '/pricing/packages'
+        "/pricing/packages",
       );
 
       if (response.data?.packages) {
@@ -117,10 +141,13 @@ class PackagePricingService {
         this.cache = newPricing;
         this.lastFetchTime = Date.now();
 
-        console.log('✅ Package pricing updated from server');
+        console.log("✅ Package pricing updated from server");
       }
     } catch (error) {
-      console.warn('⚠️  Failed to fetch pricing from server, using cached values:', error);
+      console.warn(
+        "⚠️  Failed to fetch pricing from server, using cached values:",
+        error,
+      );
       // Fallback to cache on error
     } finally {
       this.isFetching = false;
@@ -138,8 +165,8 @@ class PackagePricingService {
 
     if (shouldRefresh) {
       // Don't wait for this
-      this.refreshPricing().catch(error => {
-        console.error('Background pricing refresh failed:', error);
+      this.refreshPricing().catch((error) => {
+        console.error("Background pricing refresh failed:", error);
       });
     }
   }
@@ -149,8 +176,8 @@ class PackagePricingService {
    * Safe to call from components
    */
   public startBackgroundPricingRefresh(): void {
-    this.refreshPricingInBackground().catch(error => {
-      console.error('Error starting background pricing refresh:', error);
+    this.refreshPricingInBackground().catch((error) => {
+      console.error("Error starting background pricing refresh:", error);
     });
   }
 
@@ -161,7 +188,7 @@ class PackagePricingService {
     try {
       await AsyncStorage.setItem(this.cacheKey, JSON.stringify(pricing));
     } catch (error) {
-      console.error('❌ Failed to save pricing to cache:', error);
+      console.error("❌ Failed to save pricing to cache:", error);
     }
   }
 
@@ -173,9 +200,9 @@ class PackagePricingService {
       await AsyncStorage.removeItem(this.cacheKey);
       this.cache = DEFAULT_PRICING;
       this.lastFetchTime = 0;
-      console.log('✅ Pricing cache cleared');
+      console.log("✅ Pricing cache cleared");
     } catch (error) {
-      console.error('❌ Failed to clear pricing cache:', error);
+      console.error("❌ Failed to clear pricing cache:", error);
     }
   }
 

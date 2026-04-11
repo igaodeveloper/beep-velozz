@@ -3,8 +3,8 @@
  * Cache inteligente com estratégias adaptativas para ambiente operacional
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
 
 interface CacheItem<T = any> {
   data: T;
@@ -59,7 +59,11 @@ class IndustrialCache {
   /**
    * Cache ultra-rápido com memória e persistência
    */
-  async set<T>(key: string, data: T, ttl: number = this.config.defaultTTL): Promise<void> {
+  async set<T>(
+    key: string,
+    data: T,
+    ttl: number = this.config.defaultTTL,
+  ): Promise<void> {
     const now = Date.now();
     const serialized = JSON.stringify(data);
     const size = this.calculateSize(serialized);
@@ -95,7 +99,7 @@ class IndustrialCache {
    */
   async get<T>(key: string): Promise<T | null> {
     const item = this.cache.get(key);
-    
+
     if (!item) {
       // Tentar carregar do disco
       const diskItem = await this.loadFromDiskItem(key);
@@ -104,7 +108,7 @@ class IndustrialCache {
         this.hitCount++;
         return diskItem.data as T;
       }
-      
+
       this.missCount++;
       return null;
     }
@@ -126,13 +130,13 @@ class IndustrialCache {
    */
   async getBatch<T>(keys: string[]): Promise<Map<string, T | null>> {
     const results = new Map<string, T | null>();
-    
+
     // Processar em paralelo para máxima performance
     await Promise.all(
       keys.map(async (key) => {
         const result = await this.get<T>(key);
         results.set(key, result);
-      })
+      }),
     );
 
     return results;
@@ -141,16 +145,19 @@ class IndustrialCache {
   /**
    * Prefetch inteligente para operações futuras
    */
-  async prefetch<T>(keys: string[], loader: (key: string) => Promise<T>): Promise<void> {
-    const missingKeys = keys.filter(key => !this.cache.has(key));
-    
+  async prefetch<T>(
+    keys: string[],
+    loader: (key: string) => Promise<T>,
+  ): Promise<void> {
+    const missingKeys = keys.filter((key) => !this.cache.has(key));
+
     if (missingKeys.length === 0) return;
 
     // Carregar em batch com limite de concorrência
     const batchSize = 5;
     for (let i = 0; i < missingKeys.length; i += batchSize) {
       const batch = missingKeys.slice(i, i + batchSize);
-      
+
       await Promise.allSettled(
         batch.map(async (key) => {
           try {
@@ -159,7 +166,7 @@ class IndustrialCache {
           } catch (error) {
             console.warn(`Failed to prefetch ${key}:`, error);
           }
-        })
+        }),
       );
     }
   }
@@ -167,17 +174,19 @@ class IndustrialCache {
   /**
    * Cache com invalidação inteligente
    */
-  async invalidate(pattern: string | RegExp | ((key: string) => boolean)): Promise<void> {
+  async invalidate(
+    pattern: string | RegExp | ((key: string) => boolean),
+  ): Promise<void> {
     const keysToDelete: string[] = [];
 
     for (const [key] of this.cache) {
       let shouldDelete = false;
 
-      if (typeof pattern === 'string') {
+      if (typeof pattern === "string") {
         shouldDelete = key.includes(pattern);
       } else if (pattern instanceof RegExp) {
         shouldDelete = pattern.test(key);
-      } else if (typeof pattern === 'function') {
+      } else if (typeof pattern === "function") {
         shouldDelete = pattern(key);
       }
 
@@ -186,7 +195,7 @@ class IndustrialCache {
       }
     }
 
-    keysToDelete.forEach(key => {
+    keysToDelete.forEach((key) => {
       this.cache.delete(key);
       AsyncStorage.removeItem(`cache_${key}`);
     });
@@ -198,19 +207,21 @@ class IndustrialCache {
    * Limpeza inteligente baseada em uso
    */
   private async ensureCapacity(requiredSize: number): Promise<void> {
-    if (this.stats.totalSize + requiredSize <= this.config.maxSize * 1024 * 1024 &&
-        this.stats.totalItems < this.config.maxItems) {
+    if (
+      this.stats.totalSize + requiredSize <=
+        this.config.maxSize * 1024 * 1024 &&
+      this.stats.totalItems < this.config.maxItems
+    ) {
       return;
     }
 
     // Ordenar por LRU (Least Recently Used)
-    const items = Array.from(this.cache.entries())
-      .sort(([, a], [, b]) => {
-        // Priorizar itens com mais hits
-        if (a.hits !== b.hits) return b.hits - a.hits;
-        // Depois por timestamp (mais antigos primeiro)
-        return a.timestamp - b.timestamp;
-      });
+    const items = Array.from(this.cache.entries()).sort(([, a], [, b]) => {
+      // Priorizar itens com mais hits
+      if (a.hits !== b.hits) return b.hits - a.hits;
+      // Depois por timestamp (mais antigos primeiro)
+      return a.timestamp - b.timestamp;
+    });
 
     let freedSize = 0;
     let freedItems = 0;
@@ -218,12 +229,14 @@ class IndustrialCache {
     for (const [key, item] of items) {
       this.cache.delete(key);
       AsyncStorage.removeItem(`cache_${key}`);
-      
+
       freedSize += item.size;
       freedItems++;
 
-      if (freedSize >= requiredSize || 
-          this.stats.totalItems - freedItems < this.config.maxItems) {
+      if (
+        freedSize >= requiredSize ||
+        this.stats.totalItems - freedItems < this.config.maxItems
+      ) {
         break;
       }
     }
@@ -245,37 +258,37 @@ class IndustrialCache {
       const data = await AsyncStorage.getItem(`cache_${key}`);
       if (data) {
         const item = JSON.parse(data) as CacheItem;
-        
+
         // Verificar TTL
         if (Date.now() - item.timestamp > item.ttl) {
           AsyncStorage.removeItem(`cache_${key}`);
           return null;
         }
-        
+
         return item;
       }
     } catch (error) {
       console.warn(`Failed to load cache item ${key}:`, error);
     }
-    
+
     return null;
   }
 
   private async loadFromDisk(): Promise<void> {
     try {
       const keys = await AsyncStorage.getAllKeys();
-      const cacheKeys = keys.filter(key => key.startsWith('cache_'));
-      
+      const cacheKeys = keys.filter((key) => key.startsWith("cache_"));
+
       if (cacheKeys.length === 0) return;
 
       const items = await AsyncStorage.multiGet(cacheKeys);
-      
+
       items.forEach(([fullKey, data]) => {
         if (data) {
           try {
-            const key = fullKey.replace('cache_', '');
+            const key = fullKey.replace("cache_", "");
             const item = JSON.parse(data) as CacheItem;
-            
+
             // Verificar TTL
             if (Date.now() - item.timestamp <= item.ttl) {
               this.cache.set(key, item);
@@ -290,7 +303,7 @@ class IndustrialCache {
 
       this.updateStats();
     } catch (error) {
-      console.warn('Failed to load cache from disk:', error);
+      console.warn("Failed to load cache from disk:", error);
     }
   }
 
@@ -313,7 +326,7 @@ class IndustrialCache {
       }
     }
 
-    keysToDelete.forEach(key => {
+    keysToDelete.forEach((key) => {
       this.cache.delete(key);
       AsyncStorage.removeItem(`cache_${key}`);
     });
@@ -329,11 +342,14 @@ class IndustrialCache {
 
   private updateStats(): void {
     this.stats.totalItems = this.cache.size;
-    this.stats.totalSize = Array.from(this.cache.values())
-      .reduce((total, item) => total + item.size, 0);
-    this.stats.hitRate = this.hitCount + this.missCount > 0 
-      ? (this.hitCount / (this.hitCount + this.missCount)) * 100 
-      : 0;
+    this.stats.totalSize = Array.from(this.cache.values()).reduce(
+      (total, item) => total + item.size,
+      0,
+    );
+    this.stats.hitRate =
+      this.hitCount + this.missCount > 0
+        ? (this.hitCount / (this.hitCount + this.missCount)) * 100
+        : 0;
     this.stats.memoryUsage = this.stats.totalSize;
   }
 
@@ -353,9 +369,9 @@ class IndustrialCache {
    */
   async clear(): Promise<void> {
     this.cache.clear();
-    
+
     const keys = await AsyncStorage.getAllKeys();
-    const cacheKeys = keys.filter(key => key.startsWith('cache_'));
+    const cacheKeys = keys.filter((key) => key.startsWith("cache_"));
     await AsyncStorage.multiRemove(cacheKeys);
 
     this.hitCount = 0;
@@ -387,11 +403,12 @@ export const industrialCache = new IndustrialCache({
 export function useIndustrialCache() {
   return {
     get: <T>(key: string) => industrialCache.get<T>(key),
-    set: <T>(key: string, data: T, ttl?: number) => industrialCache.set(key, data, ttl),
+    set: <T>(key: string, data: T, ttl?: number) =>
+      industrialCache.set(key, data, ttl),
     getBatch: <T>(keys: string[]) => industrialCache.getBatch<T>(keys),
-    prefetch: <T>(keys: string[], loader: (key: string) => Promise<T>) => 
+    prefetch: <T>(keys: string[], loader: (key: string) => Promise<T>) =>
       industrialCache.prefetch(keys, loader),
-    invalidate: (pattern: string | RegExp | ((key: string) => boolean)) => 
+    invalidate: (pattern: string | RegExp | ((key: string) => boolean)) =>
       industrialCache.invalidate(pattern),
     getStats: () => industrialCache.getStats(),
     clear: () => industrialCache.clear(),

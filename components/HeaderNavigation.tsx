@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -7,10 +7,10 @@ import {
   Animated,
   StatusBar,
   Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAppTheme } from '@/utils/useAppTheme';
-import { useResponsive } from '@/utils/useResponsive';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useAppTheme } from "@/utils/useAppTheme";
+import { useResponsive } from "@/utils/useResponsive";
 import {
   ChevronLeft,
   Menu,
@@ -21,12 +21,17 @@ import {
   Settings,
   Filter,
   Plus,
-} from 'lucide-react-native';
-import ModernIcon from './ModernIcon';
-import * as Haptics from 'expo-haptics';
+} from "lucide-react-native";
+import ModernIcon from "./ModernIcon";
+import * as Haptics from "expo-haptics";
 
-export type HeaderVariant = 'default' | 'centered' | 'search' | 'profile' | 'settings';
-export type HeaderSize = 'sm' | 'md' | 'lg';
+export type HeaderVariant =
+  | "default"
+  | "centered"
+  | "search"
+  | "profile"
+  | "settings";
+export type HeaderSize = "sm" | "md" | "lg";
 
 interface HeaderNavigationProps {
   title?: string;
@@ -64,8 +69,8 @@ interface HeaderNavigationProps {
 export default function HeaderNavigation({
   title,
   subtitle,
-  variant = 'default',
-  size = 'md',
+  variant = "default",
+  size = "md",
   onBackPress,
   onMenuPress,
   onSearchPress,
@@ -165,7 +170,7 @@ export default function HeaderNavigation({
   const getHeaderStyle = () => {
     const baseStyle = {
       height: getHeaderHeight(),
-      backgroundColor: transparent ? 'transparent' : colors.surface,
+      backgroundColor: transparent ? "transparent" : colors.surface,
       borderBottomColor: colors.border,
       borderBottomWidth: transparent ? 0 : 1,
       borderRadius: getBorderRadius(),
@@ -182,8 +187,8 @@ export default function HeaderNavigation({
     if (blur) {
       return {
         ...baseStyle,
-        backgroundColor: colors.surface + '80',
-        backdropFilter: 'blur(20px)',
+        backgroundColor: colors.surface + "80",
+        backdropFilter: "blur(20px)",
       };
     }
 
@@ -196,7 +201,7 @@ export default function HeaderNavigation({
     }
 
     const buttons = [];
-    
+
     if (showBackButton) {
       buttons.push(
         <ModernIcon
@@ -206,7 +211,7 @@ export default function HeaderNavigation({
           color={colors.text}
           onPress={() => handleButtonPress(onBackPress)}
           hapticFeedback={true}
-        />
+        />,
       );
     }
 
@@ -219,7 +224,7 @@ export default function HeaderNavigation({
           color={colors.text}
           onPress={() => handleButtonPress(onMenuPress)}
           hapticFeedback={true}
-        />
+        />,
       );
     }
 
@@ -232,7 +237,7 @@ export default function HeaderNavigation({
           color={colors.text}
           onPress={() => handleButtonPress(onProfilePress)}
           hapticFeedback={true}
-        />
+        />,
       );
     }
 
@@ -256,9 +261,14 @@ export default function HeaderNavigation({
           hapticFeedback={true}
         />
         {notificationCount > 0 && (
-          <View style={[styles.notificationBadge, { backgroundColor: colors.danger }]}>
-            <Text style={[styles.notificationCount, { color: '#ffffff' }]}>
-              {notificationCount > 99 ? '99+' : notificationCount.toString()}
+          <View
+            style={[
+              styles.notificationBadge,
+              { backgroundColor: colors.danger },
+            ]}
+          >
+            <Text style={[styles.notificationCount, { color: "#ffffff" }]}>
+              {notificationCount > 99 ? "99+" : notificationCount.toString()}
             </Text>
           </View>
         )}
@@ -291,7 +301,7 @@ export default function HeaderNavigation({
           color={colors.text}
           onPress={() => handleButtonPress(onSearchPress)}
           hapticFeedback={true}
-        />
+        />,
       );
     }
 
@@ -308,7 +318,7 @@ export default function HeaderNavigation({
           color={colors.text}
           onPress={() => handleButtonPress(onFilterPress)}
           hapticFeedback={true}
-        />
+        />,
       );
     }
 
@@ -321,7 +331,7 @@ export default function HeaderNavigation({
           color={colors.primary}
           onPress={() => handleButtonPress(onAddPress)}
           hapticFeedback={true}
-        />
+        />,
       );
     }
 
@@ -334,7 +344,7 @@ export default function HeaderNavigation({
           color={colors.text}
           onPress={() => handleButtonPress(onSettingsPress)}
           hapticFeedback={true}
-        />
+        />,
       );
     }
 
@@ -347,7 +357,7 @@ export default function HeaderNavigation({
           color={colors.text}
           onPress={() => handleButtonPress(onMorePress)}
           hapticFeedback={true}
-        />
+        />,
       );
     }
 
@@ -355,13 +365,13 @@ export default function HeaderNavigation({
   };
 
   return (
-    <SafeAreaView 
+    <SafeAreaView
       style={[styles.container, { backgroundColor: colors.bg }]}
-      edges={['top', 'left', 'right']}
+      edges={["top", "left", "right"]}
     >
       <StatusBar
-        barStyle={colors.bg === '#ffffff' ? 'dark-content' : 'light-content'}
-        backgroundColor={transparent ? 'transparent' : colors.surface}
+        barStyle={colors.bg === "#ffffff" ? "dark-content" : "light-content"}
+        backgroundColor={transparent ? "transparent" : colors.surface}
         translucent={transparent}
       />
       <Animated.View style={[getHeaderStyle(), animatedStyle]}>
@@ -377,57 +387,57 @@ export default function HeaderNavigation({
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
+    width: "100%",
   },
   headerContent: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   leftContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     minWidth: 60,
   },
   centerContent: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   rightContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     minWidth: 60,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   title: {
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   subtitle: {
-    fontWeight: '400',
-    textAlign: 'center',
+    fontWeight: "400",
+    textAlign: "center",
     marginTop: 2,
   },
   notificationButton: {
-    position: 'relative',
+    position: "relative",
   },
   notificationBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: -6,
     right: -6,
     minWidth: 18,
     height: 18,
     borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   notificationCount: {
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: "700",
     paddingHorizontal: 4,
   },
 });

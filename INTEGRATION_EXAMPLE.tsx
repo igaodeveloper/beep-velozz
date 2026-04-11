@@ -7,10 +7,10 @@
 // PASSO 1: Setup Básico em um Screen/Página
 // ============================================================================
 
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { useIndustrialScanner } from '@/utils/useIndustrialScanner';
-import IndustrialScannerView from '@/components/IndustrialScannerView';
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { useIndustrialScanner } from "@/utils/useIndustrialScanner";
+import IndustrialScannerView from "@/components/IndustrialScannerView";
 
 /**
  * Exemplo: Tela de Lote (Lotes de Pacotes)
@@ -35,7 +35,7 @@ export function LoteScreen({ navigation }: any) {
 
   // 3. Handler quando pacote é escaneado
   const handlePackageScanned = (code: string, type: string) => {
-    setScannedPackages(prev => [
+    setScannedPackages((prev) => [
       ...prev,
       {
         code,
@@ -47,13 +47,13 @@ export function LoteScreen({ navigation }: any) {
 
   // 4. Handler quando limite é atingido
   const handleLimitReached = (limitedTypes: string[]) => {
-    alert(`⚠️ Limite atingido para: ${limitedTypes.join(', ')}`);
+    alert(`⚠️ Limite atingido para: ${limitedTypes.join(", ")}`);
   };
 
   // 5. Handler quando encerra sessão
   const handleEndSession = () => {
     // Gere relatório, envie para servidor, etc
-    console.log('Lote finalizado', {
+    console.log("Lote finalizado", {
       total: scanner.stats.validScans,
       shopee: scanner.counts.shopee,
       mercado_livre: scanner.counts.mercado_livre,
@@ -78,19 +78,28 @@ export function LoteScreen({ navigation }: any) {
 
   // Tela inicial do lote
   return (
-    <View style={{ flex: 1, padding: 20, backgroundColor: '#f5f5f5' }}>
+    <View style={{ flex: 1, padding: 20, backgroundColor: "#f5f5f5" }}>
       {/* Header */}
-      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>
+      <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 20 }}>
         📦 Novo Lote
       </Text>
 
       {/* Limites Configurados */}
-      <View style={{ backgroundColor: '#fff', padding: 16, borderRadius: 8, marginBottom: 20 }}>
-        <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 12 }}>
+      <View
+        style={{
+          backgroundColor: "#fff",
+          padding: 16,
+          borderRadius: 8,
+          marginBottom: 20,
+        }}
+      >
+        <Text style={{ fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>
           📊 Limites Configurados
         </Text>
         <Text>🛒 Shopee: {scanner.limits.shopee || 50} pacotes</Text>
-        <Text>📦 Mercado Livre: {scanner.limits.mercado_livre || 30} pacotes</Text>
+        <Text>
+          📦 Mercado Livre: {scanner.limits.mercado_livre || 30} pacotes
+        </Text>
         <Text>📭 Avulso: {scanner.limits.avulso || 20} pacotes</Text>
       </View>
 
@@ -98,32 +107,35 @@ export function LoteScreen({ navigation }: any) {
       <TouchableOpacity
         onPress={() => setShowScanner(true)}
         style={{
-          backgroundColor: '#007AFF',
+          backgroundColor: "#007AFF",
           padding: 16,
           borderRadius: 8,
-          alignItems: 'center',
+          alignItems: "center",
           marginBottom: 20,
         }}
       >
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>
+        <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
           📷 Iniciar Escaneamento
         </Text>
       </TouchableOpacity>
 
       {/* Histórico de escaneados */}
-      <Text style={{ fontSize: 14, fontWeight: 'bold', marginBottom: 8 }}>
+      <Text style={{ fontSize: 14, fontWeight: "bold", marginBottom: 8 }}>
         📝 Histórico ({scannedPackages.length})
       </Text>
-      <ScrollView style={{ flex: 1, backgroundColor: '#fff', borderRadius: 8 }}>
+      <ScrollView style={{ flex: 1, backgroundColor: "#fff", borderRadius: 8 }}>
         {scannedPackages.length === 0 ? (
-          <Text style={{ padding: 16, color: '#999', textAlign: 'center' }}>
+          <Text style={{ padding: 16, color: "#999", textAlign: "center" }}>
             Nenhum pacote escaneado ainda
           </Text>
         ) : (
           scannedPackages.map((pkg, i) => (
-            <View key={i} style={{ padding: 12, borderBottomWidth: 1, borderColor: '#eee' }}>
-              <Text style={{ fontWeight: 'bold' }}>{pkg.code}</Text>
-              <Text style={{ color: '#666', fontSize: 12 }}>
+            <View
+              key={i}
+              style={{ padding: 12, borderBottomWidth: 1, borderColor: "#eee" }}
+            >
+              <Text style={{ fontWeight: "bold" }}>{pkg.code}</Text>
+              <Text style={{ color: "#666", fontSize: 12 }}>
                 {pkg.type} • {pkg.scannedAt}
               </Text>
             </View>
@@ -138,7 +150,7 @@ export function LoteScreen({ navigation }: any) {
 // PASSO 2: Integração com Stack de Navegação
 // ============================================================================
 
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 const Stack = createNativeStackNavigator();
 
@@ -147,16 +159,16 @@ export function LoteStackNavigator() {
     <Stack.Navigator
       screenOptions={{
         headerShown: true,
-        headerStyle: { backgroundColor: '#f5f5f5' },
-        headerTintColor: '#000',
-        headerTitleStyle: { fontWeight: 'bold' },
+        headerStyle: { backgroundColor: "#f5f5f5" },
+        headerTintColor: "#000",
+        headerTitleStyle: { fontWeight: "bold" },
       }}
     >
       {/* Outras telas... */}
       <Stack.Screen
         name="LoteDetail"
         component={LoteScreen}
-        options={{ title: 'Novo Lote' }}
+        options={{ title: "Novo Lote" }}
       />
     </Stack.Navigator>
   );
@@ -194,7 +206,7 @@ export function MultiLoteManager() {
       packages: [],
       completed: false,
     };
-    setLotes(prev => [...prev, newLote]);
+    setLotes((prev) => [...prev, newLote]);
     setCurrentLote(newLote);
   };
 
@@ -202,7 +214,7 @@ export function MultiLoteManager() {
   const addPackageToLote = (code: string, type: string) => {
     if (!currentLote) return;
 
-    setCurrentLote(prev => {
+    setCurrentLote((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
@@ -210,15 +222,15 @@ export function MultiLoteManager() {
       };
     });
 
-    setLotes(prev =>
-      prev.map(lote =>
+    setLotes((prev) =>
+      prev.map((lote) =>
         lote.id === currentLote.id
           ? {
               ...lote,
               packages: [...lote.packages, { code, type }],
             }
-          : lote
-      )
+          : lote,
+      ),
     );
   };
 
@@ -226,14 +238,14 @@ export function MultiLoteManager() {
   const completeLote = () => {
     if (!currentLote) return;
 
-    setLotes(prev =>
-      prev.map(lote =>
-        lote.id === currentLote.id ? { ...lote, completed: true } : lote
-      )
+    setLotes((prev) =>
+      prev.map((lote) =>
+        lote.id === currentLote.id ? { ...lote, completed: true } : lote,
+      ),
     );
 
     // Salve no servidor/DB
-    console.log('Lote finalizado:', currentLote);
+    console.log("Lote finalizado:", currentLote);
 
     setCurrentLote(null);
   };
@@ -279,18 +291,18 @@ export function LoteScreenWithCloud({ navigation }: any) {
     try {
       // Implemente aqui a sincronização com seu servidor/cloud
       // Exemplo: await fetch('/api/lotes', { method: 'POST', body: JSON.stringify(loteData) })
-      const response = await fetch('/api/lotes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/lotes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loteData),
       });
-      
+
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      
-      console.log('✅ Lote sincronizado');
+
+      console.log("✅ Lote sincronizado");
       navigation.goBack();
     } catch (error) {
-      setSyncError('Erro ao sincronizar: ' + (error as Error).message);
+      setSyncError("Erro ao sincronizar: " + (error as Error).message);
       setSyncing(false);
     }
   };
@@ -320,11 +332,11 @@ export function LoteScreenWithAnalytics() {
     },
     onStateChange: (state) => {
       // Integre sua solução de analytics aqui
-      console.log('scanner_state_changed', { state });
+      console.log("scanner_state_changed", { state });
     },
     onStatsUpdate: (stats) => {
       // Integre sua solução de analytics aqui
-      console.log('scanner_stats_updated', {
+      console.log("scanner_stats_updated", {
         validScans: stats.validScans,
         duplicates: stats.duplicates,
       });
@@ -333,7 +345,7 @@ export function LoteScreenWithAnalytics() {
 
   const handleScan = async (code: string, type: string) => {
     // Integre sua solução de analytics aqui
-    console.log('package_scanned', {
+    console.log("package_scanned", {
       code,
       type,
       timestamp: new Date().toISOString(),
@@ -358,10 +370,10 @@ export function LoteScreenWithToast() {
       avulso: 20,
     },
     onStateChange: (state) => {
-      if (state === 'LIMIT_REACHED') {
+      if (state === "LIMIT_REACHED") {
         // Integre sua solução de notificações aqui
         // Exemplo: alert, react-native-toast-message, react-native-snackbar, etc
-        alert('⚠️ Limite Atingido - Não é possível escanear mais pacotes');
+        alert("⚠️ Limite Atingido - Não é possível escanear mais pacotes");
       }
     },
   });
@@ -377,5 +389,3 @@ export function LoteScreenWithToast() {
 // ============================================================================
 // EXPORT
 // ============================================================================
-
-

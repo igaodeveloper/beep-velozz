@@ -3,7 +3,7 @@
  * Sistema de comandos de voz para controle do aplicativo
  */
 
-import { Platform, Alert } from 'react-native';
+import { Platform, Alert } from "react-native";
 
 // Interfaces para comandos de voz
 export interface VoiceCommand {
@@ -15,7 +15,14 @@ export interface VoiceCommand {
 }
 
 export interface VoiceAction {
-  type: 'start_session' | 'end_session' | 'scan_package' | 'show_report' | 'navigate' | 'help' | 'settings';
+  type:
+    | "start_session"
+    | "end_session"
+    | "scan_package"
+    | "show_report"
+    | "navigate"
+    | "help"
+    | "settings";
   parameters?: Record<string, any>;
 }
 
@@ -45,54 +52,72 @@ class VoiceCommandProcessor {
   // Mapeamento de comandos reconhecidos
   private commandPatterns: Map<string, VoiceAction> = new Map([
     // Iniciar sessão
-    ['iniciar sessão', { type: 'start_session' }],
-    ['iniciar conferência', { type: 'start_session' }],
-    ['começar', { type: 'start_session' }],
-    ['nova sessão', { type: 'start_session' }],
-    
+    ["iniciar sessão", { type: "start_session" }],
+    ["iniciar conferência", { type: "start_session" }],
+    ["começar", { type: "start_session" }],
+    ["nova sessão", { type: "start_session" }],
+
     // Finalizar sessão
-    ['finalizar sessão', { type: 'end_session' }],
-    ['terminar conferência', { type: 'end_session' }],
-    ['encerrar', { type: 'end_session' }],
-    ['fechar', { type: 'end_session' }],
-    
+    ["finalizar sessão", { type: "end_session" }],
+    ["terminar conferência", { type: "end_session" }],
+    ["encerrar", { type: "end_session" }],
+    ["fechar", { type: "end_session" }],
+
     // Scanner
-    ['escanear', { type: 'scan_package' }],
-    ['scanner', { type: 'scan_package' }],
-    ['ler código', { type: 'scan_package' }],
-    ['próximo pacote', { type: 'scan_package' }],
-    
+    ["escanear", { type: "scan_package" }],
+    ["scanner", { type: "scan_package" }],
+    ["ler código", { type: "scan_package" }],
+    ["próximo pacote", { type: "scan_package" }],
+
     // Relatórios
-    ['mostrar relatório', { type: 'show_report' }],
-    ['ver relatório', { type: 'show_report' }],
-    ['abrir relatório', { type: 'show_report' }],
-    ['relatório', { type: 'show_report' }],
-    
+    ["mostrar relatório", { type: "show_report" }],
+    ["ver relatório", { type: "show_report" }],
+    ["abrir relatório", { type: "show_report" }],
+    ["relatório", { type: "show_report" }],
+
     // Navegação
-    ['ir para analytics', { type: 'navigate', parameters: { screen: 'analytics' } }],
-    ['abrir analytics', { type: 'navigate', parameters: { screen: 'analytics' } }],
-    ['ir para histórico', { type: 'navigate', parameters: { screen: 'history' } }],
-    ['abrir histórico', { type: 'navigate', parameters: { screen: 'history' } }],
-    ['ir para configurações', { type: 'navigate', parameters: { screen: 'settings' } }],
-    ['abrir configurações', { type: 'navigate', parameters: { screen: 'settings' } }],
-    ['voltar', { type: 'navigate', parameters: { screen: 'back' } }],
-    ['menu principal', { type: 'navigate', parameters: { screen: 'home' } }],
-    
+    [
+      "ir para analytics",
+      { type: "navigate", parameters: { screen: "analytics" } },
+    ],
+    [
+      "abrir analytics",
+      { type: "navigate", parameters: { screen: "analytics" } },
+    ],
+    [
+      "ir para histórico",
+      { type: "navigate", parameters: { screen: "history" } },
+    ],
+    [
+      "abrir histórico",
+      { type: "navigate", parameters: { screen: "history" } },
+    ],
+    [
+      "ir para configurações",
+      { type: "navigate", parameters: { screen: "settings" } },
+    ],
+    [
+      "abrir configurações",
+      { type: "navigate", parameters: { screen: "settings" } },
+    ],
+    ["voltar", { type: "navigate", parameters: { screen: "back" } }],
+    ["menu principal", { type: "navigate", parameters: { screen: "home" } }],
+
     // Ajuda
-    ['ajuda', { type: 'help' }],
-    ['ajudar', { type: 'help' }],
-    ['como usar', { type: 'help' }],
-    ['instruções', { type: 'help' }],
-    
+    ["ajuda", { type: "help" }],
+    ["ajudar", { type: "help" }],
+    ["como usar", { type: "help" }],
+    ["instruções", { type: "help" }],
+
     // Configurações
-    ['configurações', { type: 'settings' }],
-    ['preferências', { type: 'settings' }],
-    ['opções', { type: 'settings' }],
+    ["configurações", { type: "settings" }],
+    ["preferências", { type: "settings" }],
+    ["opções", { type: "settings" }],
   ]);
 
   constructor(config: Partial<VoiceConfig> = {}) {
     this.config = {
-      language: 'pt-BR',
+      language: "pt-BR",
       continuous: true,
       interimResults: false,
       maxAlternatives: 3,
@@ -109,23 +134,25 @@ class VoiceCommandProcessor {
   private initializeVoiceRecognition(): void {
     try {
       // Verifica suporte para Web Speech API
-      if (Platform.OS === 'web' && 'webkitSpeechRecognition' in window) {
+      if (Platform.OS === "web" && "webkitSpeechRecognition" in window) {
         this.recognition = new (window as any).webkitSpeechRecognition();
         this.setupRecognition();
         this.isSupported = true;
-        console.log('🎤 Voice recognition supported');
-      } else if (Platform.OS === 'web' && 'SpeechRecognition' in window) {
+        console.log("🎤 Voice recognition supported");
+      } else if (Platform.OS === "web" && "SpeechRecognition" in window) {
         this.recognition = new (window as any).SpeechRecognition();
         this.setupRecognition();
         this.isSupported = true;
-        console.log('🎤 Voice recognition supported');
+        console.log("🎤 Voice recognition supported");
       } else {
         // Para React Native, seria necessário usar expo-speech ou biblioteca similar
-        console.log('📱 Voice recognition requires additional setup for React Native');
+        console.log(
+          "📱 Voice recognition requires additional setup for React Native",
+        );
         this.isSupported = false;
       }
     } catch (error) {
-      console.error('❌ Failed to initialize voice recognition:', error);
+      console.error("❌ Failed to initialize voice recognition:", error);
       this.isSupported = false;
     }
   }
@@ -142,32 +169,32 @@ class VoiceCommandProcessor {
     this.recognition.maxAlternatives = this.config.maxAlternatives;
 
     this.recognition.onstart = () => {
-      console.log('🎤 Voice recognition started');
+      console.log("🎤 Voice recognition started");
       this.isListening = true;
     };
 
     this.recognition.onend = () => {
-      console.log('🔇 Voice recognition stopped');
+      console.log("🔇 Voice recognition stopped");
       this.isListening = false;
     };
 
     this.recognition.onerror = (event: any) => {
-      console.error('❌ Voice recognition error:', event.error);
+      console.error("❌ Voice recognition error:", event.error);
       this.isListening = false;
-      
-      let errorMessage = 'Erro no reconhecimento de voz';
+
+      let errorMessage = "Erro no reconhecimento de voz";
       switch (event.error) {
-        case 'no-speech':
-          errorMessage = 'Nenhum discurso detectado';
+        case "no-speech":
+          errorMessage = "Nenhum discurso detectado";
           break;
-        case 'audio-capture':
-          errorMessage = 'Erro ao capturar áudio';
+        case "audio-capture":
+          errorMessage = "Erro ao capturar áudio";
           break;
-        case 'not-allowed':
-          errorMessage = 'Permissão de microfone negada';
+        case "not-allowed":
+          errorMessage = "Permissão de microfone negada";
           break;
-        case 'network':
-          errorMessage = 'Erro de conexão';
+        case "network":
+          errorMessage = "Erro de conexão";
           break;
       }
 
@@ -200,7 +227,7 @@ class VoiceCommandProcessor {
     if (confidence < this.config.confidenceThreshold) {
       this.notifyCallback({
         success: false,
-        error: 'Confiança baixa no reconhecimento',
+        error: "Confiança baixa no reconhecimento",
       });
       return;
     }
@@ -213,7 +240,10 @@ class VoiceCommandProcessor {
   /**
    * Processa o comando reconhecido
    */
-  private processCommand(transcript: string, confidence: number): VoiceCommandResult {
+  private processCommand(
+    transcript: string,
+    confidence: number,
+  ): VoiceCommandResult {
     // Tenta encontrar correspondência exata
     for (const [pattern, action] of this.commandPatterns) {
       if (transcript.includes(pattern.toLowerCase())) {
@@ -243,27 +273,31 @@ class VoiceCommandProcessor {
     // Comando não reconhecido
     return {
       success: false,
-      error: 'Comando não reconhecido. Tente: "iniciar sessão", "escanear", "relatório", etc.',
+      error:
+        'Comando não reconhecido. Tente: "iniciar sessão", "escanear", "relatório", etc.',
     };
   }
 
   /**
    * Processa comando por palavras-chave
    */
-  private processByKeywords(transcript: string, confidence: number): VoiceCommandResult | null {
+  private processByKeywords(
+    transcript: string,
+    confidence: number,
+  ): VoiceCommandResult | null {
     const keywords: Record<string, VoiceAction> = {
-      'iniciar': { type: 'start_session' },
-      'começar': { type: 'start_session' },
-      'finalizar': { type: 'end_session' },
-      'terminar': { type: 'end_session' },
-      'escanear': { type: 'scan_package' },
-      'scanner': { type: 'scan_package' },
-      'relatório': { type: 'show_report' },
-      'analytics': { type: 'navigate', parameters: { screen: 'analytics' } },
-      'histórico': { type: 'navigate', parameters: { screen: 'history' } },
-      'configurações': { type: 'settings' },
-      'ajuda': { type: 'help' },
-      'voltar': { type: 'navigate', parameters: { screen: 'back' } },
+      iniciar: { type: "start_session" },
+      começar: { type: "start_session" },
+      finalizar: { type: "end_session" },
+      terminar: { type: "end_session" },
+      escanear: { type: "scan_package" },
+      scanner: { type: "scan_package" },
+      relatório: { type: "show_report" },
+      analytics: { type: "navigate", parameters: { screen: "analytics" } },
+      histórico: { type: "navigate", parameters: { screen: "history" } },
+      configurações: { type: "settings" },
+      ajuda: { type: "help" },
+      voltar: { type: "navigate", parameters: { screen: "back" } },
     };
 
     for (const [keyword, action] of Object.entries(keywords)) {
@@ -293,28 +327,28 @@ class VoiceCommandProcessor {
    */
   private generateResponse(action: VoiceAction): string {
     switch (action.type) {
-      case 'start_session':
-        return 'Iniciando nova sessão de conferência';
-      case 'end_session':
-        return 'Finalizando sessão atual';
-      case 'scan_package':
-        return 'Modo scanner ativado';
-      case 'show_report':
-        return 'Abrindo relatório';
-      case 'navigate':
+      case "start_session":
+        return "Iniciando nova sessão de conferência";
+      case "end_session":
+        return "Finalizando sessão atual";
+      case "scan_package":
+        return "Modo scanner ativado";
+      case "show_report":
+        return "Abrindo relatório";
+      case "navigate":
         const screen = action.parameters?.screen;
-        if (screen === 'analytics') return 'Abrindo analytics';
-        if (screen === 'history') return 'Abrindo histórico';
-        if (screen === 'settings') return 'Abrindo configurações';
-        if (screen === 'back') return 'Voltando';
-        if (screen === 'home') return 'Indo para o menu principal';
-        return 'Navegando';
-      case 'help':
-        return 'Comandos disponíveis: iniciar sessão, escanear, relatório, analytics, histórico, configurações, ajuda';
-      case 'settings':
-        return 'Abrindo configurações';
+        if (screen === "analytics") return "Abrindo analytics";
+        if (screen === "history") return "Abrindo histórico";
+        if (screen === "settings") return "Abrindo configurações";
+        if (screen === "back") return "Voltando";
+        if (screen === "home") return "Indo para o menu principal";
+        return "Navegando";
+      case "help":
+        return "Comandos disponíveis: iniciar sessão, escanear, relatório, analytics, histórico, configurações, ajuda";
+      case "settings":
+        return "Abrindo configurações";
       default:
-        return 'Comando executado';
+        return "Comando executado";
     }
   }
 
@@ -325,13 +359,13 @@ class VoiceCommandProcessor {
     if (!this.isSupported) {
       this.notifyCallback({
         success: false,
-        error: 'Reconhecimento de voz não suportado neste dispositivo',
+        error: "Reconhecimento de voz não suportado neste dispositivo",
       });
       return false;
     }
 
     if (this.isListening) {
-      console.log('🎤 Already listening');
+      console.log("🎤 Already listening");
       return true;
     }
 
@@ -339,10 +373,10 @@ class VoiceCommandProcessor {
       this.recognition.start();
       return true;
     } catch (error) {
-      console.error('❌ Failed to start voice recognition:', error);
+      console.error("❌ Failed to start voice recognition:", error);
       this.notifyCallback({
         success: false,
-        error: 'Falha ao iniciar reconhecimento de voz',
+        error: "Falha ao iniciar reconhecimento de voz",
       });
       return false;
     }
@@ -414,7 +448,7 @@ class VoiceCommandProcessor {
    */
   updateConfig(newConfig: Partial<VoiceConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    
+
     if (this.recognition) {
       this.recognition.lang = this.config.language;
       this.recognition.continuous = this.config.continuous;
@@ -460,7 +494,7 @@ export function useVoiceCommands() {
 
   useEffect(() => {
     setIsSupported(voiceCommandProcessor.isVoiceSupported());
-    
+
     voiceCommandProcessor.onCommand((result) => {
       setLastResult(result);
     });
@@ -495,4 +529,4 @@ export function useVoiceCommands() {
 }
 
 // Importar useState do React
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from "react";

@@ -1,8 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, Image, ScrollView, ActivityIndicator } from 'react-native';
-import { Session } from '@/types/session';
-import { useAppTheme } from '@/utils/useAppTheme';
-import { getSessionPhotos, deletePackagePhoto, formatFileSize, getSessionPhotosSize } from '@/utils/photoStorage';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  Image,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
+import { Session } from "@/types/session";
+import { useAppTheme } from "@/utils/useAppTheme";
+import {
+  getSessionPhotos,
+  deletePackagePhoto,
+  formatFileSize,
+  getSessionPhotosSize,
+} from "@/utils/photoStorage";
 
 interface PackagePhotoGalleryProps {
   session: Session;
@@ -38,7 +51,7 @@ export default function PackagePhotoGallery({
       const size = await getSessionPhotosSize(session.id);
       setTotalSize(size);
     } catch (error) {
-      console.error('Erro ao carregar fotos:', error);
+      console.error("Erro ao carregar fotos:", error);
     } finally {
       setLoading(false);
     }
@@ -50,21 +63,25 @@ export default function PackagePhotoGallery({
       setPhotos(photos.filter((p) => p.uri !== photoUri));
       setTotalSize(totalSize - (await getSessionPhotosSize(session.id)));
     } catch (error) {
-      console.error('Erro ao deletar foto:', error);
+      console.error("Erro ao deletar foto:", error);
     }
   };
 
   return (
     <>
       {/* Modal Principal */}
-      <Modal visible={visible && !selectedPhoto} transparent animationType="slide">
+      <Modal
+        visible={visible && !selectedPhoto}
+        transparent
+        animationType="slide"
+      >
         <View style={{ flex: 1, backgroundColor: colors.bg }}>
           {/* Header */}
           <View
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
               paddingHorizontal: 16,
               paddingTop: 16,
               paddingBottom: 12,
@@ -73,11 +90,20 @@ export default function PackagePhotoGallery({
             }}
           >
             <View>
-              <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700', letterSpacing: 1 }}>
+              <Text
+                style={{
+                  color: colors.primary,
+                  fontSize: 12,
+                  fontWeight: "700",
+                  letterSpacing: 1,
+                }}
+              >
                 GALERIA DE FOTOS
               </Text>
-              <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700' }}>
-                {photos.length} foto{photos.length !== 1 ? 's' : ''}
+              <Text
+                style={{ color: colors.text, fontSize: 18, fontWeight: "700" }}
+              >
+                {photos.length} foto{photos.length !== 1 ? "s" : ""}
               </Text>
             </View>
             <TouchableOpacity
@@ -87,19 +113,31 @@ export default function PackagePhotoGallery({
                 height: 40,
                 borderRadius: 10,
                 backgroundColor: colors.surface,
-                alignItems: 'center',
-                justifyContent: 'center',
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <Text style={{ fontSize: 18 }}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ padding: 16 }}
+          >
             {loading ? (
-              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 300,
+                }}
+              >
                 <ActivityIndicator size="large" color={colors.primary} />
-                <Text style={{ color: colors.textMuted, marginTop: 12 }}>Carregando fotos...</Text>
+                <Text style={{ color: colors.textMuted, marginTop: 12 }}>
+                  Carregando fotos...
+                </Text>
               </View>
             ) : photos.length === 0 ? (
               <View
@@ -107,16 +145,30 @@ export default function PackagePhotoGallery({
                   backgroundColor: colors.surface,
                   borderRadius: 14,
                   padding: 24,
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  alignItems: "center",
+                  justifyContent: "center",
                   minHeight: 300,
                 }}
               >
                 <Text style={{ fontSize: 48, marginBottom: 12 }}>📸</Text>
-                <Text style={{ color: colors.text, fontSize: 16, fontWeight: '700', marginBottom: 4, textAlign: 'center' }}>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 16,
+                    fontWeight: "700",
+                    marginBottom: 4,
+                    textAlign: "center",
+                  }}
+                >
                   Nenhuma foto capturada
                 </Text>
-                <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: 'center' }}>
+                <Text
+                  style={{
+                    color: colors.textMuted,
+                    fontSize: 12,
+                    textAlign: "center",
+                  }}
+                >
                   Capture fotos dos pacotes durante a conferência
                 </Text>
               </View>
@@ -133,18 +185,85 @@ export default function PackagePhotoGallery({
                     marginBottom: 16,
                   }}
                 >
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '600' }}>FOTOS CAPTURADAS</Text>
-                    <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700' }}>{photos.length}</Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: colors.textMuted,
+                        fontSize: 11,
+                        fontWeight: "600",
+                      }}
+                    >
+                      FOTOS CAPTURADAS
+                    </Text>
+                    <Text
+                      style={{
+                        color: colors.primary,
+                        fontSize: 11,
+                        fontWeight: "700",
+                      }}
+                    >
+                      {photos.length}
+                    </Text>
                   </View>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '600' }}>TAMANHO TOTAL</Text>
-                    <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700' }}>{formatFileSize(totalSize)}</Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: colors.textMuted,
+                        fontSize: 11,
+                        fontWeight: "600",
+                      }}
+                    >
+                      TAMANHO TOTAL
+                    </Text>
+                    <Text
+                      style={{
+                        color: colors.primary,
+                        fontSize: 11,
+                        fontWeight: "700",
+                      }}
+                    >
+                      {formatFileSize(totalSize)}
+                    </Text>
                   </View>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
-                    <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '600' }}>COBERTURA</Text>
-                    <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700' }}>
-                      {((photos.length / session.packages.length) * 100).toFixed(0)}%
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      marginTop: 8,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: colors.textMuted,
+                        fontSize: 11,
+                        fontWeight: "600",
+                      }}
+                    >
+                      COBERTURA
+                    </Text>
+                    <Text
+                      style={{
+                        color: colors.primary,
+                        fontSize: 11,
+                        fontWeight: "700",
+                      }}
+                    >
+                      {(
+                        (photos.length / session.packages.length) *
+                        100
+                      ).toFixed(0)}
+                      %
                     </Text>
                   </View>
                 </View>
@@ -187,10 +306,17 @@ export default function PackagePhotoGallery({
                     backgroundColor: colors.primary,
                     borderRadius: 10,
                     paddingVertical: 14,
-                    alignItems: 'center',
+                    alignItems: "center",
                   }}
                 >
-                  <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700', letterSpacing: 0.3 }}>
+                  <Text
+                    style={{
+                      color: "#fff",
+                      fontSize: 15,
+                      fontWeight: "700",
+                      letterSpacing: 0.3,
+                    }}
+                  >
                     📄 Exportar PDF com Fotos
                   </Text>
                 </TouchableOpacity>
@@ -201,12 +327,20 @@ export default function PackagePhotoGallery({
                   backgroundColor: colors.surface,
                   borderRadius: 10,
                   paddingVertical: 12,
-                  alignItems: 'center',
+                  alignItems: "center",
                   borderWidth: 1,
                   borderColor: colors.border,
                 }}
               >
-                <Text style={{ color: colors.text, fontSize: 14, fontWeight: '600' }}>🔄 Atualizar</Text>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 14,
+                    fontWeight: "600",
+                  }}
+                >
+                  🔄 Atualizar
+                </Text>
               </TouchableOpacity>
             </View>
           )}
@@ -216,24 +350,36 @@ export default function PackagePhotoGallery({
       {/* Photo Preview Modal */}
       {selectedPhoto && (
         <Modal visible={true} transparent animationType="fade">
-          <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.95)', justifyContent: 'center', alignItems: 'center' }}>
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(0, 0, 0, 0.95)",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             <View
               style={{
-                position: 'absolute',
+                position: "absolute",
                 top: 16,
                 right: 16,
                 width: 40,
                 height: 40,
                 borderRadius: 10,
                 backgroundColor: colors.surface,
-                alignItems: 'center',
-                justifyContent: 'center',
+                alignItems: "center",
+                justifyContent: "center",
                 zIndex: 10,
               }}
             >
               <TouchableOpacity
                 onPress={() => setSelectedPhoto(null)}
-                style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
                 <Text style={{ fontSize: 18 }}>✕</Text>
               </TouchableOpacity>
@@ -242,19 +388,39 @@ export default function PackagePhotoGallery({
             <Image
               source={{ uri: selectedPhoto.uri }}
               style={{
-                width: '90%',
+                width: "90%",
                 height: 600,
                 borderRadius: 14,
-                resizeMode: 'contain',
+                resizeMode: "contain",
               }}
             />
 
-            <View style={{ marginTop: 24, gap: 8, width: '90%' }}>
-              <View style={{ backgroundColor: colors.surface, borderRadius: 10, padding: 12, marginBottom: 12 }}>
-                <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '600', marginBottom: 4 }}>
+            <View style={{ marginTop: 24, gap: 8, width: "90%" }}>
+              <View
+                style={{
+                  backgroundColor: colors.surface,
+                  borderRadius: 10,
+                  padding: 12,
+                  marginBottom: 12,
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.textMuted,
+                    fontSize: 10,
+                    fontWeight: "600",
+                    marginBottom: 4,
+                  }}
+                >
                   CÓDIGO DO PACOTE
                 </Text>
-                <Text style={{ color: colors.text, fontSize: 14, fontWeight: '700' }}>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 14,
+                    fontWeight: "700",
+                  }}
+                >
                   {selectedPhoto.packageCode}
                 </Text>
               </View>
@@ -265,13 +431,17 @@ export default function PackagePhotoGallery({
                   setSelectedPhoto(null);
                 }}
                 style={{
-                  backgroundColor: '#ef4444',
+                  backgroundColor: "#ef4444",
                   borderRadius: 10,
                   paddingVertical: 12,
-                  alignItems: 'center',
+                  alignItems: "center",
                 }}
               >
-                <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700' }}>🗑️ Deletar Foto</Text>
+                <Text
+                  style={{ color: "#fff", fontSize: 14, fontWeight: "700" }}
+                >
+                  🗑️ Deletar Foto
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -280,12 +450,20 @@ export default function PackagePhotoGallery({
                   backgroundColor: colors.surface,
                   borderRadius: 10,
                   paddingVertical: 12,
-                  alignItems: 'center',
+                  alignItems: "center",
                   borderWidth: 1,
                   borderColor: colors.border,
                 }}
               >
-                <Text style={{ color: colors.text, fontSize: 14, fontWeight: '700' }}>Fechar</Text>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 14,
+                    fontWeight: "700",
+                  }}
+                >
+                  Fechar
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -310,27 +488,46 @@ function PhotoCard({ photo, onSelect, onDelete, colors }: PhotoCardProps) {
         borderRadius: 12,
         borderWidth: 1,
         borderColor: colors.surface2,
-        overflow: 'hidden',
+        overflow: "hidden",
       }}
     >
-      <TouchableOpacity onPress={onSelect} style={{ width: '100%', height: 200 }}>
+      <TouchableOpacity
+        onPress={onSelect}
+        style={{ width: "100%", height: 200 }}
+      >
         <Image
           source={{ uri: photo.uri }}
           style={{
-            width: '100%',
-            height: '100%',
-            resizeMode: 'cover',
+            width: "100%",
+            height: "100%",
+            resizeMode: "cover",
           }}
         />
       </TouchableOpacity>
 
       <View style={{ padding: 12 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 8,
+          }}
+        >
           <View style={{ flex: 1 }}>
-            <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '600', marginBottom: 2 }}>
+            <Text
+              style={{
+                color: colors.textMuted,
+                fontSize: 10,
+                fontWeight: "600",
+                marginBottom: 2,
+              }}
+            >
               PACOTE
             </Text>
-            <Text style={{ color: colors.text, fontSize: 13, fontWeight: '700' }}>
+            <Text
+              style={{ color: colors.text, fontSize: 13, fontWeight: "700" }}
+            >
               {photo.packageCode}
             </Text>
           </View>
@@ -340,9 +537,9 @@ function PhotoCard({ photo, onSelect, onDelete, colors }: PhotoCardProps) {
               width: 32,
               height: 32,
               borderRadius: 8,
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-              alignItems: 'center',
-              justifyContent: 'center',
+              backgroundColor: "rgba(239, 68, 68, 0.1)",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             <Text style={{ fontSize: 16 }}>🗑️</Text>
@@ -350,7 +547,7 @@ function PhotoCard({ photo, onSelect, onDelete, colors }: PhotoCardProps) {
         </View>
 
         <Text style={{ color: colors.textMuted, fontSize: 10 }}>
-          {new Date(photo.timestamp).toLocaleString('pt-BR')}
+          {new Date(photo.timestamp).toLocaleString("pt-BR")}
         </Text>
       </View>
     </View>

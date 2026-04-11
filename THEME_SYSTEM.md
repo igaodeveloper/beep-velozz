@@ -1,13 +1,15 @@
 # Sistema de Tema Dinâmico
 
 ## Visão Geral
+
 O projeto agora possui um sistema completo de tema claro e escuro, com cores primárias laranja e secundárias brancas.
 
 ## Cores Disponíveis
 
 ### Tema Claro (Light)
+
 - **bg**: `#ffffff` - Fundo principal
-- **surface**: `#f9fafb` - Cards e superfícies  
+- **surface**: `#f9fafb` - Cards e superfícies
 - **surface2**: `#f3f4f6` - Superfícies secundárias
 - **border**: `#e5e7eb` - Bordas principais
 - **border2**: `#d1d5db` - Bordas secundárias
@@ -17,6 +19,7 @@ O projeto agora possui um sistema completo de tema claro e escuro, com cores pri
 - **textFaint**: `#d1d5db` - Texto muito sutil
 
 ### Tema Escuro (Dark)
+
 - **bg**: `#0f172a` - Fundo principal
 - **surface**: `#1e293b` - Cards e superfícies
 - **surface2**: `#0f172a` - Superfícies secundárias
@@ -28,6 +31,7 @@ O projeto agora possui um sistema completo de tema claro e escuro, com cores pri
 - **textFaint**: `#64748b` - Texto muito sutil
 
 ### Cores Acentuadas (Ambos Temas)
+
 - **primary**: `#f97316` - Laranja (cor primária)
 - **primary2**: `#fb923c` - Laranja claro (variante)
 - **primaryLight**: `#fedba74` - Laranja muito claro
@@ -43,19 +47,15 @@ O projeto agora possui um sistema completo de tema claro e escuro, com cores pri
 ### Em um Componente Funcional
 
 ```tsx
-import { useAppTheme } from '@/utils/useAppTheme';
+import { useAppTheme } from "@/utils/useAppTheme";
 
 export default function MeuComponente() {
   const { isDark, colors } = useAppTheme();
 
   return (
     <View style={{ backgroundColor: colors.surface }}>
-      <Text style={{ color: colors.text }}>
-        Texto com tema dinâmico
-      </Text>
-      <TouchableOpacity
-        style={{ backgroundColor: colors.primary }}
-      >
+      <Text style={{ color: colors.text }}>Texto com tema dinâmico</Text>
+      <TouchableOpacity style={{ backgroundColor: colors.primary }}>
         <Text style={{ color: colors.secondary }}>Botão</Text>
       </TouchableOpacity>
     </View>
@@ -68,15 +68,13 @@ export default function MeuComponente() {
 Para permitir que o usuário alterne entre light/dark:
 
 ```tsx
-import { useTheme } from '@/utils/themeContext';
+import { useTheme } from "@/utils/themeContext";
 
 export default function MeuComponente() {
   const { colorScheme, setColorScheme, isDark } = useTheme();
 
   return (
-    <TouchableOpacity
-      onPress={() => setColorScheme(isDark ? 'light' : 'dark')}
-    >
+    <TouchableOpacity onPress={() => setColorScheme(isDark ? "light" : "dark")}>
       <Text>Alternar Tema</Text>
     </TouchableOpacity>
   );
@@ -91,11 +89,12 @@ export default function MeuComponente() {
 - **utils/themeContext.tsx** - Contexto React que gerencia o estado do tema
 - **utils/useAppTheme.ts** - Hook customizado que combina tema + contexto
 - **components/ThemeToggle.tsx** - Componente de botão para alternar tema
-- **app/_layout.tsx** - Layout raiz com ThemeProvider
+- **app/\_layout.tsx** - Layout raiz com ThemeProvider
 
 ### Como o Tema é Persistido
 
 O tema selecionado é salvo no AsyncStorage e é recuperado na inicialização do app:
+
 - Tema do sistema é usado como fallback se nenhuma preferência foi salva
 - A preferência é salua automicamente quando o usuário alterna o tema
 
@@ -104,9 +103,7 @@ O tema selecionado é salvo no AsyncStorage e é recuperado na inicialização d
 O `tailwind.config.js` está configurado com `darkMode: 'class'`, permitindo estilos específicos do dark mode:
 
 ```tsx
-<View className="bg-white dark:bg-slate-900">
-  {/* ... */}
-</View>
+<View className="bg-white dark:bg-slate-900">{/* ... */}</View>
 ```
 
 ## Recomendações de Uso

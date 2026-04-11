@@ -30,11 +30,11 @@
 ### No ScannerView (Tirar Foto)
 
 ```tsx
-import PackagePhotoCapture from '@/components/PackagePhotoCapture';
-import { savePackagePhoto } from '@/utils/photoStorage';
+import PackagePhotoCapture from "@/components/PackagePhotoCapture";
+import { savePackagePhoto } from "@/utils/photoStorage";
 
 const [showPhotoModal, setShowPhotoModal] = useState(false);
-const [photoCode, setPhotoCode] = useState('');
+const [photoCode, setPhotoCode] = useState("");
 
 // Quando pacote é escaneado:
 const handleScan = (pkg: ScannedPackage) => {
@@ -56,7 +56,7 @@ const handlePhotoCapture = async (uri: string) => {
   packageCode={photoCode}
   onPhotoCapture={handlePhotoCapture}
   onClose={() => setShowPhotoModal(false)}
-/>
+/>;
 ```
 
 ### No ReportView (Ver Fotos)
@@ -85,14 +85,14 @@ const [showGallery, setShowGallery] = useState(false);
 
 ## 📊 Arquivos Criados/Modificados
 
-| Arquivo | Tipo | O Quê |
-|---------|------|-------|
-| `components/PackagePhotoCapture.tsx` | ✨ Novo | Componente de câmera |
-| `components/PackagePhotoGallery.tsx` | ✨ Novo | Galeria de fotos |
-| `utils/photoStorage.ts` | ✨ Novo | Gerenciamento de fotos |
-| `utils/pdfExport.ts` | 📝 Modificado | Adicionado PDF com fotos |
-| `types/session.ts` | 📝 Modificado | Campo `photoUri` já existe |
-| `PHOTO_INTEGRATION_GUIDE.md` | 📖 Novo | Guia completo |
+| Arquivo                              | Tipo          | O Quê                      |
+| ------------------------------------ | ------------- | -------------------------- |
+| `components/PackagePhotoCapture.tsx` | ✨ Novo       | Componente de câmera       |
+| `components/PackagePhotoGallery.tsx` | ✨ Novo       | Galeria de fotos           |
+| `utils/photoStorage.ts`              | ✨ Novo       | Gerenciamento de fotos     |
+| `utils/pdfExport.ts`                 | 📝 Modificado | Adicionado PDF com fotos   |
+| `types/session.ts`                   | 📝 Modificado | Campo `photoUri` já existe |
+| `PHOTO_INTEGRATION_GUIDE.md`         | 📖 Novo       | Guia completo              |
 
 ---
 
@@ -157,6 +157,7 @@ const [showGallery, setShowGallery] = useState(false);
 ```
 
 Cada foto é salva com nome único baseado em:
+
 - ID da sessão
 - Código do pacote
 - Timestamp
@@ -188,10 +189,10 @@ Adicione em `app.json`:
 
 ```typescript
 // Testar salvamento
-await savePackagePhoto(uri, 'BR123', 'session-id');
+await savePackagePhoto(uri, "BR123", "session-id");
 
 // Testar carregamento
-const photos = await getSessionPhotos('session-id');
+const photos = await getSessionPhotos("session-id");
 
 // Testar deleção
 await deletePackagePhoto(photoUri);
@@ -215,6 +216,7 @@ const base64 = await photoToBase64(photoUri);
 ## 📞 Suporte
 
 Se encontrar problemas:
+
 1. Verificar permissões
 2. Testar em dispositivo físico
 3. Limpar cache do app

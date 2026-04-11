@@ -63,7 +63,7 @@ export interface SessionFinancials {
 
 export interface OperatorFinancialSummary {
   operatorId: string;
-  period: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  period: "daily" | "weekly" | "monthly" | "yearly";
   totalSessions: number;
   totalPackages: number;
   totalEarnings: number;
@@ -119,7 +119,7 @@ export interface ROIAnalysis {
 
 export interface FinancialReport {
   id: string;
-  type: 'session' | 'operator' | 'team' | 'period';
+  type: "session" | "operator" | "team" | "period";
   period: {
     start: number;
     end: number;
@@ -171,7 +171,7 @@ export interface CostBreakdown {
 }
 
 export interface RevenueProjection {
-  timeframe: 'week' | 'month' | 'quarter' | 'year';
+  timeframe: "week" | "month" | "quarter" | "year";
   scenarios: {
     conservative: {
       packages: number;
@@ -203,8 +203,8 @@ export interface FinancialKPI {
   value: number;
   target: number;
   unit: string;
-  trend: 'up' | 'down' | 'stable';
+  trend: "up" | "down" | "stable";
   change: number;
   changePercent: number;
-  status: 'good' | 'warning' | 'critical';
+  status: "good" | "warning" | "critical";
 }

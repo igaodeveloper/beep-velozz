@@ -3,14 +3,20 @@
  * Tipos para sistema de IA preditiva e aprendizado contínuo
  */
 
-import { PackageType } from './scanner';
-import { ScannedPackage } from './session';
+import { PackageType } from "./scanner";
+import { ScannedPackage } from "./session";
 
 /**
  * Padrão detectado em sequência de códigos
  */
 export interface DetectedPattern {
-  type: 'sequential' | 'prefix' | 'suffix' | 'numeric' | 'alphanumeric' | 'mixed';
+  type:
+    | "sequential"
+    | "prefix"
+    | "suffix"
+    | "numeric"
+    | "alphanumeric"
+    | "mixed";
   confidence: number;
   pattern: string;
   examples: string[];
@@ -33,8 +39,8 @@ export interface SmartSuggestion {
   type: PackageType;
   confidence: number;
   reason: string;
-  source: 'pattern' | 'history' | 'ml_model' | 'sequential' | 'operator_habit';
-  priority: 'high' | 'medium' | 'low';
+  source: "pattern" | "history" | "ml_model" | "sequential" | "operator_habit";
+  priority: "high" | "medium" | "low";
   metadata: {
     patternId?: string;
     historicalMatches?: number;
@@ -80,7 +86,7 @@ export interface PredictiveAnalysis {
   operatorProfile: {
     dominantPatterns: string[];
     averageSpeed: number;
-    accuracyTrend: 'improving' | 'stable' | 'declining';
+    accuracyTrend: "improving" | "stable" | "declining";
     preferredPackageTypes: PackageType[];
   };
   sessionInsights: string[];
@@ -103,7 +109,7 @@ export interface ScanLearningEvent {
     previousCode?: string;
     nextCode?: string;
     positionInSession: number;
-    timeOfDay: 'morning' | 'afternoon' | 'evening';
+    timeOfDay: "morning" | "afternoon" | "evening";
   };
 }
 

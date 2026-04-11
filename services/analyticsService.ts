@@ -3,20 +3,26 @@
  * Sistema completo de métricas e insights inteligentes
  */
 
-import { Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Session, ScannedPackage } from '@/types/session';
-import { PackageType } from '@/types/scanner';
+import { Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Session, ScannedPackage } from "@/types/session";
+import { PackageType } from "@/types/scanner";
 
 interface AnalyticsEvent {
   id: string;
   timestamp: number;
-  type: 'scan' | 'session' | 'performance' | 'error' | 'user_action' | 'insight';
+  type:
+    | "scan"
+    | "session"
+    | "performance"
+    | "error"
+    | "user_action"
+    | "insight";
   data: any;
   sessionId: string;
   operatorName?: string;
   deviceInfo: DeviceInfo;
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  priority: "low" | "medium" | "high" | "critical";
 }
 
 interface DeviceInfo {
@@ -42,29 +48,29 @@ interface PerformanceMetrics {
   scanProcessingTime: number;
   cacheHitRate: number;
   uptime: number;
-  systemHealth: 'excellent' | 'good' | 'warning' | 'critical';
+  systemHealth: "excellent" | "good" | "warning" | "critical";
 }
 
 interface RealTimeStats {
   activeSessions: number;
   totalScansToday: number;
   totalScansWeek: number;
-  topOperators: Array<{name: string, scans: number, efficiency: number}>;
+  topOperators: Array<{ name: string; scans: number; efficiency: number }>;
   packageDistribution: Record<PackageType, number>;
   performanceScore: number;
-  systemHealth: 'excellent' | 'good' | 'warning' | 'critical';
+  systemHealth: "excellent" | "good" | "warning" | "critical";
   insights: string[];
-  predictions: Array<{type: string, confidence: number, suggestion: string}>;
+  predictions: Array<{ type: string; confidence: number; suggestion: string }>;
 }
 
 interface SmartInsight {
-  type: 'performance' | 'efficiency' | 'pattern' | 'prediction';
+  type: "performance" | "efficiency" | "pattern" | "prediction";
   title: string;
   description: string;
   confidence: number;
   actionable: boolean;
   suggestion?: string;
-  impact: 'low' | 'medium' | 'high' | 'critical';
+  impact: "low" | "medium" | "high" | "critical";
 }
 
 class AnalyticsService {
@@ -80,11 +86,11 @@ class AnalyticsService {
   private performanceHistory: number[] = [];
 
   private readonly STORAGE_KEYS = {
-    EVENTS: 'analytics_events',
-    SESSIONS: 'analytics_sessions',
-    METRICS: 'analytics_metrics',
-    INSIGHTS: 'analytics_insights',
-    CONFIG: 'analytics_config'
+    EVENTS: "analytics_events",
+    SESSIONS: "analytics_sessions",
+    METRICS: "analytics_metrics",
+    INSIGHTS: "analytics_insights",
+    CONFIG: "analytics_config",
   };
 
   private readonly BATCH_SIZE = 50;
@@ -107,19 +113,21 @@ class AnalyticsService {
     try {
       // Carrega dados persistidos
       await this.loadStoredData();
-      
+
       // Inicia sincronização automática
       this.startSyncTimer();
-      
+
       // Inicia geração de insights
       this.startInsightGeneration();
-      
+
       // Monitora conectividade
       this.setupConnectivityMonitoring();
-      
-      console.log('[AnalyticsService] ✅ Serviço avançado inicializado com sucesso');
+
+      console.log(
+        "[AnalyticsService] ✅ Serviço avançado inicializado com sucesso",
+      );
     } catch (error) {
-      console.error('[AnalyticsService] ❌ Erro na inicialização:', error);
+      console.error("[AnalyticsService] ❌ Erro na inicialização:", error);
     }
   }
 
@@ -127,12 +135,12 @@ class AnalyticsService {
   async startSession(sessionId: string, operatorName?: string): Promise<void> {
     this.currentSessionId = sessionId;
     const deviceInfo = this.getDeviceInfo();
-    
+
     const session: Session = {
       id: sessionId,
       notes: {},
-      operatorName: operatorName || 'Operador',
-      driverName: 'Driver',
+      operatorName: operatorName || "Operador",
+      driverName: "Driver",
       declaredCount: 0,
       declaredCounts: {
         shopee: 0,
@@ -145,27 +153,33 @@ class AnalyticsService {
     };
 
     this.sessions.set(sessionId, session);
-    
+
     // Evento de início de sessão
-    await this.trackEvent('session', {
-      action: 'session_start',
-      sessionId,
-      operatorName,
-      deviceInfo,
-      performanceBaseline: this.getCurrentPerformanceMetrics(),
-    }, 'high');
+    await this.trackEvent(
+      "session",
+      {
+        action: "session_start",
+        sessionId,
+        operatorName,
+        deviceInfo,
+        performanceBaseline: this.getCurrentPerformanceMetrics(),
+      },
+      "high",
+    );
 
     await this.saveSessions();
-    
-    console.log(`[AnalyticsService] 🚀 Sessão avançada iniciada: ${sessionId} por ${operatorName || 'Operador'}`);
+
+    console.log(
+      `[AnalyticsService] 🚀 Sessão avançada iniciada: ${sessionId} por ${operatorName || "Operador"}`,
+    );
   }
 
   // Track de scan avançado
   async trackScan(
-    packageData: ScannedPackage, 
+    packageData: ScannedPackage,
     processingTime: number,
     confidence?: number,
-    method: 'camera' | 'manual' | 'qr' = 'camera'
+    method: "camera" | "manual" | "qr" = "camera",
   ): Promise<void> {
     if (!this.currentSessionId) return;
 
@@ -176,16 +190,20 @@ class AnalyticsService {
     session.packages.push(packageData);
 
     // Evento de scan detalhado
-    await this.trackEvent('scan', {
-      packageId: packageData.id,
-      packageType: packageData.type,
-      packageCode: packageData.code,
-      processingTime,
-      confidence,
-      method,
-      sessionId: this.currentSessionId,
-      timestamp: Date.now(),
-    }, 'medium');
+    await this.trackEvent(
+      "scan",
+      {
+        packageId: packageData.id,
+        packageType: packageData.type,
+        packageCode: packageData.code,
+        processingTime,
+        confidence,
+        method,
+        sessionId: this.currentSessionId,
+        timestamp: Date.now(),
+      },
+      "medium",
+    );
 
     // Gera insight se necessário
     await this.generateScanInsights(session);
@@ -195,27 +213,41 @@ class AnalyticsService {
 
   // Track de erro
   async trackError(errorType: string, errorData: any): Promise<void> {
-    await this.trackEvent('error', {
-      errorType,
-      errorData,
-      timestamp: Date.now()
-    }, 'high');
+    await this.trackEvent(
+      "error",
+      {
+        errorType,
+        errorData,
+        timestamp: Date.now(),
+      },
+      "high",
+    );
   }
 
   // Track evento genérico
-  async trackEvent(type: 'scan' | 'session' | 'performance' | 'error' | 'user_action' | 'insight', data: any, priority: 'low' | 'medium' | 'high' | 'critical' = 'medium'): Promise<void> {
+  async trackEvent(
+    type:
+      | "scan"
+      | "session"
+      | "performance"
+      | "error"
+      | "user_action"
+      | "insight",
+    data: any,
+    priority: "low" | "medium" | "high" | "critical" = "medium",
+  ): Promise<void> {
     const event: AnalyticsEvent = {
       id: Math.random().toString(36).substr(2, 9),
       timestamp: Date.now(),
       type,
       data,
-      sessionId: this.currentSessionId || '',
+      sessionId: this.currentSessionId || "",
       deviceInfo: this.getDeviceInfo(),
       priority,
     };
-    
+
     this.events.push(event);
-    
+
     // Manter apenas últimos 1000 eventos para não sobrecarregar memória
     if (this.events.length > this.MAX_EVENTS) {
       this.events = this.events.slice(-this.MAX_EVENTS);
@@ -223,7 +255,7 @@ class AnalyticsService {
 
     // Adicionar à fila de batch
     this.batchQueue.push(event);
-    
+
     // Se atingiu o batch size, sincroniza
     if (this.batchQueue.length >= this.BATCH_SIZE) {
       await this.syncBatch();
@@ -233,28 +265,40 @@ class AnalyticsService {
   // Sincronizar batch de eventos
   private async syncBatch(): Promise<void> {
     if (this.batchQueue.length === 0) return;
-    
+
     try {
       // Aqui você enviaria os eventos para o servidor
-      console.log(`[AnalyticsService] Sincronizando ${this.batchQueue.length} eventos`);
-      
+      console.log(
+        `[AnalyticsService] Sincronizando ${this.batchQueue.length} eventos`,
+      );
+
       // Limpa a fila após sincronização
       this.batchQueue = [];
     } catch (error) {
-      console.error('[AnalyticsService] Erro na sincronização do batch:', error);
+      console.error(
+        "[AnalyticsService] Erro na sincronização do batch:",
+        error,
+      );
     }
   }
 
   // Calcular métricas de performance
   calculateMetrics(): PerformanceMetrics {
-    const currentSession = this.currentSessionId ? this.sessions.get(this.currentSessionId) : null;
-    const sessionDuration = currentSession ? Date.now() - new Date(currentSession.startedAt).getTime() : 0;
+    const currentSession = this.currentSessionId
+      ? this.sessions.get(this.currentSessionId)
+      : null;
+    const sessionDuration = currentSession
+      ? Date.now() - new Date(currentSession.startedAt).getTime()
+      : 0;
     const sessionDurationMinutes = sessionDuration / (1000 * 60);
     const totalScans = currentSession ? currentSession.packages.length : 0;
-    
+
     return {
       sessionDuration,
-      scanRate: sessionDurationMinutes > 0 && currentSession ? totalScans / sessionDurationMinutes : 0,
+      scanRate:
+        sessionDurationMinutes > 0 && currentSession
+          ? totalScans / sessionDurationMinutes
+          : 0,
       errorRate: 0, // Calculado baseado em divergências
       averageScanTime: 0, // Calculado baseado nos timestamps dos pacotes
       cpuUsage: 0,
@@ -263,7 +307,7 @@ class AnalyticsService {
       scanProcessingTime: 0,
       cacheHitRate: 0,
       uptime: 0,
-      systemHealth: 'excellent',
+      systemHealth: "excellent",
     };
   }
 
@@ -276,12 +320,14 @@ class AnalyticsService {
   } {
     const metrics = this.calculateMetrics();
     const insights = this.generateInsights(metrics, session);
-    
+
     return {
       session,
       metrics,
-      events: this.events.filter(e => !e.sessionId || e.sessionId === session.id),
-      insights
+      events: this.events.filter(
+        (e) => !e.sessionId || e.sessionId === session.id,
+      ),
+      insights,
     };
   }
 
@@ -295,21 +341,28 @@ class AnalyticsService {
       }
 
       // Carregar sessões
-      const storedSessions = await AsyncStorage.getItem(this.STORAGE_KEYS.SESSIONS);
+      const storedSessions = await AsyncStorage.getItem(
+        this.STORAGE_KEYS.SESSIONS,
+      );
       if (storedSessions) {
         const sessionsArray = JSON.parse(storedSessions);
         this.sessions = new Map(sessionsArray);
       }
 
       // Carregar insights
-      const storedInsights = await AsyncStorage.getItem(this.STORAGE_KEYS.INSIGHTS);
+      const storedInsights = await AsyncStorage.getItem(
+        this.STORAGE_KEYS.INSIGHTS,
+      );
       if (storedInsights) {
         this.insights = JSON.parse(storedInsights);
       }
 
-      console.log('[AnalyticsService] Dados carregados do storage com sucesso');
+      console.log("[AnalyticsService] Dados carregados do storage com sucesso");
     } catch (error) {
-      console.error('[AnalyticsService] Erro ao carregar dados do storage:', error);
+      console.error(
+        "[AnalyticsService] Erro ao carregar dados do storage:",
+        error,
+      );
     }
   }
 
@@ -318,7 +371,7 @@ class AnalyticsService {
     return {
       platform: Platform.OS,
       version: Platform.Version.toString(),
-      model: 'Unknown',
+      model: "Unknown",
       isTablet: Platform.isTV,
       pixelRatio: 1,
       screenWidth: 375,
@@ -339,7 +392,7 @@ class AnalyticsService {
       scanProcessingTime: 0,
       cacheHitRate: 0,
       uptime: 0,
-      systemHealth: 'excellent',
+      systemHealth: "excellent",
     };
   }
 
@@ -348,7 +401,7 @@ class AnalyticsService {
     if (this.syncTimer) {
       clearTimeout(this.syncTimer);
     }
-    
+
     this.syncTimer = setTimeout(() => {
       this.syncData();
       this.startSyncTimer(); // Recursivo para manter o timer ativo
@@ -378,22 +431,25 @@ class AnalyticsService {
       await this.saveInsights();
       this.lastSync = Date.now();
     } catch (error) {
-      console.error('[AnalyticsService] Erro na sincronização:', error);
+      console.error("[AnalyticsService] Erro na sincronização:", error);
     }
   }
 
   // Gerar insights em tempo real
   private generateRealTimeInsights(): void {
     // Implementação básica
-    console.log('[AnalyticsService] Gerando insights em tempo real');
+    console.log("[AnalyticsService] Gerando insights em tempo real");
   }
 
   // Salvar eventos no storage
   private async saveEvents(): Promise<void> {
     try {
-      await AsyncStorage.setItem(this.STORAGE_KEYS.EVENTS, JSON.stringify(this.events));
+      await AsyncStorage.setItem(
+        this.STORAGE_KEYS.EVENTS,
+        JSON.stringify(this.events),
+      );
     } catch (error) {
-      console.error('[AnalyticsService] Erro ao salvar eventos:', error);
+      console.error("[AnalyticsService] Erro ao salvar eventos:", error);
     }
   }
 
@@ -401,28 +457,38 @@ class AnalyticsService {
   private async saveSessions(): Promise<void> {
     try {
       const sessionsArray = Array.from(this.sessions.entries());
-      await AsyncStorage.setItem(this.STORAGE_KEYS.SESSIONS, JSON.stringify(sessionsArray));
+      await AsyncStorage.setItem(
+        this.STORAGE_KEYS.SESSIONS,
+        JSON.stringify(sessionsArray),
+      );
     } catch (error) {
-      console.error('[AnalyticsService] Erro ao salvar sessões:', error);
+      console.error("[AnalyticsService] Erro ao salvar sessões:", error);
     }
   }
 
   // Salvar insights no storage
   private async saveInsights(): Promise<void> {
     try {
-      await AsyncStorage.setItem(this.STORAGE_KEYS.INSIGHTS, JSON.stringify(this.insights));
+      await AsyncStorage.setItem(
+        this.STORAGE_KEYS.INSIGHTS,
+        JSON.stringify(this.insights),
+      );
     } catch (error) {
-      console.error('[AnalyticsService] Erro ao salvar insights:', error);
+      console.error("[AnalyticsService] Erro ao salvar insights:", error);
     }
   }
 
   // Calcular tempo médio de scan
-  private calculateAverageScanTime(session: Session, processingTime: number): number {
+  private calculateAverageScanTime(
+    session: Session,
+    processingTime: number,
+  ): number {
     // Como ScannedPackage não tem processingTime, calculamos baseado nos timestamps
-    const totalTime = session.packages.reduce((sum, pkg) => {
-      const scanTime = new Date(pkg.scannedAt).getTime();
-      return sum + scanTime;
-    }, 0) + processingTime;
+    const totalTime =
+      session.packages.reduce((sum, pkg) => {
+        const scanTime = new Date(pkg.scannedAt).getTime();
+        return sum + scanTime;
+      }, 0) + processingTime;
     return totalTime / (session.packages.length + 1);
   }
 
@@ -444,48 +510,54 @@ class AnalyticsService {
     // Implementação básica
     if (session.hasDivergence) {
       const insight: SmartInsight = {
-        type: 'performance',
-        title: 'Divergência Detectada',
-        description: 'Foi detectada uma divergência na contagem de pacotes',
+        type: "performance",
+        title: "Divergência Detectada",
+        description: "Foi detectada uma divergência na contagem de pacotes",
         confidence: 0.9,
         actionable: true,
-        suggestion: 'Verifique a contagem declarada vs a contagem real',
-        impact: 'high'
+        suggestion: "Verifique a contagem declarada vs a contagem real",
+        impact: "high",
       };
       this.insights.push(insight);
     }
   }
 
   // Gerar insights inteligentes
-  private generateInsights(metrics: PerformanceMetrics, session: Session): string[] {
+  private generateInsights(
+    metrics: PerformanceMetrics,
+    session: Session,
+  ): string[] {
     const insights: string[] = [];
-    
+
     // Performance insights
     if (metrics.scanRate > 20) {
-      insights.push('Excelente performance: scanning acima de 20 pacotes/minuto');
+      insights.push(
+        "Excelente performance: scanning acima de 20 pacotes/minuto",
+      );
     } else if (metrics.scanRate < 5) {
-      insights.push('Performance baixa: menos de 5 pacotes/minuto');
+      insights.push("Performance baixa: menos de 5 pacotes/minuto");
     }
-    
+
     // Error rate insights
     if (metrics.errorRate > 10) {
-      insights.push('Alta taxa de erros: acima de 10%');
+      insights.push("Alta taxa de erros: acima de 10%");
     } else if (metrics.errorRate < 2) {
-      insights.push('Excelente precisão: menos de 2% de erros');
+      insights.push("Excelente precisão: menos de 2% de erros");
     }
-    
+
     // Divergence insights
     if (session.hasDivergence) {
-      insights.push('Sessão com divergência detectada');
+      insights.push("Sessão com divergência detectada");
     } else {
-      insights.push('Sessão concluída sem divergências');
+      insights.push("Sessão concluída sem divergências");
     }
-    
+
     // Duration insights
-    if (metrics.sessionDuration > 30 * 60 * 1000) { // 30 minutos
-      insights.push('Sessão longa: mais de 30 minutos');
+    if (metrics.sessionDuration > 30 * 60 * 1000) {
+      // 30 minutos
+      insights.push("Sessão longa: mais de 30 minutos");
     }
-    
+
     return insights;
   }
 

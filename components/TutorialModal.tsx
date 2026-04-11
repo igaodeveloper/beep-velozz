@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -6,92 +6,95 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
-} from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
+} from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
 
 interface TutorialModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get("window");
 
 const slides = [
   {
-    id: 'intro',
-    title: 'Bem-vindo ao Beep Velozz',
-    badge: 'VISÃO GERAL',
+    id: "intro",
+    title: "Bem-vindo ao Beep Velozz",
+    badge: "VISÃO GERAL",
     description:
-      'Um cockpit de conferência logística para você escanear, analisar e fechar sessões com precisão de nível enterprise.',
+      "Um cockpit de conferência logística para você escanear, analisar e fechar sessões com precisão de nível enterprise.",
     bullets: [
-      'Dashboard em tempo real com estatísticas do dia',
-      'Fluxo guiado de conferência com limites por tipo de pacote',
-      'Relatórios e histórico prontos para auditoria',
+      "Dashboard em tempo real com estatísticas do dia",
+      "Fluxo guiado de conferência com limites por tipo de pacote",
+      "Relatórios e histórico prontos para auditoria",
     ],
   },
   {
-    id: 'session',
-    title: '1. Começando uma conferência',
-    badge: 'SESSÃO',
+    id: "session",
+    title: "1. Começando uma conferência",
+    badge: "SESSÃO",
     description:
-      'Inicie uma nova conferência informando motorista, operador e quantidades declaradas por marketplace.',
+      "Inicie uma nova conferência informando motorista, operador e quantidades declaradas por marketplace.",
     bullets: [
       'Use o botão "Nova Sessão" na tela inicial',
-      'Preencha motorista, operador e totais declarados',
-      'Confirme para ativar o scanner com limites inteligentes',
+      "Preencha motorista, operador e totais declarados",
+      "Confirme para ativar o scanner com limites inteligentes",
     ],
   },
   {
-    id: 'scanner',
-    title: '2. Escaneando com o scanner industrial',
-    badge: 'SCANNER',
+    id: "scanner",
+    title: "2. Escaneando com o scanner industrial",
+    badge: "SCANNER",
     description:
-      'Aponte para o código de barras ou QR Code e deixe o Beep Velozz contar, validar e alertar.',
+      "Aponte para o código de barras ou QR Code e deixe o Beep Velozz contar, validar e alertar.",
     bullets: [
-      'O retângulo no centro guia o enquadramento ideal',
-      'Cada leitura atualiza contadores por tipo e valor total',
-      'Ao atingir o limite declarado, você é avisado automaticamente',
+      "O retângulo no centro guia o enquadramento ideal",
+      "Cada leitura atualiza contadores por tipo e valor total",
+      "Ao atingir o limite declarado, você é avisado automaticamente",
     ],
   },
   {
-    id: 'divergence',
-    title: '3. Tratando divergências com segurança',
-    badge: 'DIVERGÊNCIA',
+    id: "divergence",
+    title: "3. Tratando divergências com segurança",
+    badge: "DIVERGÊNCIA",
     description:
-      'Se os números não batem, o app abre um fluxo específico para revisão antes de concluir.',
+      "Se os números não batem, o app abre um fluxo específico para revisão antes de concluir.",
     bullets: [
-      'Ao tentar encerrar com diferença, a tela de divergência é exibida',
-      'Revise pacotes, reescane se necessário e registre observações',
-      'Você decide se encerra com ou sem divergência marcada',
+      "Ao tentar encerrar com diferença, a tela de divergência é exibida",
+      "Revise pacotes, reescane se necessário e registre observações",
+      "Você decide se encerra com ou sem divergência marcada",
     ],
   },
   {
-    id: 'report-history',
-    title: '4. Relatórios, histórico e fotos',
-    badge: 'RELATÓRIO',
+    id: "report-history",
+    title: "4. Relatórios, histórico e fotos",
+    badge: "RELATÓRIO",
     description:
-      'Depois de cada conferência você tem um resumo executivo, lista detalhada e exportação.',
+      "Depois de cada conferência você tem um resumo executivo, lista detalhada e exportação.",
     bullets: [
-      'Veja totais por marketplace, valores e delta da divergência',
-      'Acesse fotos de pacotes anexadas à sessão',
-      'Exporte e compartilhe via PDF, WhatsApp ou outros canais',
+      "Veja totais por marketplace, valores e delta da divergência",
+      "Acesse fotos de pacotes anexadas à sessão",
+      "Exporte e compartilhe via PDF, WhatsApp ou outros canais",
     ],
   },
   {
-    id: 'analytics',
-    title: '5. Analytics e aprendizado contínuo',
-    badge: 'ANALYTICS',
+    id: "analytics",
+    title: "5. Analytics e aprendizado contínuo",
+    badge: "ANALYTICS",
     description:
-      'Use a aba de analytics para enxergar produtividade, taxas de erro e operadores em destaque.',
+      "Use a aba de analytics para enxergar produtividade, taxas de erro e operadores em destaque.",
     bullets: [
-      'Compare sessões ao longo do tempo',
-      'Veja rankings de operadores e anomalias detectadas',
-      'Use os insights para ajustar turnos, metas e processos',
+      "Compare sessões ao longo do tempo",
+      "Veja rankings de operadores e anomalias detectadas",
+      "Use os insights para ajustar turnos, metas e processos",
     ],
   },
 ];
 
-export default function TutorialModal({ visible, onClose }: TutorialModalProps) {
+export default function TutorialModal({
+  visible,
+  onClose,
+}: TutorialModalProps) {
   const { colors } = useAppTheme();
 
   return (
@@ -99,29 +102,29 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
       <View
         style={{
           flex: 1,
-          backgroundColor: 'rgba(15,23,42,0.92)',
-          justifyContent: 'center',
-          alignItems: 'center',
+          backgroundColor: "rgba(15,23,42,0.92)",
+          justifyContent: "center",
+          alignItems: "center",
           paddingHorizontal: 16,
         }}
       >
         <View
           style={{
-            width: '100%',
+            width: "100%",
             maxWidth: 720,
             borderRadius: 20,
             backgroundColor: colors.bg,
             borderWidth: 1,
             borderColor: colors.border,
-            overflow: 'hidden',
+            overflow: "hidden",
           }}
         >
           {/* Header */}
           <View
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
               paddingHorizontal: 18,
               paddingVertical: 14,
               borderBottomWidth: 1,
@@ -133,7 +136,7 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
                 style={{
                   color: colors.primary,
                   fontSize: 12,
-                  fontWeight: '700',
+                  fontWeight: "700",
                   letterSpacing: 1.5,
                 }}
               >
@@ -143,7 +146,7 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
                 style={{
                   color: colors.text,
                   fontSize: 18,
-                  fontWeight: '800',
+                  fontWeight: "800",
                 }}
               >
                 Como usar o Beep Velozz
@@ -156,8 +159,8 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
                 height: 36,
                 borderRadius: 10,
                 backgroundColor: colors.surface,
-                alignItems: 'center',
-                justifyContent: 'center',
+                alignItems: "center",
+                justifyContent: "center",
                 borderWidth: 1,
                 borderColor: colors.border,
               }}
@@ -173,7 +176,7 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
             showsHorizontalScrollIndicator={false}
             style={{ maxHeight: 360 }}
             contentContainerStyle={{
-              alignItems: 'center',
+              alignItems: "center",
             }}
           >
             {slides.map((slide) => (
@@ -197,14 +200,14 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
                 >
                   <Text
                     style={{
-                      alignSelf: 'flex-start',
+                      alignSelf: "flex-start",
                       paddingHorizontal: 10,
                       paddingVertical: 4,
                       borderRadius: 999,
                       backgroundColor: colors.surface2,
                       color: colors.textSubtle,
                       fontSize: 10,
-                      fontWeight: '700',
+                      fontWeight: "700",
                       letterSpacing: 1,
                     }}
                   >
@@ -214,7 +217,7 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
                     style={{
                       color: colors.text,
                       fontSize: 18,
-                      fontWeight: '800',
+                      fontWeight: "800",
                     }}
                   >
                     {slide.title}
@@ -249,9 +252,9 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
           {/* Footer actions */}
           <View
             style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
               paddingHorizontal: 18,
               paddingVertical: 12,
               borderTopWidth: 1,
@@ -279,7 +282,7 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
                 style={{
                   color: colors.secondary,
                   fontSize: 13,
-                  fontWeight: '700',
+                  fontWeight: "700",
                 }}
               >
                 Começar a usar agora
@@ -291,4 +294,3 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
     </Modal>
   );
 }
-

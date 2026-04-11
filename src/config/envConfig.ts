@@ -1,8 +1,8 @@
 // src/config/envConfig.ts
-import Constants from 'expo-constants';
-import { Platform } from 'react-native';
+import Constants from "expo-constants";
+import { Platform } from "react-native";
 
-export type Environment = 'development' | 'staging' | 'production';
+export type Environment = "development" | "staging" | "production";
 
 interface EnvironmentConfig {
   environment: Environment;
@@ -35,42 +35,46 @@ interface FirebaseConfig {
 
 // Get environment from build-time variable
 const getEnvironment = (): Environment => {
-  const env = process.env.EXPO_PUBLIC_ENVIRONMENT || 'production';
+  const env = process.env.EXPO_PUBLIC_ENVIRONMENT || "production";
   return env as Environment;
 };
 
 // Get Firebase config from environment variables
 const getFirebaseConfig = (): FirebaseConfig => ({
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || '',
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || 'beepvelozz.firebaseapp.com',
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || 'beepvelozz',
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || 'beepvelozz.appspot.com',
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || '',
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "",
+  authDomain:
+    process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN ||
+    "beepvelozz.firebaseapp.com",
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "beepvelozz",
+  storageBucket:
+    process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || "beepvelozz.appspot.com",
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "",
 });
 
 // Validate required environment variables
 const validateConfig = (env: Environment) => {
-  const requiredVars = ['EXPO_PUBLIC_API_BASE_URL', 'EXPO_PUBLIC_API_TOKEN'];
-  
-  if (env === 'production') {
+  const requiredVars = ["EXPO_PUBLIC_API_BASE_URL", "EXPO_PUBLIC_API_TOKEN"];
+
+  if (env === "production") {
     const missing = requiredVars.filter(
-      (varName) => !process.env[varName as keyof NodeJS.ProcessEnv]
+      (varName) => !process.env[varName as keyof NodeJS.ProcessEnv],
     );
 
     if (missing.length > 0) {
       throw new Error(
-        `❌ CRITICAL: Missing required environment variables in production: ${missing.join(', ')}\n` +
-        `Please set these in your .env or build configuration.`
+        `❌ CRITICAL: Missing required environment variables in production: ${missing.join(", ")}\n` +
+          `Please set these in your .env or build configuration.`,
       );
     }
   }
 };
 
 // Base configuration
-const baseConfig: Omit<EnvironmentConfig, 'environment'> = {
-  apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL || 'https://app.logmanager.com.br/api',
-  apiToken: process.env.EXPO_PUBLIC_API_TOKEN || '',
+const baseConfig: Omit<EnvironmentConfig, "environment"> = {
+  apiBaseUrl:
+    process.env.EXPO_PUBLIC_API_BASE_URL || "https://app.logmanager.com.br/api",
+  apiToken: process.env.EXPO_PUBLIC_API_TOKEN || "",
   firebaseConfig: getFirebaseConfig(),
   enableLogging: false,
   enableCrashReporting: true,
@@ -124,10 +128,10 @@ const envConfigs: Record<Environment, Partial<EnvironmentConfig>> = {
 // Create final configuration
 export const createEnvironmentConfig = (): EnvironmentConfig => {
   const environment = getEnvironment();
-  
+
   // Validate configuration
   validateConfig(environment);
-  
+
   const config: EnvironmentConfig = {
     environment,
     ...baseConfig,
@@ -136,10 +140,10 @@ export const createEnvironmentConfig = (): EnvironmentConfig => {
 
   // Log configuration summary (in dev only)
   if (config.enableLogging) {
-    console.log('📋 Environment Configuration:', {
+    console.log("📋 Environment Configuration:", {
       environment: config.environment,
       platform: Platform.OS,
-      apiBase: config.apiBaseUrl.replace(/\/api$/, '/***'),
+      apiBase: config.apiBaseUrl.replace(/\/api$/, "/***"),
       firebaseProject: config.firebaseConfig.projectId,
       logging: config.enableLogging,
       crashReporting: config.enableCrashReporting,
@@ -154,8 +158,8 @@ export const createEnvironmentConfig = (): EnvironmentConfig => {
 export const envConfig = createEnvironmentConfig();
 
 // Export individual helpers
-export const isDevelopment = () => envConfig.environment === 'development';
-export const isStaging = () => envConfig.environment === 'staging';
-export const isProduction = () => envConfig.environment === 'production';
+export const isDevelopment = () => envConfig.environment === "development";
+export const isStaging = () => envConfig.environment === "staging";
+export const isProduction = () => envConfig.environment === "production";
 
 export default envConfig;

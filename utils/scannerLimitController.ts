@@ -4,7 +4,7 @@
  * Responsável pelo bloqueio absoluto após limite
  */
 
-import { PackageType } from '@/types/scanner';
+import { PackageType } from "@/types/scanner";
 
 /**
  * Configuração de limite para um tipo de pacote
@@ -32,17 +32,17 @@ export class ScanLimitController {
     avulso: number;
   }) {
     this.limits = new Map([
-      ['shopee', config.shopee],
-      ['mercado_livre', config.mercado_livre],
-      ['avulso', config.avulso],
-      ['unknown', 0], // Unknown nunca tem limite (ou pode ser 0)
+      ["shopee", config.shopee],
+      ["mercado_livre", config.mercado_livre],
+      ["avulso", config.avulso],
+      ["unknown", 0], // Unknown nunca tem limite (ou pode ser 0)
     ]);
 
     this.scanCounts = new Map([
-      ['shopee', 0],
-      ['mercado_livre', 0],
-      ['avulso', 0],
-      ['unknown', 0],
+      ["shopee", 0],
+      ["mercado_livre", 0],
+      ["avulso", 0],
+      ["unknown", 0],
     ]);
 
     this.limitReachedTypes = new Set();
@@ -108,7 +108,9 @@ export class ScanLimitController {
    * Verifica se ainda há espaço para um tipo
    */
   hasSpace(type: PackageType): boolean {
-    return !this.hasLimitReached(type) && this.getCount(type) < this.getLimit(type);
+    return (
+      !this.hasLimitReached(type) && this.getCount(type) < this.getLimit(type)
+    );
   }
 
   /**
@@ -124,22 +126,22 @@ export class ScanLimitController {
   getStats() {
     return {
       shopee: {
-        count: this.getCount('shopee'),
-        limit: this.getLimit('shopee'),
-        progress: this.getProgress('shopee'),
-        reached: this.hasLimitReached('shopee'),
+        count: this.getCount("shopee"),
+        limit: this.getLimit("shopee"),
+        progress: this.getProgress("shopee"),
+        reached: this.hasLimitReached("shopee"),
       },
       mercado_livre: {
-        count: this.getCount('mercado_livre'),
-        limit: this.getLimit('mercado_livre'),
-        progress: this.getProgress('mercado_livre'),
-        reached: this.hasLimitReached('mercado_livre'),
+        count: this.getCount("mercado_livre"),
+        limit: this.getLimit("mercado_livre"),
+        progress: this.getProgress("mercado_livre"),
+        reached: this.hasLimitReached("mercado_livre"),
       },
       avulso: {
-        count: this.getCount('avulso'),
-        limit: this.getLimit('avulso'),
-        progress: this.getProgress('avulso'),
-        reached: this.hasLimitReached('avulso'),
+        count: this.getCount("avulso"),
+        limit: this.getLimit("avulso"),
+        progress: this.getProgress("avulso"),
+        reached: this.hasLimitReached("avulso"),
       },
     };
   }
@@ -152,9 +154,9 @@ export class ScanLimitController {
     this.limitReachedTypes.clear();
 
     // Reinicializa contadores para zero
-    this.scanCounts.set('shopee', 0);
-    this.scanCounts.set('mercado_livre', 0);
-    this.scanCounts.set('avulso', 0);
-    this.scanCounts.set('unknown', 0);
+    this.scanCounts.set("shopee", 0);
+    this.scanCounts.set("mercado_livre", 0);
+    this.scanCounts.set("avulso", 0);
+    this.scanCounts.set("unknown", 0);
   }
 }

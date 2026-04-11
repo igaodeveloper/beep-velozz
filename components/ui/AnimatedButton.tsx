@@ -3,7 +3,7 @@
  * Microinterações premium para UX excepcional
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   TouchableOpacity,
   Text,
@@ -13,14 +13,14 @@ import {
   Animated,
   GestureResponderEvent,
   View,
-} from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
+} from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
 
 interface AnimatedButtonProps {
   title: string;
   onPress: (event: GestureResponderEvent) => void;
-  variant?: 'primary' | 'secondary' | 'danger' | 'success';
-  size?: 'small' | 'medium' | 'large';
+  variant?: "primary" | "secondary" | "danger" | "success";
+  size?: "small" | "medium" | "large";
   disabled?: boolean;
   loading?: boolean;
   icon?: React.ReactNode;
@@ -31,8 +31,8 @@ interface AnimatedButtonProps {
 export default function AnimatedButton({
   title,
   onPress,
-  variant = 'primary',
-  size = 'medium',
+  variant = "primary",
+  size = "medium",
   disabled = false,
   loading = false,
   icon,
@@ -45,23 +45,23 @@ export default function AnimatedButton({
 
   const getVariantStyles = () => {
     switch (variant) {
-      case 'primary':
+      case "primary":
         return {
           backgroundColor: colors.primary,
           borderWidth: 0,
         };
-      case 'secondary':
+      case "secondary":
         return {
-          backgroundColor: 'transparent',
+          backgroundColor: "transparent",
           borderWidth: 2,
           borderColor: colors.primary,
         };
-      case 'danger':
+      case "danger":
         return {
           backgroundColor: colors.danger,
           borderWidth: 0,
         };
-      case 'success':
+      case "success":
         return {
           backgroundColor: colors.success,
           borderWidth: 0,
@@ -76,19 +76,19 @@ export default function AnimatedButton({
 
   const getSizeStyles = () => {
     switch (size) {
-      case 'small':
+      case "small":
         return {
           paddingHorizontal: 16,
           paddingVertical: 8,
           borderRadius: 8,
         };
-      case 'medium':
+      case "medium":
         return {
           paddingHorizontal: 24,
           paddingVertical: 12,
           borderRadius: 12,
         };
-      case 'large':
+      case "large":
         return {
           paddingHorizontal: 32,
           paddingVertical: 16,
@@ -105,11 +105,11 @@ export default function AnimatedButton({
 
   const getTextSize = () => {
     switch (size) {
-      case 'small':
+      case "small":
         return 14;
-      case 'medium':
+      case "medium":
         return 16;
-      case 'large':
+      case "large":
         return 18;
       default:
         return 16;
@@ -117,15 +117,15 @@ export default function AnimatedButton({
   };
 
   const getTextColor = () => {
-    if (variant === 'secondary') {
+    if (variant === "secondary") {
       return colors.primary;
     }
-    return '#ffffff';
+    return "#ffffff";
   };
 
   const handlePressIn = () => {
     if (disabled || loading) return;
-    
+
     Animated.parallel([
       Animated.timing(scaleValue, {
         toValue: 0.95,
@@ -142,7 +142,7 @@ export default function AnimatedButton({
 
   const handlePressOut = () => {
     if (disabled || loading) return;
-    
+
     Animated.parallel([
       Animated.timing(scaleValue, {
         toValue: 1,
@@ -210,12 +210,12 @@ export default function AnimatedButton({
 
 const styles = StyleSheet.create({
   button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     minWidth: 120,
     elevation: 3,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -224,8 +224,8 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   text: {
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   iconContainer: {
     marginRight: 8,

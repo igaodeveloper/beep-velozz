@@ -1,21 +1,25 @@
-import React from 'react';
-import { Platform, InteractionManager } from 'react-native';
-import Animated, { cancelAnimation, runOnUI, Easing } from 'react-native-reanimated';
+import React from "react";
+import { Platform, InteractionManager } from "react-native";
+import Animated, {
+  cancelAnimation,
+  runOnUI,
+  Easing,
+} from "react-native-reanimated";
 
 // Configurações de performance
 export const PERFORMANCE_CONFIG = {
   // FPS target para animações
   TARGET_FPS: 60,
-  
+
   // Threshold para animações complexas
   COMPLEX_ANIMATION_THRESHOLD: 1000,
-  
+
   // Debounce time para eventos frequentes
   DEBOUNCE_TIME: 16, // ~60fps
-  
+
   // Maximum concurrent animations
   MAX_CONCURRENT_ANIMATIONS: 10,
-  
+
   // Memory cleanup interval
   CLEANUP_INTERVAL: 30000, // 30 seconds
 };
@@ -30,7 +34,7 @@ class PerformanceMonitor {
 
   startMonitoring() {
     if (this.isMonitoring) return;
-    
+
     this.isMonitoring = true;
     this.measureFPS();
   }
@@ -44,15 +48,15 @@ class PerformanceMonitor {
 
     const now = Date.now();
     const delta = now - this.lastFrameTime;
-    
+
     if (delta >= 1000) {
       this.fps = Math.round((this.frameCount * 1000) / delta);
       this.frameCount = 0;
       this.lastFrameTime = now;
-      
-      this.callbacks.forEach(callback => callback(this.fps));
+
+      this.callbacks.forEach((callback) => callback(this.fps));
     }
-    
+
     this.frameCount++;
     requestAnimationFrame(() => this.measureFPS());
   }
@@ -60,7 +64,7 @@ class PerformanceMonitor {
   onFPSUpdate(callback: (fps: number) => void) {
     this.callbacks.push(callback);
     return () => {
-      this.callbacks = this.callbacks.filter(cb => cb !== callback);
+      this.callbacks = this.callbacks.filter((cb) => cb !== callback);
     };
   }
 
@@ -82,7 +86,9 @@ class AnimationManager {
   private isProcessingQueue = false;
 
   registerAnimation(id: string, animation: () => void) {
-    if (this.activeAnimations.size >= PERFORMANCE_CONFIG.MAX_CONCURRENT_ANIMATIONS) {
+    if (
+      this.activeAnimations.size >= PERFORMANCE_CONFIG.MAX_CONCURRENT_ANIMATIONS
+    ) {
       this.animationQueue.push(animation);
       return false;
     }
@@ -99,9 +105,9 @@ class AnimationManager {
 
   private processQueue() {
     if (this.isProcessingQueue || this.animationQueue.length === 0) return;
-    
+
     this.isProcessingQueue = true;
-    
+
     // Process next animation in queue
     const nextAnimation = this.animationQueue.shift();
     if (nextAnimation) {
@@ -130,7 +136,7 @@ export const animationManager = new AnimationManager();
 // Utility para otimizar animações baseado na performance
 export function usePerformanceOptimizedAnimation() {
   const shouldUseComplexAnimations = performanceMonitor.isHighPerformance();
-  
+
   return {
     shouldUseComplexAnimations,
     optimizeAnimation: (animation: () => void) => {
@@ -149,10 +155,10 @@ export function usePerformanceOptimizedAnimation() {
 // Debounce utility
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number = PERFORMANCE_CONFIG.DEBOUNCE_TIME
+  wait: number = PERFORMANCE_CONFIG.DEBOUNCE_TIME,
 ): (...args: Parameters<T>) => void {
   let timeout: number;
-  
+
   return (...args: Parameters<T>) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
@@ -162,15 +168,15 @@ export function debounce<T extends (...args: any[]) => any>(
 // Throttle utility
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  limit: number = PERFORMANCE_CONFIG.DEBOUNCE_TIME
+  limit: number = PERFORMANCE_CONFIG.DEBOUNCE_TIME,
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
-  
+
   return (...args: Parameters<T>) => {
     if (!inThrottle) {
       func(...args);
       inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
+      setTimeout(() => (inThrottle = false), limit);
     }
   };
 }
@@ -180,9 +186,9 @@ export function useMemoryCleanup() {
   const cleanup = () => {
     // Limpar animações não utilizadas
     animationManager.clearAll();
-    
+
     // Forçar garbage collection se disponível
-    if (Platform.OS === 'web' && 'gc' in window) {
+    if (Platform.OS === "web" && "gc" in window) {
       (window as any).gc();
     }
   };
@@ -212,7 +218,7 @@ export const OPTIMIZED_ANIMATION_PRESETS = {
       easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
     },
   },
-  
+
   // Para dispositivos de média performance
   medium: {
     spring: {
@@ -228,7 +234,7 @@ export const OPTIMIZED_ANIMATION_PRESETS = {
       easing: Easing.bezier(0.4, 0.0, 0.2, 1),
     },
   },
-  
+
   // Para dispositivos de baixa performance
   low: {
     spring: {
@@ -249,7 +255,7 @@ export const OPTIMIZED_ANIMATION_PRESETS = {
 // Função para obter preset baseado na performance atual
 export function getOptimizedPreset() {
   const fps = performanceMonitor.getCurrentFPS();
-  
+
   if (fps >= 55) return OPTIMIZED_ANIMATION_PRESETS.high;
   if (fps >= 30) return OPTIMIZED_ANIMATION_PRESETS.medium;
   return OPTIMIZED_ANIMATION_PRESETS.low;
@@ -258,8 +264,9 @@ export function getOptimizedPreset() {
 // Hook para animações otimizadas
 export function useOptimizedAnimation() {
   const preset = getOptimizedPreset();
-  const { shouldUseComplexAnimations, optimizeAnimation } = usePerformanceOptimizedAnimation();
-  
+  const { shouldUseComplexAnimations, optimizeAnimation } =
+    usePerformanceOptimizedAnimation();
+
   return {
     preset,
     shouldUseComplexAnimations,
@@ -272,43 +279,44 @@ export function useOptimizedAnimation() {
 // Utility para detectar se deve usar animações
 export function shouldAnimate(): boolean {
   // Verificar preferências do usuário
-  const prefersReducedMotion = 
-    Platform.OS === 'web' && 
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  
+  const prefersReducedMotion =
+    Platform.OS === "web" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   // Verificar performance do dispositivo
   const isLowPerformance = !performanceMonitor.isHighPerformance();
-  
+
   // Verificar bateria (se disponível)
-  const isLowBattery = 
-    Platform.OS === 'web' && 
-    (navigator as any).getBattery && 
+  const isLowBattery =
+    Platform.OS === "web" &&
+    (navigator as any).getBattery &&
     (navigator as any).battery?.level < 0.2;
-  
+
   return !prefersReducedMotion && !isLowPerformance && !isLowBattery;
 }
 
 // Hook para gerenciar animações condicionais
 export function useConditionalAnimation() {
-  const [isAnimationEnabled, setIsAnimationEnabled] = React.useState(shouldAnimate());
-  
+  const [isAnimationEnabled, setIsAnimationEnabled] =
+    React.useState(shouldAnimate());
+
   React.useEffect(() => {
     const unsubscribe = performanceMonitor.onFPSUpdate((fps) => {
       setIsAnimationEnabled(shouldAnimate());
     });
-    
+
     return unsubscribe;
   }, []);
-  
+
   return isAnimationEnabled;
 }
 
 // Utility para preloading de animações
 export function preloadAnimations() {
   // Preload common animation configurations
-  if (Platform.OS === 'web') {
+  if (Platform.OS === "web") {
     // Preload CSS animations
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
       @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -321,14 +329,14 @@ export function preloadAnimations() {
 // Utility para batch de atualizações de animação
 export function batchAnimationUpdates(updates: Array<() => void>) {
   return new Promise<void>((resolve) => {
-    if (Platform.OS === 'web') {
+    if (Platform.OS === "web") {
       requestAnimationFrame(() => {
-        updates.forEach(update => update());
+        updates.forEach((update) => update());
         resolve();
       });
     } else {
       InteractionManager.runAfterInteractions(() => {
-        updates.forEach(update => update());
+        updates.forEach((update) => update());
         resolve();
       });
     }
@@ -337,9 +345,10 @@ export function batchAnimationUpdates(updates: Array<() => void>) {
 
 // Hook para animações de lista otimizadas
 export function useOptimizedListAnimation(itemCount: number) {
-  const shouldUseStaggered = performanceMonitor.isHighPerformance() && itemCount < 50;
+  const shouldUseStaggered =
+    performanceMonitor.isHighPerformance() && itemCount < 50;
   const staggerDelay = shouldUseStaggered ? 50 : 0;
-  
+
   return {
     shouldUseStaggered,
     staggerDelay,

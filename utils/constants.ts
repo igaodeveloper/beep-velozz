@@ -10,11 +10,11 @@ export const DIMS = {
 } as const;
 
 export const COLORS = {
-  PRIMARY: '#f97316',
-  BG: '#080d18',
-  SURFACE: '#0f172a',
-  BORDER: '#1e293b',
-  BORDER2: '#334155',
-  TEXT: '#ffffff',
-  TEXT_SECONDARY: '#94a3b8',
+  PRIMARY: "#f97316",
+  BG: "#080d18",
+  SURFACE: "#0f172a",
+  BORDER: "#1e293b",
+  BORDER2: "#334155",
+  TEXT: "#ffffff",
+  TEXT_SECONDARY: "#94a3b8",
 } as const;

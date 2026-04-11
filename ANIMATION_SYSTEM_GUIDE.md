@@ -40,12 +40,12 @@
 
 ```typescript
 const SCREEN_ANIMATIONS = {
-  welcome: { type: 'fade', direction: 'up' },        // Fade suave para cima
-  scanning: { type: 'slide', direction: 'left' },      // Slide da esquerda
-  report: { type: 'glide', direction: 'right' },       // Glide com escala para direita
-  history: { type: 'scale', direction: 'up' },         // Zoom de baixo para cima
-  settings: { type: 'flip', direction: 'right' },      // Flip 3D para direita
-  analytics: { type: 'bounce', direction: 'up' },       // Bounce para cima
+  welcome: { type: "fade", direction: "up" }, // Fade suave para cima
+  scanning: { type: "slide", direction: "left" }, // Slide da esquerda
+  report: { type: "glide", direction: "right" }, // Glide com escala para direita
+  history: { type: "scale", direction: "up" }, // Zoom de baixo para cima
+  settings: { type: "flip", direction: "right" }, // Flip 3D para direita
+  analytics: { type: "bounce", direction: "up" }, // Bounce para cima
 };
 ```
 
@@ -86,7 +86,7 @@ const SCREEN_ANIMATIONS = {
 ```typescript
 size?: 'small' | 'medium' | 'large'
 // small: scale 0.6, roadHeight 40
-// medium: scale 1.0, roadHeight 50  
+// medium: scale 1.0, roadHeight 50
 // large: scale 1.3, roadHeight 60
 ```
 
@@ -96,7 +96,10 @@ size?: 'small' | 'medium' | 'large'
 
 ```typescript
 // Função centralizada para mudança de tela
-const changeScreenWithAnimation = (newScreen: AppScreen, showLoading = false) => {
+const changeScreenWithAnimation = (
+  newScreen: AppScreen,
+  showLoading = false,
+) => {
   if (showLoading) {
     setIsLoading(true);
     // Mostra motoboy durante carregamento
@@ -170,7 +173,7 @@ const changeScreenWithAnimation = (newScreen: AppScreen, showLoading = false) =>
 // Corpo da moto
 colors={['#FF6B35', '#F7931E', '#FFA500']}
 
-// Caixa de entrega  
+// Caixa de entrega
 colors={['#FF8C00', '#FF6347']}
 
 // Capacete

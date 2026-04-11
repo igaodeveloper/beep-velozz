@@ -1,4 +1,4 @@
-import * as Location from 'expo-location';
+import * as Location from "expo-location";
 
 /**
  * Obtém a localização atual do dispositivo
@@ -10,8 +10,8 @@ export async function getCurrentLocation(): Promise<{
 } | null> {
   try {
     const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      console.warn('Permissão de localização negada');
+    if (status !== "granted") {
+      console.warn("Permissão de localização negada");
       return null;
     }
 
@@ -29,10 +29,10 @@ export async function getCurrentLocation(): Promise<{
 
       if (reverseGeocode[0]) {
         const { street, city, region } = reverseGeocode[0];
-        address = [street, city, region].filter(Boolean).join(', ');
+        address = [street, city, region].filter(Boolean).join(", ");
       }
     } catch (error) {
-      console.warn('Erro ao geocodificar endereço:', error);
+      console.warn("Erro ao geocodificar endereço:", error);
     }
 
     return {
@@ -41,7 +41,7 @@ export async function getCurrentLocation(): Promise<{
       address,
     };
   } catch (error) {
-    console.error('Erro ao obter localização:', error);
+    console.error("Erro ao obter localização:", error);
     return null;
   }
 }
@@ -53,7 +53,7 @@ export function calculateDistance(
   lat1: number,
   lon1: number,
   lat2: number,
-  lon2: number
+  lon2: number,
 ): number {
   const R = 6371000; // Raio da Terra em metros
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -78,7 +78,7 @@ export function isLocationWithinRadius(
   userLon: number,
   centerLat: number,
   centerLon: number,
-  radiusMeters: number = 500
+  radiusMeters: number = 500,
 ): boolean {
   const distance = calculateDistance(userLat, userLon, centerLat, centerLon);
   return distance <= radiusMeters;

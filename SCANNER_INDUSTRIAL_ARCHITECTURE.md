@@ -263,7 +263,7 @@ ScannerState.PAUSED
         │   processingLock = false
         │
         └─→ CODE B pode processar agora
-            
+
     Resultado: SEQUENCIAL, SEM RACE CONDITIONS
 ```
 
@@ -298,7 +298,7 @@ ScannerState.PAUSED
    Δt = 500ms < 2000                  Δt = 1500ms < 2000
    ✓ É DUPLICATA                      ✓ É DUPLICATA
    REJEITADO                          REJEITADO
-   
+
         [Espera 2100ms]
              │
              ▼
@@ -374,12 +374,12 @@ ScannerState.PAUSED
 ```
         SHOPEE                MERCADO LIVRE            AVULSO
         (Limite: 50)          (Limite: 30)             (Limite: 20)
-        
+
         [████████░]           [██████░░░░░]           [█████░░░░░░░]
         40/50 (80%)           15/30 (50%)              8/20 (40%)
-        
+
         ✓ Espaço disponível   ✓ Espaço disponível    ✓ Espaço disponível
-        
+
         Novo scan: BR987654
               │
               ▼
@@ -391,7 +391,7 @@ ScannerState.PAUSED
     count: 40    count: 41
     limit: 50    limit: 50
     return: true return: true
-    
+
     [████████░]           [█████░░░░░░░]
     41/50 (82%)           41/50 (82%)
 ```
@@ -437,13 +437,13 @@ ScannerState.PAUSED
 
 ## 📌 Resumo de Garantias
 
-| Garantia | Implementação |
-|----------|---------------|
-| Sem sobreposição de áudio | `audioService.state` + fila |
-| Sem duplicação | `lastValidScan` + gap temporal 2s |
-| Sem race condition | `processingLock` flag |
-| Sem múltiplos bipes rápidos | Debounce 400ms + fila |
-| Bloqueio absoluto | Flag `limitReachedTypes` + estado `LIMIT_REACHED` |
-| Reset seguro | Método explícito, nunca automático |
-| Escalável | Mapeamento centralizado de prefixos |
-| Determinístico | Mesma entrada = mesmo output sempre |
+| Garantia                    | Implementação                                     |
+| --------------------------- | ------------------------------------------------- |
+| Sem sobreposição de áudio   | `audioService.state` + fila                       |
+| Sem duplicação              | `lastValidScan` + gap temporal 2s                 |
+| Sem race condition          | `processingLock` flag                             |
+| Sem múltiplos bipes rápidos | Debounce 400ms + fila                             |
+| Bloqueio absoluto           | Flag `limitReachedTypes` + estado `LIMIT_REACHED` |
+| Reset seguro                | Método explícito, nunca automático                |
+| Escalável                   | Mapeamento centralizado de prefixos               |
+| Determinístico              | Mesma entrada = mesmo output sempre               |

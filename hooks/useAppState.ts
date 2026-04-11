@@ -3,8 +3,8 @@
  * Otimizado para performance e UX
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
+import { useState, useEffect, useCallback } from "react";
+import { AppState, AppStateStatus } from "react-native";
 
 interface UseAppStateOptions {
   onForeground?: () => void;
@@ -13,15 +13,17 @@ interface UseAppStateOptions {
 }
 
 export function useAppState(options: UseAppStateOptions = {}) {
-  const [appState, setAppState] = useState<AppStateStatus>(AppState.currentState);
-  const [isForeground, setIsForeground] = useState(appState === 'active');
+  const [appState, setAppState] = useState<AppStateStatus>(
+    AppState.currentState,
+  );
+  const [isForeground, setIsForeground] = useState(appState === "active");
 
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
       setAppState(nextAppState);
-      
+
       const wasForeground = isForeground;
-      const nowForeground = nextAppState === 'active';
+      const nowForeground = nextAppState === "active";
       setIsForeground(nowForeground);
 
       // Disparar callbacks baseados na mudança de estado
@@ -33,21 +35,24 @@ export function useAppState(options: UseAppStateOptions = {}) {
         }
       }
 
-      if (nextAppState === 'inactive' && options.onInactive) {
+      if (nextAppState === "inactive" && options.onInactive) {
         options.onInactive();
       }
     };
 
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
-    
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange,
+    );
+
     return () => subscription?.remove();
   }, [isForeground, options]);
 
   return {
     appState,
     isForeground,
-    isBackground: appState === 'background',
-    isActive: appState === 'active',
-    isInactive: appState === 'inactive'
+    isBackground: appState === "background",
+    isActive: appState === "active",
+    isInactive: appState === "inactive",
   };
 }

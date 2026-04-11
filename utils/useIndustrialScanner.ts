@@ -3,10 +3,10 @@
  * Gerencia ciclo de vida, listeners e estado reativo
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { IndustrialScannerController } from '@/utils/scannerController';
-import { ScannerState, ScanResult, ScannerConfig } from '@/types/scanner';
-import { PackageType } from '@/types/scanner';
+import { useEffect, useRef, useState, useCallback } from "react";
+import { IndustrialScannerController } from "@/utils/scannerController";
+import { ScannerState, ScanResult, ScannerConfig } from "@/types/scanner";
+import { PackageType } from "@/types/scanner";
 
 export interface UseScannerState {
   state: ScannerState;
@@ -48,7 +48,7 @@ export function useIndustrialScanner(config: ScannerConfig): UseScannerReturn {
     const enhancedConfig: ScannerConfig = {
       ...config,
       onStateChange: (newState) => {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           state: newState,
           isLimitReached: newState === ScannerState.LIMIT_REACHED,
@@ -59,7 +59,7 @@ export function useIndustrialScanner(config: ScannerConfig): UseScannerReturn {
         // Atualiza stats
         if (controllerRef.current) {
           const fullStats = controllerRef.current.getStats();
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
             stats: fullStats,
           }));
@@ -71,7 +71,7 @@ export function useIndustrialScanner(config: ScannerConfig): UseScannerReturn {
     controllerRef.current = new IndustrialScannerController(enhancedConfig);
 
     // Estado inicial
-    setState(prev => {
+    setState((prev) => {
       const controller = controllerRef.current!;
       return {
         ...prev,
@@ -92,13 +92,13 @@ export function useIndustrialScanner(config: ScannerConfig): UseScannerReturn {
 
   const processScan = useCallback(async (code: string): Promise<ScanResult> => {
     if (!controllerRef.current) {
-      throw new Error('Scanner not initialized');
+      throw new Error("Scanner not initialized");
     }
 
     const result = await controllerRef.current.processScan(code);
 
     // Atualiza estado após processamento
-    setState(prev => {
+    setState((prev) => {
       const controller = controllerRef.current!;
       const newState: UseScannerState = {
         ...prev,
@@ -125,7 +125,7 @@ export function useIndustrialScanner(config: ScannerConfig): UseScannerReturn {
   const reset = useCallback(() => {
     if (controllerRef.current) {
       controllerRef.current.reset();
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         counts: { shopee: 0, mercado_livre: 0, avulso: 0, unknown: 0 },
         stats: controllerRef.current!.getStats(),
@@ -140,7 +140,7 @@ export function useIndustrialScanner(config: ScannerConfig): UseScannerReturn {
   const pause = useCallback(() => {
     if (controllerRef.current) {
       controllerRef.current.pause();
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         state: ScannerState.PAUSED,
       }));
@@ -150,7 +150,7 @@ export function useIndustrialScanner(config: ScannerConfig): UseScannerReturn {
   const resume = useCallback(() => {
     if (controllerRef.current) {
       controllerRef.current.resume();
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         state: ScannerState.ACTIVE,
       }));

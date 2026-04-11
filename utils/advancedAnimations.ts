@@ -12,10 +12,10 @@ import Animated, {
   cancelAnimation,
   Easing,
   ReduceMotion,
-} from 'react-native-reanimated';
-import { Dimensions } from 'react-native';
+} from "react-native-reanimated";
+import { Dimensions } from "react-native";
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 // Configurações de animação predefinidas
 export const ANIMATION_CONFIGS = {
@@ -77,27 +77,27 @@ export const ANIMATION_CONFIGS = {
 };
 
 // Tipos de animação
-export type AnimationType = 
-  | 'fadeIn'
-  | 'fadeOut'
-  | 'slideIn'
-  | 'slideOut'
-  | 'scaleIn'
-  | 'scaleOut'
-  | 'rotate'
-  | 'bounce'
-  | 'pulse'
-  | 'shake'
-  | 'flip'
-  | 'elastic'
-  | 'wave'
-  | 'glow'
-  | 'parallax'
-  | 'dramatic'
-  | 'snappy'
-  | 'smooth';
+export type AnimationType =
+  | "fadeIn"
+  | "fadeOut"
+  | "slideIn"
+  | "slideOut"
+  | "scaleIn"
+  | "scaleOut"
+  | "rotate"
+  | "bounce"
+  | "pulse"
+  | "shake"
+  | "flip"
+  | "elastic"
+  | "wave"
+  | "glow"
+  | "parallax"
+  | "dramatic"
+  | "snappy"
+  | "smooth";
 
-export type AnimationDirection = 'up' | 'down' | 'left' | 'right';
+export type AnimationDirection = "up" | "down" | "left" | "right";
 
 export interface AnimationConfig {
   type: AnimationType;
@@ -114,7 +114,7 @@ export interface AnimationConfig {
 export function useAdvancedAnimation(config: AnimationConfig) {
   const {
     type,
-    direction = 'up',
+    direction = "up",
     duration = 300,
     delay = 0,
     repeat = 1,
@@ -128,24 +128,24 @@ export function useAdvancedAnimation(config: AnimationConfig) {
 
   const getAnimationConfig = () => {
     if (customConfig) return customConfig;
-    
+
     if (spring) {
       switch (type) {
-        case 'bounce':
+        case "bounce":
           return ANIMATION_CONFIGS.SPRING_BOUNCY;
-        case 'pulse':
-        case 'elastic':
+        case "pulse":
+        case "elastic":
           return ANIMATION_CONFIGS.SPRING_SNAPPY;
         default:
           return ANIMATION_CONFIGS.SPRING_GENTLE;
       }
     } else {
       switch (type) {
-        case 'dramatic':
+        case "dramatic":
           return ANIMATION_CONFIGS.TIMING_DRAMATIC;
-        case 'snappy':
+        case "snappy":
           return ANIMATION_CONFIGS.TIMING_SNAPPY;
-        case 'smooth':
+        case "smooth":
           return ANIMATION_CONFIGS.TIMING_SMOOTH;
         default:
           return ANIMATION_CONFIGS.TIMING_GENTLE;
@@ -155,21 +155,23 @@ export function useAdvancedAnimation(config: AnimationConfig) {
 
   const startAnimation = (callback?: () => void) => {
     if (isAnimating.value) return;
-    
+
     isAnimating.value = true;
     const animationConfig = getAnimationConfig();
-    const animationValue = spring ? withSpring(1, animationConfig) : withTiming(1, animationConfig);
-    
-    const finalAnimation = delay > 0 
-      ? withDelay(delay, animationValue)
-      : animationValue;
+    const animationValue = spring
+      ? withSpring(1, animationConfig)
+      : withTiming(1, animationConfig);
 
-    const repeatedAnimation = repeat > 1
-      ? withRepeat(finalAnimation, repeat, autoReverse)
-      : finalAnimation;
+    const finalAnimation =
+      delay > 0 ? withDelay(delay, animationValue) : animationValue;
+
+    const repeatedAnimation =
+      repeat > 1
+        ? withRepeat(finalAnimation, repeat, autoReverse)
+        : finalAnimation;
 
     progress.value = repeatedAnimation;
-    
+
     if (callback) {
       progress.value = withTiming(1, animationConfig, (finished) => {
         if (finished) {
@@ -194,32 +196,32 @@ export function useAdvancedAnimation(config: AnimationConfig) {
     const value = progress.value;
 
     switch (type) {
-      case 'fadeIn':
+      case "fadeIn":
         return {
           opacity: value,
         };
 
-      case 'fadeOut':
+      case "fadeOut":
         return {
           opacity: 1 - value,
         };
 
-      case 'slideIn':
+      case "slideIn":
         const slideDistance = screenWidth * 0.3;
         let translateX = 0;
         let translateY = 0;
 
         switch (direction) {
-          case 'left':
+          case "left":
             translateX = interpolate(value, [0, 1], [-slideDistance, 0]);
             break;
-          case 'right':
+          case "right":
             translateX = interpolate(value, [0, 1], [slideDistance, 0]);
             break;
-          case 'up':
+          case "up":
             translateY = interpolate(value, [0, 1], [-slideDistance, 0]);
             break;
-          case 'down':
+          case "down":
             translateY = interpolate(value, [0, 1], [slideDistance, 0]);
             break;
         }
@@ -229,32 +231,35 @@ export function useAdvancedAnimation(config: AnimationConfig) {
           opacity: value,
         };
 
-      case 'slideOut':
+      case "slideOut":
         const outSlideDistance = screenWidth * 0.3;
         let outTranslateX = 0;
         let outTranslateY = 0;
 
         switch (direction) {
-          case 'left':
+          case "left":
             outTranslateX = interpolate(value, [0, 1], [0, -outSlideDistance]);
             break;
-          case 'right':
+          case "right":
             outTranslateX = interpolate(value, [0, 1], [0, outSlideDistance]);
             break;
-          case 'up':
+          case "up":
             outTranslateY = interpolate(value, [0, 1], [0, -outSlideDistance]);
             break;
-          case 'down':
+          case "down":
             outTranslateY = interpolate(value, [0, 1], [0, outSlideDistance]);
             break;
         }
 
         return {
-          transform: [{ translateX: outTranslateX }, { translateY: outTranslateY }],
+          transform: [
+            { translateX: outTranslateX },
+            { translateY: outTranslateY },
+          ],
           opacity: 1 - value,
         };
 
-      case 'scaleIn':
+      case "scaleIn":
         return {
           transform: [
             {
@@ -264,7 +269,7 @@ export function useAdvancedAnimation(config: AnimationConfig) {
           opacity: value,
         };
 
-      case 'scaleOut':
+      case "scaleOut":
         return {
           transform: [
             {
@@ -274,7 +279,7 @@ export function useAdvancedAnimation(config: AnimationConfig) {
           opacity: 1 - value,
         };
 
-      case 'rotate':
+      case "rotate":
         return {
           transform: [
             {
@@ -283,7 +288,7 @@ export function useAdvancedAnimation(config: AnimationConfig) {
           ],
         };
 
-      case 'bounce':
+      case "bounce":
         return {
           transform: [
             {
@@ -291,13 +296,13 @@ export function useAdvancedAnimation(config: AnimationConfig) {
                 value,
                 [0, 0.2, 0.4, 0.6, 0.8, 1],
                 [0, -30, 0, -15, 0, 0],
-                Extrapolate.CLAMP
+                Extrapolate.CLAMP,
               ),
             },
           ],
         };
 
-      case 'pulse':
+      case "pulse":
         return {
           transform: [
             {
@@ -305,13 +310,13 @@ export function useAdvancedAnimation(config: AnimationConfig) {
                 value,
                 [0, 0.5, 1],
                 [1, 1.05, 1],
-                Extrapolate.CLAMP
+                Extrapolate.CLAMP,
               ),
             },
           ],
         };
 
-      case 'shake':
+      case "shake":
         return {
           transform: [
             {
@@ -319,13 +324,13 @@ export function useAdvancedAnimation(config: AnimationConfig) {
                 value,
                 [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
                 [0, -10, 10, -10, 10, -10, 10, -10, 10, -10, 0],
-                Extrapolate.CLAMP
+                Extrapolate.CLAMP,
               ),
             },
           ],
         };
 
-      case 'flip':
+      case "flip":
         return {
           transform: [
             {
@@ -334,7 +339,7 @@ export function useAdvancedAnimation(config: AnimationConfig) {
           ],
         };
 
-      case 'elastic':
+      case "elastic":
         return {
           transform: [
             {
@@ -342,13 +347,13 @@ export function useAdvancedAnimation(config: AnimationConfig) {
                 value,
                 [0, 0.2, 0.4, 0.6, 0.8, 1],
                 [1, 1.3, 0.9, 1.1, 0.95, 1],
-                Extrapolate.CLAMP
+                Extrapolate.CLAMP,
               ),
             },
           ],
         };
 
-      case 'wave':
+      case "wave":
         return {
           transform: [
             {
@@ -356,7 +361,7 @@ export function useAdvancedAnimation(config: AnimationConfig) {
                 value,
                 [0, 0.25, 0.5, 0.75, 1],
                 [0, -20, 0, 20, 0],
-                Extrapolate.CLAMP
+                Extrapolate.CLAMP,
               ),
             },
             {
@@ -365,7 +370,7 @@ export function useAdvancedAnimation(config: AnimationConfig) {
           ],
         };
 
-      case 'glow':
+      case "glow":
         return {
           shadowOpacity: interpolate(value, [0, 1], [0, 0.8]),
           shadowRadius: interpolate(value, [0, 1], [0, 20]),
@@ -375,11 +380,15 @@ export function useAdvancedAnimation(config: AnimationConfig) {
           },
         };
 
-      case 'parallax':
+      case "parallax":
         return {
           transform: [
             {
-              translateX: interpolate(value, [0, 1], [screenWidth * 0.1, -screenWidth * 0.1]),
+              translateX: interpolate(
+                value,
+                [0, 1],
+                [screenWidth * 0.1, -screenWidth * 0.1],
+              ),
             },
             {
               scale: interpolate(value, [0, 1], [1, 1.1]),
@@ -404,8 +413,11 @@ export function useAdvancedAnimation(config: AnimationConfig) {
 }
 
 // Animações compostas
-export function useStaggeredAnimation(configs: AnimationConfig[], staggerDelay: number = 100) {
-  const animations = configs.map(config => useAdvancedAnimation(config));
+export function useStaggeredAnimation(
+  configs: AnimationConfig[],
+  staggerDelay: number = 100,
+) {
+  const animations = configs.map((config) => useAdvancedAnimation(config));
 
   const startAll = () => {
     animations.forEach((animation, index) => {
@@ -416,11 +428,11 @@ export function useStaggeredAnimation(configs: AnimationConfig[], staggerDelay: 
   };
 
   const stopAll = () => {
-    animations.forEach(animation => animation.stopAnimation());
+    animations.forEach((animation) => animation.stopAnimation());
   };
 
   const resetAll = () => {
-    animations.forEach(animation => animation.resetAnimation());
+    animations.forEach((animation) => animation.resetAnimation());
   };
 
   return {
@@ -432,22 +444,30 @@ export function useStaggeredAnimation(configs: AnimationConfig[], staggerDelay: 
 }
 
 // Animações de entrada/saída para telas
-export function useScreenTransition(type: 'slide' | 'fade' | 'scale' | 'flip' = 'slide') {
+export function useScreenTransition(
+  type: "slide" | "fade" | "scale" | "flip" = "slide",
+) {
   const progress = useSharedValue(0);
 
   const enter = () => {
-    progress.value = withTiming(1, { duration: 300, easing: Easing.bezier(0.25, 0.46, 0.45, 0.94) });
+    progress.value = withTiming(1, {
+      duration: 300,
+      easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
+    });
   };
 
   const exit = () => {
-    progress.value = withTiming(0, { duration: 300, easing: Easing.bezier(0.55, 0.085, 0.68, 0.53) });
+    progress.value = withTiming(0, {
+      duration: 300,
+      easing: Easing.bezier(0.55, 0.085, 0.68, 0.53),
+    });
   };
 
   const animatedStyle = useAnimatedStyle(() => {
     const value = progress.value;
 
     switch (type) {
-      case 'slide':
+      case "slide":
         return {
           transform: [
             {
@@ -456,12 +476,12 @@ export function useScreenTransition(type: 'slide' | 'fade' | 'scale' | 'flip' = 
           ],
         };
 
-      case 'fade':
+      case "fade":
         return {
           opacity: value,
         };
 
-      case 'scale':
+      case "scale":
         return {
           transform: [
             {
@@ -471,7 +491,7 @@ export function useScreenTransition(type: 'slide' | 'fade' | 'scale' | 'flip' = 
           opacity: value,
         };
 
-      case 'flip':
+      case "flip":
         return {
           transform: [
             {
@@ -503,16 +523,22 @@ export function useLoadingAnimation() {
     rotation.value = withRepeat(
       withTiming(360, { duration: 1000, easing: Easing.linear }),
       -1,
-      false
+      false,
     );
 
     scale.value = withRepeat(
       withSequence(
-        withTiming(1.2, { duration: 500, easing: Easing.bezier(0.4, 0.0, 0.2, 1) }),
-        withTiming(1, { duration: 500, easing: Easing.bezier(0.4, 0.0, 0.2, 1) })
+        withTiming(1.2, {
+          duration: 500,
+          easing: Easing.bezier(0.4, 0.0, 0.2, 1),
+        }),
+        withTiming(1, {
+          duration: 500,
+          easing: Easing.bezier(0.4, 0.0, 0.2, 1),
+        }),
       ),
       -1,
-      true
+      true,
     );
   };
 
@@ -524,10 +550,7 @@ export function useLoadingAnimation() {
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { rotate: `${rotation.value}deg` },
-      { scale: scale.value },
-    ],
+    transform: [{ rotate: `${rotation.value}deg` }, { scale: scale.value }],
   }));
 
   return {

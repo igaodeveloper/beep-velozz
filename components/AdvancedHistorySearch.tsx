@@ -1,8 +1,15 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView, FlatList } from 'react-native';
-import { Session } from '@/types/session';
-import { useAppTheme } from '@/utils/useAppTheme';
-import { getSessionMetrics } from '@/utils/session';
+import React, { useState, useMemo } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
+  FlatList,
+} from "react-native";
+import { Session } from "@/types/session";
+import { useAppTheme } from "@/utils/useAppTheme";
+import { getSessionMetrics } from "@/utils/session";
 
 interface AdvancedHistorySearchProps {
   sessions: Session[];
@@ -18,51 +25,65 @@ export default function AdvancedHistorySearch({
   const { colors } = useAppTheme();
 
   // Filtros
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
   const [filterOperator, setFilterOperator] = useState<string | null>(null);
   const [filterDriver, setFilterDriver] = useState<string | null>(null);
-  const [filterMarketplace, setFilterMarketplace] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<'all' | 'ok' | 'divergence' | 'pending'>('all');
-  const [dateRange, setDateRange] = useState<'all' | 'today' | 'week' | 'month'>('all');
+  const [filterMarketplace, setFilterMarketplace] = useState<string | null>(
+    null,
+  );
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "ok" | "divergence" | "pending"
+  >("all");
+  const [dateRange, setDateRange] = useState<
+    "all" | "today" | "week" | "month"
+  >("all");
 
   // Extrair valores únicos para filtros
-  const uniqueOperators = useMemo(() => [...new Set(sessions.map((s) => s.operatorName))], [sessions]);
-  const uniqueDrivers = useMemo(() => [...new Set(sessions.map((s) => s.driverName))], [sessions]);
+  const uniqueOperators = useMemo(
+    () => [...new Set(sessions.map((s) => s.operatorName))],
+    [sessions],
+  );
+  const uniqueDrivers = useMemo(
+    () => [...new Set(sessions.map((s) => s.driverName))],
+    [sessions],
+  );
 
   // Filtrar sessões
   const filteredSessions = useMemo(() => {
     return sessions.filter((session) => {
       // Busca por texto
       const matchesSearch =
-        searchText === '' ||
+        searchText === "" ||
         session.operatorName.toLowerCase().includes(searchText.toLowerCase()) ||
         session.driverName.toLowerCase().includes(searchText.toLowerCase()) ||
         session.id.toLowerCase().includes(searchText.toLowerCase());
 
       // Filtro de operador
-      const matchesOperator = !filterOperator || session.operatorName === filterOperator;
+      const matchesOperator =
+        !filterOperator || session.operatorName === filterOperator;
 
       // Filtro de motorista
-      const matchesDriver = !filterDriver || session.driverName === filterDriver;
+      const matchesDriver =
+        !filterDriver || session.driverName === filterDriver;
 
       // Filtro de marketplace
       let matchesMarketplace = true;
       if (filterMarketplace) {
         const metrics = getSessionMetrics(session.packages);
         const hasMarketplace =
-          (filterMarketplace === 'shopee' && metrics.shopee > 0) ||
-          (filterMarketplace === 'mercado_livre' && metrics.mercadoLivre > 0) ||
-          (filterMarketplace === 'avulso' && metrics.avulsos > 0);
+          (filterMarketplace === "shopee" && metrics.shopee > 0) ||
+          (filterMarketplace === "mercado_livre" && metrics.mercadoLivre > 0) ||
+          (filterMarketplace === "avulso" && metrics.avulsos > 0);
         matchesMarketplace = hasMarketplace;
       }
 
       // Filtro de status
       let matchesStatus = true;
-      if (filterStatus === 'ok') {
+      if (filterStatus === "ok") {
         matchesStatus = !session.hasDivergence;
-      } else if (filterStatus === 'divergence') {
+      } else if (filterStatus === "divergence") {
         matchesStatus = session.hasDivergence;
-      } else if (filterStatus === 'pending') {
+      } else if (filterStatus === "pending") {
         matchesStatus = !session.completedAt;
       }
 
@@ -71,13 +92,12 @@ export default function AdvancedHistorySearch({
       const now = new Date();
       const sessionDate = new Date(session.startedAt);
 
-      if (dateRange === 'today') {
-        matchesDateRange =
-          sessionDate.toDateString() === now.toDateString();
-      } else if (dateRange === 'week') {
+      if (dateRange === "today") {
+        matchesDateRange = sessionDate.toDateString() === now.toDateString();
+      } else if (dateRange === "week") {
         const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         matchesDateRange = sessionDate >= weekAgo;
-      } else if (dateRange === 'month') {
+      } else if (dateRange === "month") {
         const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         matchesDateRange = sessionDate >= monthAgo;
       }
@@ -91,7 +111,15 @@ export default function AdvancedHistorySearch({
         matchesDateRange
       );
     });
-  }, [sessions, searchText, filterOperator, filterDriver, filterMarketplace, filterStatus, dateRange]);
+  }, [
+    sessions,
+    searchText,
+    filterOperator,
+    filterDriver,
+    filterMarketplace,
+    filterStatus,
+    dateRange,
+  ]);
 
   const stats = useMemo(() => {
     const metrics = filteredSessions.map((s) => getSessionMetrics(s.packages));
@@ -108,9 +136,9 @@ export default function AdvancedHistorySearch({
       {/* Header */}
       <View
         style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
           paddingHorizontal: 16,
           paddingTop: 16,
           paddingBottom: 12,
@@ -119,10 +147,17 @@ export default function AdvancedHistorySearch({
         }}
       >
         <View>
-          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700', letterSpacing: 1.5 }}>
+          <Text
+            style={{
+              color: colors.primary,
+              fontSize: 12,
+              fontWeight: "700",
+              letterSpacing: 1.5,
+            }}
+          >
             BUSCA AVANÇADA
           </Text>
-          <Text style={{ color: colors.text, fontSize: 20, fontWeight: '800' }}>
+          <Text style={{ color: colors.text, fontSize: 20, fontWeight: "800" }}>
             Histórico de Sessões
           </Text>
         </View>
@@ -133,15 +168,18 @@ export default function AdvancedHistorySearch({
             height: 40,
             borderRadius: 10,
             backgroundColor: colors.surface,
-            alignItems: 'center',
-            justifyContent: 'center',
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <Text style={{ fontSize: 18 }}>✕</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 24 }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
+      >
         {/* Search Bar */}
         <TextInput
           style={{
@@ -164,10 +202,10 @@ export default function AdvancedHistorySearch({
         <FilterSection
           title="Status"
           options={[
-            { label: 'Todos', value: 'all', icon: '📋' },
-            { label: 'Conforme', value: 'ok', icon: '✅' },
-            { label: 'Divergência', value: 'divergence', icon: '⚠️' },
-            { label: 'Pendente', value: 'pending', icon: '⏳' },
+            { label: "Todos", value: "all", icon: "📋" },
+            { label: "Conforme", value: "ok", icon: "✅" },
+            { label: "Divergência", value: "divergence", icon: "⚠️" },
+            { label: "Pendente", value: "pending", icon: "⏳" },
           ]}
           selected={filterStatus}
           onSelect={(value) => setFilterStatus(value as any)}
@@ -177,10 +215,10 @@ export default function AdvancedHistorySearch({
         <FilterSection
           title="Período"
           options={[
-            { label: 'Todos', value: 'all', icon: '📅' },
-            { label: 'Hoje', value: 'today', icon: '📅' },
-            { label: 'Esta Semana', value: 'week', icon: '📅' },
-            { label: 'Este Mês', value: 'month', icon: '📅' },
+            { label: "Todos", value: "all", icon: "📅" },
+            { label: "Hoje", value: "today", icon: "📅" },
+            { label: "Esta Semana", value: "week", icon: "📅" },
+            { label: "Este Mês", value: "month", icon: "📅" },
           ]}
           selected={dateRange}
           onSelect={(value) => setDateRange(value as any)}
@@ -190,10 +228,22 @@ export default function AdvancedHistorySearch({
         {/* Operador Filter */}
         {uniqueOperators.length > 0 && (
           <View style={{ marginBottom: 16 }}>
-            <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 8 }}>
+            <Text
+              style={{
+                color: colors.textMuted,
+                fontSize: 11,
+                fontWeight: "700",
+                letterSpacing: 1,
+                marginBottom: 8,
+              }}
+            >
               OPERADORES
             </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -16, paddingHorizontal: 16 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginHorizontal: -16, paddingHorizontal: 16 }}
+            >
               <FilterTag
                 label="Todos"
                 selected={!filterOperator}
@@ -216,10 +266,22 @@ export default function AdvancedHistorySearch({
         {/* Motorista Filter */}
         {uniqueDrivers.length > 0 && (
           <View style={{ marginBottom: 16 }}>
-            <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 8 }}>
+            <Text
+              style={{
+                color: colors.textMuted,
+                fontSize: 11,
+                fontWeight: "700",
+                letterSpacing: 1,
+                marginBottom: 8,
+              }}
+            >
               MOTORISTAS
             </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -16, paddingHorizontal: 16 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginHorizontal: -16, paddingHorizontal: 16 }}
+            >
               <FilterTag
                 label="Todos"
                 selected={!filterDriver}
@@ -241,10 +303,18 @@ export default function AdvancedHistorySearch({
 
         {/* Marketplace Filter */}
         <View style={{ marginBottom: 16 }}>
-          <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 8 }}>
+          <Text
+            style={{
+              color: colors.textMuted,
+              fontSize: 11,
+              fontWeight: "700",
+              letterSpacing: 1,
+              marginBottom: 8,
+            }}
+          >
             MARKETPLACE
           </Text>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View style={{ flexDirection: "row", gap: 8 }}>
             <FilterTag
               label="Todos"
               selected={!filterMarketplace}
@@ -253,20 +323,20 @@ export default function AdvancedHistorySearch({
             />
             <FilterTag
               label="🛍️ Shopee"
-              selected={filterMarketplace === 'shopee'}
-              onPress={() => setFilterMarketplace('shopee')}
+              selected={filterMarketplace === "shopee"}
+              onPress={() => setFilterMarketplace("shopee")}
               colors={colors}
             />
             <FilterTag
               label="🟡 ML"
-              selected={filterMarketplace === 'mercado_livre'}
-              onPress={() => setFilterMarketplace('mercado_livre')}
+              selected={filterMarketplace === "mercado_livre"}
+              onPress={() => setFilterMarketplace("mercado_livre")}
               colors={colors}
             />
             <FilterTag
               label="📦 Avulsos"
-              selected={filterMarketplace === 'avulso'}
-              onPress={() => setFilterMarketplace('avulso')}
+              selected={filterMarketplace === "avulso"}
+              onPress={() => setFilterMarketplace("avulso")}
               colors={colors}
             />
           </View>
@@ -283,13 +353,33 @@ export default function AdvancedHistorySearch({
             marginBottom: 16,
           }}
         >
-          <Text style={{ color: colors.textSubtle, fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 12 }}>
+          <Text
+            style={{
+              color: colors.textSubtle,
+              fontSize: 11,
+              fontWeight: "700",
+              letterSpacing: 1,
+              marginBottom: 12,
+            }}
+          >
             RESUMO DOS RESULTADOS
           </Text>
           <View style={{ gap: 8 }}>
-            <StatRow label="Sessões Encontradas" value={stats.total.toString()} colors={colors} />
-            <StatRow label="Total de Pacotes" value={stats.packages.toString()} colors={colors} />
-            <StatRow label="Valor Total" value={`R$ ${stats.value.toFixed(2).replace('.', ',')}`} colors={colors} />
+            <StatRow
+              label="Sessões Encontradas"
+              value={stats.total.toString()}
+              colors={colors}
+            />
+            <StatRow
+              label="Total de Pacotes"
+              value={stats.packages.toString()}
+              colors={colors}
+            />
+            <StatRow
+              label="Valor Total"
+              value={`R$ ${stats.value.toFixed(2).replace(".", ",")}`}
+              colors={colors}
+            />
             <StatRow
               label="Com Divergência"
               value={stats.divergences.toString()}
@@ -306,7 +396,11 @@ export default function AdvancedHistorySearch({
             data={filteredSessions}
             keyExtractor={(item, index) => `${item.id}-${index}`}
             renderItem={({ item }) => (
-              <SessionItemCompact session={item} onPress={() => onSessionSelect(item)} colors={colors} />
+              <SessionItemCompact
+                session={item}
+                onPress={() => onSessionSelect(item)}
+                colors={colors}
+              />
             )}
             ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
           />
@@ -316,15 +410,28 @@ export default function AdvancedHistorySearch({
               backgroundColor: colors.surface,
               borderRadius: 14,
               padding: 24,
-              alignItems: 'center',
-              justifyContent: 'center',
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             <Text style={{ fontSize: 32, marginBottom: 8 }}>📭</Text>
-            <Text style={{ color: colors.text, fontSize: 16, fontWeight: '700', marginBottom: 4 }}>
+            <Text
+              style={{
+                color: colors.text,
+                fontSize: 16,
+                fontWeight: "700",
+                marginBottom: 4,
+              }}
+            >
               Nenhuma sessão encontrada
             </Text>
-            <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: 'center' }}>
+            <Text
+              style={{
+                color: colors.textMuted,
+                fontSize: 12,
+                textAlign: "center",
+              }}
+            >
               Tente ajustar suas preferências de filtro
             </Text>
           </View>
@@ -342,13 +449,27 @@ interface FilterSectionProps {
   colors: any;
 }
 
-function FilterSection({ title, options, selected, onSelect, colors }: FilterSectionProps) {
+function FilterSection({
+  title,
+  options,
+  selected,
+  onSelect,
+  colors,
+}: FilterSectionProps) {
   return (
     <View style={{ marginBottom: 16 }}>
-      <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 8 }}>
+      <Text
+        style={{
+          color: colors.textMuted,
+          fontSize: 11,
+          fontWeight: "700",
+          letterSpacing: 1,
+          marginBottom: 8,
+        }}
+      >
         {title}
       </Text>
-      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+      <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
         {options.map((option) => (
           <TouchableOpacity
             key={option.value}
@@ -357,16 +478,18 @@ function FilterSection({ title, options, selected, onSelect, colors }: FilterSec
               paddingHorizontal: 12,
               paddingVertical: 8,
               borderRadius: 8,
-              backgroundColor: selected === option.value ? colors.primary : colors.surface,
+              backgroundColor:
+                selected === option.value ? colors.primary : colors.surface,
               borderWidth: 1,
-              borderColor: selected === option.value ? colors.primary : colors.border,
+              borderColor:
+                selected === option.value ? colors.primary : colors.border,
             }}
           >
             <Text
               style={{
-                color: selected === option.value ? '#fff' : colors.text,
+                color: selected === option.value ? "#fff" : colors.text,
                 fontSize: 12,
-                fontWeight: '600',
+                fontWeight: "600",
               }}
             >
               {option.icon} {option.label}
@@ -401,9 +524,9 @@ function FilterTag({ label, selected, onPress, colors }: FilterTagProps) {
     >
       <Text
         style={{
-          color: selected ? '#fff' : colors.text,
+          color: selected ? "#fff" : colors.text,
           fontSize: 11,
-          fontWeight: '600',
+          fontWeight: "600",
         }}
       >
         {label}
@@ -421,9 +544,21 @@ interface StatRowProps {
 
 function StatRow({ label, value, colors, color }: StatRowProps) {
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-      <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: '500' }}>{label}</Text>
-      <Text style={{ color: color || colors.primary, fontSize: 13, fontWeight: '700' }}>{value}</Text>
+    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      <Text
+        style={{ color: colors.textMuted, fontSize: 12, fontWeight: "500" }}
+      >
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: color || colors.primary,
+          fontSize: 13,
+          fontWeight: "700",
+        }}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
@@ -434,7 +569,11 @@ interface SessionItemCompactProps {
   colors: any;
 }
 
-function SessionItemCompact({ session, onPress, colors }: SessionItemCompactProps) {
+function SessionItemCompact({
+  session,
+  onPress,
+  colors,
+}: SessionItemCompactProps) {
   const metrics = getSessionMetrics(session.packages);
 
   return (
@@ -447,23 +586,32 @@ function SessionItemCompact({ session, onPress, colors }: SessionItemCompactProp
         borderWidth: 1,
         borderColor: colors.surface2,
         borderLeftWidth: 4,
-        borderLeftColor: session.hasDivergence ? colors.warning : colors.success,
+        borderLeftColor: session.hasDivergence
+          ? colors.warning
+          : colors.success,
       }}
     >
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: 8,
+        }}
+      >
         <View style={{ flex: 1 }}>
-          <Text style={{ color: colors.text, fontSize: 13, fontWeight: '700' }}>
+          <Text style={{ color: colors.text, fontSize: 13, fontWeight: "700" }}>
             {session.operatorName}
           </Text>
           <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
-            {new Date(session.startedAt).toLocaleDateString('pt-BR')} às{' '}
-            {new Date(session.startedAt).toLocaleTimeString('pt-BR', {
-              hour: '2-digit',
-              minute: '2-digit',
+            {new Date(session.startedAt).toLocaleDateString("pt-BR")} às{" "}
+            {new Date(session.startedAt).toLocaleTimeString("pt-BR", {
+              hour: "2-digit",
+              minute: "2-digit",
             })}
           </Text>
         </View>
-        <View style={{ alignItems: 'flex-end' }}>
+        <View style={{ alignItems: "flex-end" }}>
           {session.hasDivergence ? (
             <Text style={{ fontSize: 14 }}>⚠️</Text>
           ) : (
@@ -471,9 +619,10 @@ function SessionItemCompact({ session, onPress, colors }: SessionItemCompactProp
           )}
         </View>
       </View>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <Text style={{ color: colors.textMuted, fontSize: 11 }}>
-          {metrics.total} pacotes • R$ {metrics.valueTotal.toFixed(2).replace('.', ',')}
+          {metrics.total} pacotes • R${" "}
+          {metrics.valueTotal.toFixed(2).replace(".", ",")}
         </Text>
       </View>
     </TouchableOpacity>

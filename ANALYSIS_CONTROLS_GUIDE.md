@@ -5,12 +5,14 @@
 ### 🎯 **Novas Funcionalidades na Tela de Análise**
 
 #### 1. **Botão TUDO** - Análise Completa
+
 - **Cor**: Azul primário do tema
 - **Função**: Analisa todos os dados disponíveis
 - **Posição**: Header da tela de análise
 - **Ação**: Dispara análise completa do sistema
 
-#### 2. **Botão ZERAR** - Reset da Análise  
+#### 2. **Botão ZERAR** - Reset da Análise
+
 - **Cor**: Vermelho (#ef4444)
 - **Função**: Limpa toda a análise atual
 - **Posição**: Header da tela de análise
@@ -19,16 +21,18 @@
 ### 🛠️ **Implementação Técnica**
 
 #### Interface Atualizada
+
 ```typescript
 interface AdvancedAnalyticsProps {
   sessions: Session[];
   onClose: () => void;
-  onAnalyzeAll?: () => void;      // Novo
-  onResetAnalysis?: () => void;   // Novo
+  onAnalyzeAll?: () => void; // Novo
+  onResetAnalysis?: () => void; // Novo
 }
 ```
 
 #### Layout dos Botões
+
 ```typescript
 {/* Action Buttons */}
 <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -47,7 +51,7 @@ interface AdvancedAnalyticsProps {
       ZERAR
     </Text>
   </TouchableOpacity>
-  
+
   {/* Tudo Button */}
   <TouchableOpacity
     onPress={onAnalyzeAll}
@@ -63,7 +67,7 @@ interface AdvancedAnalyticsProps {
       TUDO
     </Text>
   </TouchableOpacity>
-  
+
   {/* Close Button */}
   <TouchableOpacity onPress={onClose}>
     {/* Botão de fechar existente */}
@@ -74,9 +78,10 @@ interface AdvancedAnalyticsProps {
 ### 🔧 **Funções Implementadas**
 
 #### 1. handleAnalyzeAll()
+
 ```typescript
 const handleAnalyzeAll = useCallback(() => {
-  console.log('Analisando todos os dados...');
+  console.log("Analisando todos os dados...");
   // Implementações futuras:
   // - Carregar todas as sessões do armazenamento
   // - Gerar relatório completo
@@ -86,25 +91,26 @@ const handleAnalyzeAll = useCallback(() => {
 ```
 
 #### 2. handleResetAnalysis()
+
 ```typescript
 const handleResetAnalysis = useCallback(() => {
-  console.log('Zerando análise...');
-  
+  console.log("Zerando análise...");
+
   // Confirmação com o usuário
   Alert.alert(
-    'Zerar Análise',
-    'Tem certeza que deseja zerar toda a análise? Esta ação não pode ser desfeita.',
+    "Zerar Análise",
+    "Tem certeza que deseja zerar toda a análise? Esta ação não pode ser desfeita.",
     [
-      { text: 'Cancelar', style: 'cancel' },
-      { 
-        text: 'Zerar', 
-        style: 'destructive',
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Zerar",
+        style: "destructive",
         onPress: () => {
           setSessions([]); // Limpar sessões
-          console.log('Análise zerada com sucesso');
-        }
-      }
-    ]
+          console.log("Análise zerada com sucesso");
+        },
+      },
+    ],
   );
 }, []);
 ```
@@ -112,17 +118,20 @@ const handleResetAnalysis = useCallback(() => {
 ### 🎨 **Design e UX**
 
 #### Layout Otimizado
+
 - **Arranjo**: Zerar | Tudo | Fechar (esquerda → direita)
 - **Espaçamento**: 8px entre botões
 - **Altura**: 40px consistente
 - **Border radius**: 10px moderno
 
 #### Cores e Feedback Visual
+
 - **ZERAR**: Vermelho intenso (#ef4444) + borda (#dc2626)
 - **TUDO**: Cor primária do tema + borda sutil
 - **Fechar**: Superfície do tema + borda
 
 #### Tipografia
+
 - **Font size**: 11px (compacto e legível)
 - **Font weight**: 700 (bold)
 - **Text transform**: Uppercase
@@ -131,18 +140,21 @@ const handleResetAnalysis = useCallback(() => {
 ### 📱 **Experiência do Usuário**
 
 #### Fluxo de Análise Completa
+
 1. **Usuário clica "TUDO"**
 2. **Sistema analisa todos os dados**
 3. **Resultados aparecem na tela**
 4. **Insights detalhados exibidos**
 
 #### Fluxo de Reset
+
 1. **Usuário clica "ZERAR"**
 2. **Alerta de confirmação aparece**
 3. **Usuário confirma ou cancela**
 4. **Análise resetada com sucesso**
 
 #### Benefícios
+
 ✅ **Controle Total**: Usuário controla o escopo da análise
 ✅ **Segurança**: Confirmação antes de ações destrutivas
 ✅ **Flexibilidade**: Pode analisar tudo ou resetar quando necessário
@@ -151,12 +163,14 @@ const handleResetAnalysis = useCallback(() => {
 ### 🔮 **Extensões Futuras**
 
 #### Para "TUDO"
+
 - **Análise avançada**: Machine learning insights
 - **Exportação**: CSV, PDF, JSON
 - **Comparação**: Períodos diferentes
 - **Previsões**: Tendências e projeções
 
 #### Para "ZERAR"
+
 - **Backup**: Salvar estado antes de resetar
 - **Filtros**: Reset seletivo por período
 - **Histórico**: Log de resets realizados
@@ -165,12 +179,14 @@ const handleResetAnalysis = useCallback(() => {
 ### ⚡ **Performance**
 
 #### Otimizações
+
 - **useCallback**: Funções memoizadas
 - **Alert nativo**: Performance otimizada
 - **Estado local**: Sem re-renders desnecessários
 - **Props opcionais**: Flexibilidade de implementação
 
 #### Compatibilidade
+
 - **iOS**: Alert nativo totalmente funcional
 - **Android**: Dialog material design
 - **Web**: Browser confirm dialog
@@ -179,12 +195,14 @@ const handleResetAnalysis = useCallback(() => {
 ### 🎯 **Casos de Uso**
 
 #### Quando usar "TUDO"
+
 - **Relatórios mensais**: Análise completa do período
 - **Auditorias**: Verificação de todos os dados
 - **Exportação**: Preparar dados para backup
 - **Insights**: Descobrir padrões globais
 
 #### Quando usar "ZERAR"
+
 - **Nova análise**: Começar do zero
 - **Testes**: Limpar dados de teste
 - **Privacidade**: Remover informações sensíveis

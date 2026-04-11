@@ -3,8 +3,8 @@
  * Sistema de cache distribuído com múltiplos níveis e estratégias avançadas
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
 
 interface CacheItem<T> {
   data: T;
@@ -13,7 +13,7 @@ interface CacheItem<T> {
   accessCount: number;
   lastAccessed: number;
   size: number;
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  priority: "low" | "medium" | "high" | "critical";
   tags: string[];
   version: string;
 }
@@ -35,7 +35,7 @@ interface CacheConfig {
   maxItems: number;
   defaultTTL: number; // em ms
   compressionThreshold: number; // em bytes
-  evictionPolicy: 'lru' | 'lfu' | 'ttl' | 'adaptive';
+  evictionPolicy: "lru" | "lfu" | "ttl" | "adaptive";
   enableCompression: boolean;
   enableEncryption: boolean;
   enablePersistence: boolean;
@@ -66,15 +66,15 @@ class DistributedCacheService {
   private config: CacheConfig;
   private syncTimer: number | null = null;
   private compressionWorker: Worker | null = null;
-  private encryptionKey: string = '';
+  private encryptionKey: string = "";
   private isOnline: boolean = true;
   private lastSync: number = Date.now();
 
   private readonly STORAGE_KEYS = {
-    MEMORY_CACHE: 'cache_memory',
-    DISK_CACHE: 'cache_disk',
-    METRICS: 'cache_metrics',
-    CONFIG: 'cache_config',
+    MEMORY_CACHE: "cache_memory",
+    DISK_CACHE: "cache_disk",
+    METRICS: "cache_metrics",
+    CONFIG: "cache_config",
   };
 
   private constructor() {
@@ -96,7 +96,7 @@ class DistributedCacheService {
       maxItems: 10000,
       defaultTTL: 30 * 60 * 1000, // 30 minutos
       compressionThreshold: 1024, // 1KB
-      evictionPolicy: 'adaptive',
+      evictionPolicy: "adaptive",
       enableCompression: true,
       enableEncryption: false,
       enablePersistence: true,
@@ -146,9 +146,9 @@ class DistributedCacheService {
       // Inicia cleanup automático
       this.startCleanupTimer();
 
-      console.log('[CacheService] Distributed cache initialized successfully');
+      console.log("[CacheService] Distributed cache initialized successfully");
     } catch (error) {
-      console.error('[CacheService] Error initializing cache service:', error);
+      console.error("[CacheService] Error initializing cache service:", error);
     }
   }
 
@@ -156,24 +156,26 @@ class DistributedCacheService {
    * Set - Armazena item no cache com estratégia multi-nível
    */
   async set<T>(
-    key: string, 
-    data: T, 
+    key: string,
+    data: T,
     options: {
       ttl?: number;
-      priority?: 'low' | 'medium' | 'high' | 'critical';
+      priority?: "low" | "medium" | "high" | "critical";
       tags?: string[];
       persist?: boolean;
       compress?: boolean;
       encrypt?: boolean;
-    } = {}
+    } = {},
   ): Promise<void> {
     const startTime = Date.now();
-    
+
     try {
       const ttl = options.ttl || this.config.defaultTTL;
-      const priority = options.priority || 'medium';
+      const priority = options.priority || "medium";
       const tags = options.tags || [];
-      const shouldCompress = options.compress ?? (this.config.enableCompression && this.shouldCompress(data));
+      const shouldCompress =
+        options.compress ??
+        (this.config.enableCompression && this.shouldCompress(data));
       const shouldEncrypt = options.encrypt ?? this.config.enableEncryption;
       const shouldPersist = options.persist ?? this.config.enablePersistence;
 
@@ -205,14 +207,14 @@ class DistributedCacheService {
         size: finalSize,
         priority,
         tags,
-        version: '1.0',
+        version: "1.0",
       };
 
       // Verifica espaço disponível e evict se necessário
       await this.ensureSpaceAvailable(finalSize);
 
       // Armazena nos níveis apropriados
-      if (priority === 'critical' || finalSize < 1024) {
+      if (priority === "critical" || finalSize < 1024) {
         // Nível 1: Memória
         this.memoryCache.set(key, cacheItem);
       } else if (shouldPersist) {
@@ -232,8 +234,9 @@ class DistributedCacheService {
       this.metrics.totalAccessTime += Date.now() - startTime;
       this.updateAverageAccessTime();
 
-      console.log(`[CacheService] SET: ${key} (${finalSize} bytes, priority: ${priority})`);
-
+      console.log(
+        `[CacheService] SET: ${key} (${finalSize} bytes, priority: ${priority})`,
+      );
     } catch (error) {
       this.metrics.errors++;
       console.error(`[CacheService] Error setting cache item ${key}:`, error);
@@ -250,16 +253,16 @@ class DistributedCacheService {
     try {
       // Busca em ordem de prioridade: Memória -> Disco -> Distribuído
       let cacheItem = this.memoryCache.get(key);
-      let source = 'memory';
+      let source = "memory";
 
       if (!cacheItem) {
         cacheItem = this.diskCache.get(key);
-        source = 'disk';
+        source = "disk";
       }
 
       if (!cacheItem && this.config.enableDistributed && this.isOnline) {
         cacheItem = this.distributedCache.get(key);
-        source = 'distributed';
+        source = "distributed";
       }
 
       if (!cacheItem) {
@@ -281,7 +284,7 @@ class DistributedCacheService {
       cacheItem.lastAccessed = Date.now();
 
       // Promove para nível superior se acesso frequente
-      if (cacheItem.accessCount > 5 && source !== 'memory') {
+      if (cacheItem.accessCount > 5 && source !== "memory") {
         await this.promoteToMemory(key, cacheItem);
       }
 
@@ -292,7 +295,6 @@ class DistributedCacheService {
       console.log(`[CacheService] HIT: ${key} from ${source}`);
 
       return cacheItem.data;
-
     } catch (error) {
       this.metrics.errors++;
       console.error(`[CacheService] Error getting cache item ${key}:`, error);
@@ -315,7 +317,6 @@ class DistributedCacheService {
 
       this.metrics.deletes++;
       console.log(`[CacheService] DELETE: ${key}`);
-
     } catch (error) {
       this.metrics.errors++;
       console.error(`[CacheService] Error deleting cache item ${key}:`, error);
@@ -325,19 +326,21 @@ class DistributedCacheService {
   /**
    * Clear - Limpa cache com filtros
    */
-  async clear(options: {
-    level?: 'memory' | 'disk' | 'distributed' | 'all';
-    tags?: string[];
-    priority?: 'low' | 'medium' | 'high' | 'critical';
-    olderThan?: number; // timestamp
-  } = {}): Promise<void> {
-    const level = options.level || 'all';
+  async clear(
+    options: {
+      level?: "memory" | "disk" | "distributed" | "all";
+      tags?: string[];
+      priority?: "low" | "medium" | "high" | "critical";
+      olderThan?: number; // timestamp
+    } = {},
+  ): Promise<void> {
+    const level = options.level || "all";
     const tags = options.tags || [];
     const priority = options.priority;
     const olderThan = options.olderThan || 0;
 
     const shouldDelete = (item: CacheItem<any>, key: string) => {
-      if (tags.length > 0 && !tags.some(tag => item.tags.includes(tag))) {
+      if (tags.length > 0 && !tags.some((tag) => item.tags.includes(tag))) {
         return false;
       }
       if (priority && item.priority !== priority) {
@@ -350,7 +353,7 @@ class DistributedCacheService {
     };
 
     try {
-      if (level === 'memory' || level === 'all') {
+      if (level === "memory" || level === "all") {
         for (const [key, item] of this.memoryCache.entries()) {
           if (shouldDelete(item, key)) {
             this.memoryCache.delete(key);
@@ -358,7 +361,7 @@ class DistributedCacheService {
         }
       }
 
-      if (level === 'disk' || level === 'all') {
+      if (level === "disk" || level === "all") {
         for (const [key, item] of this.diskCache.entries()) {
           if (shouldDelete(item, key)) {
             this.diskCache.delete(key);
@@ -367,7 +370,7 @@ class DistributedCacheService {
         }
       }
 
-      if (level === 'distributed' || level === 'all') {
+      if (level === "distributed" || level === "all") {
         for (const [key, item] of this.distributedCache.entries()) {
           if (shouldDelete(item, key)) {
             this.distributedCache.delete(key);
@@ -376,10 +379,9 @@ class DistributedCacheService {
       }
 
       console.log(`[CacheService] CLEAR: ${level} level`);
-
     } catch (error) {
       this.metrics.errors++;
-      console.error('[CacheService] Error clearing cache:', error);
+      console.error("[CacheService] Error clearing cache:", error);
     }
   }
 
@@ -404,9 +406,9 @@ class DistributedCacheService {
     items: Map<string, T>,
     options: {
       ttl?: number;
-      priority?: 'low' | 'medium' | 'high' | 'critical';
+      priority?: "low" | "medium" | "high" | "critical";
       tags?: string[];
-    } = {}
+    } = {},
   ): Promise<void> {
     const promises = Array.from(items.entries()).map(async ([key, data]) => {
       await this.set(key, data, options);
@@ -427,12 +429,13 @@ class DistributedCacheService {
 
     const totalItems = allItems.length;
     const memoryUsage = allItems.reduce((sum, item) => sum + item.size, 0);
-    const hitRate = this.metrics.hits + this.metrics.misses > 0 
-      ? (this.metrics.hits / (this.metrics.hits + this.metrics.misses)) * 100 
-      : 0;
+    const hitRate =
+      this.metrics.hits + this.metrics.misses > 0
+        ? (this.metrics.hits / (this.metrics.hits + this.metrics.misses)) * 100
+        : 0;
     const missRate = 100 - hitRate;
 
-    const timestamps = allItems.map(item => item.timestamp);
+    const timestamps = allItems.map((item) => item.timestamp);
     const oldestItem = timestamps.length > 0 ? Math.min(...timestamps) : 0;
     const newestItem = timestamps.length > 0 ? Math.max(...timestamps) : 0;
 
@@ -461,7 +464,7 @@ class DistributedCacheService {
    */
   async warmUp(keys: string[]): Promise<void> {
     console.log(`[CacheService] Warming up ${keys.length} keys...`);
-    
+
     const promises = keys.map(async (key) => {
       // Tenta carregar do disco para memória
       const diskItem = this.diskCache.get(key);
@@ -471,7 +474,7 @@ class DistributedCacheService {
     });
 
     await Promise.all(promises);
-    console.log('[CacheService] Warm up completed');
+    console.log("[CacheService] Warm up completed");
   }
 
   /**
@@ -485,7 +488,7 @@ class DistributedCacheService {
     };
 
     return {
-      version: '1.0.0',
+      version: "1.0.0",
       timestamp: Date.now(),
       config: this.config,
       metrics: this.metrics,
@@ -517,9 +520,9 @@ class DistributedCacheService {
         });
       }
 
-      console.log('[CacheService] Import completed successfully');
+      console.log("[CacheService] Import completed successfully");
     } catch (error) {
-      console.error('[CacheService] Error importing cache data:', error);
+      console.error("[CacheService] Error importing cache data:", error);
       throw error;
     }
   }
@@ -558,7 +561,7 @@ class DistributedCacheService {
 
   private async ensureSpaceAvailable(requiredSize: number): Promise<void> {
     const currentUsage = this.getCurrentMemoryUsage();
-    
+
     if (currentUsage + requiredSize <= this.config.maxMemorySize) {
       return;
     }
@@ -568,8 +571,10 @@ class DistributedCacheService {
   }
 
   private getCurrentMemoryUsage(): number {
-    return Array.from(this.memoryCache.values())
-      .reduce((sum, item) => sum + item.size, 0);
+    return Array.from(this.memoryCache.values()).reduce(
+      (sum, item) => sum + item.size,
+      0,
+    );
   }
 
   private async evictItems(requiredSize: number): Promise<void> {
@@ -578,16 +583,16 @@ class DistributedCacheService {
 
     // Ordena por política de evicção
     switch (this.config.evictionPolicy) {
-      case 'lru':
+      case "lru":
         items.sort((a, b) => a[1].lastAccessed - b[1].lastAccessed);
         break;
-      case 'lfu':
+      case "lfu":
         items.sort((a, b) => a[1].accessCount - b[1].accessCount);
         break;
-      case 'ttl':
+      case "ttl":
         items.sort((a, b) => a[1].timestamp - b[1].timestamp);
         break;
-      case 'adaptive':
+      case "adaptive":
         // Combinação de múltiplos fatores
         items.sort((a, b) => {
           const scoreA = this.calculateEvictionScore(a[1]);
@@ -600,7 +605,7 @@ class DistributedCacheService {
     // Evict itens até liberar espaço suficiente
     for (const [key, item] of items) {
       if (freedSpace >= requiredSize) break;
-      
+
       this.memoryCache.delete(key);
       freedSpace += item.size;
       this.metrics.evictions++;
@@ -613,17 +618,23 @@ class DistributedCacheService {
     const age = Date.now() - item.timestamp;
     const accessFrequency = item.accessCount;
     const timeSinceLastAccess = Date.now() - item.lastAccessed;
-    
+
     // Score mais baixo = maior prioridade para evicção
-    return (accessFrequency * 1000) - (age / 1000) - (timeSinceLastAccess / 1000);
+    return accessFrequency * 1000 - age / 1000 - timeSinceLastAccess / 1000;
   }
 
-  private async promoteToMemory(key: string, item: CacheItem<any>): Promise<void> {
+  private async promoteToMemory(
+    key: string,
+    item: CacheItem<any>,
+  ): Promise<void> {
     this.memoryCache.set(key, item);
     this.diskCache.delete(key);
   }
 
-  private async persistToDisk(key: string, item: CacheItem<any>): Promise<void> {
+  private async persistToDisk(
+    key: string,
+    item: CacheItem<any>,
+  ): Promise<void> {
     try {
       const serialized = JSON.stringify(item);
       await AsyncStorage.setItem(`cache_${key}`, serialized);
@@ -632,17 +643,21 @@ class DistributedCacheService {
     }
   }
 
-  private async syncToDistributed(key: string, item: CacheItem<any>): Promise<void> {
+  private async syncToDistributed(
+    key: string,
+    item: CacheItem<any>,
+  ): Promise<void> {
     // Implementar sincronização com servidor distribuído
     // Placeholder para implementação real
   }
 
   private calculateCompressionRatio(): number {
-    const compressedItems = Array.from(this.memoryCache.values())
-      .filter(item => item.size < 1024); // Itens pequenos provavelmente comprimidos
-    
+    const compressedItems = Array.from(this.memoryCache.values()).filter(
+      (item) => item.size < 1024,
+    ); // Itens pequenos provavelmente comprimidos
+
     if (compressedItems.length === 0) return 1.0;
-    
+
     // Placeholder - cálculo real seria baseado no tamanho original vs comprimido
     return 0.7;
   }
@@ -650,13 +665,14 @@ class DistributedCacheService {
   private updateAverageAccessTime(): void {
     const totalOperations = this.metrics.hits + this.metrics.misses;
     if (totalOperations > 0) {
-      this.metrics.averageAccessTime = this.metrics.totalAccessTime / totalOperations;
+      this.metrics.averageAccessTime =
+        this.metrics.totalAccessTime / totalOperations;
     }
   }
 
   private async initializeEncryption(): Promise<void> {
     // Gerar ou carregar chave de criptografia
-    this.encryptionKey = 'encryption_key_placeholder';
+    this.encryptionKey = "encryption_key_placeholder";
   }
 
   private async initializeCompressionWorker(): Promise<void> {
@@ -666,12 +682,14 @@ class DistributedCacheService {
 
   private async loadPersistedData(): Promise<void> {
     try {
-      const [memoryData, diskData, metricsData, configData] = await Promise.all([
-        AsyncStorage.getItem(this.STORAGE_KEYS.MEMORY_CACHE),
-        AsyncStorage.getItem(this.STORAGE_KEYS.DISK_CACHE),
-        AsyncStorage.getItem(this.STORAGE_KEYS.METRICS),
-        AsyncStorage.getItem(this.STORAGE_KEYS.CONFIG),
-      ]);
+      const [memoryData, diskData, metricsData, configData] = await Promise.all(
+        [
+          AsyncStorage.getItem(this.STORAGE_KEYS.MEMORY_CACHE),
+          AsyncStorage.getItem(this.STORAGE_KEYS.DISK_CACHE),
+          AsyncStorage.getItem(this.STORAGE_KEYS.METRICS),
+          AsyncStorage.getItem(this.STORAGE_KEYS.CONFIG),
+        ],
+      );
 
       if (memoryData) {
         const memoryItems = JSON.parse(memoryData);
@@ -695,9 +713,9 @@ class DistributedCacheService {
         this.config = JSON.parse(configData);
       }
 
-      console.log('[CacheService] Persisted data loaded');
+      console.log("[CacheService] Persisted data loaded");
     } catch (error) {
-      console.error('[CacheService] Error loading persisted data:', error);
+      console.error("[CacheService] Error loading persisted data:", error);
     }
   }
 
@@ -716,7 +734,7 @@ class DistributedCacheService {
       this.lastSync = Date.now();
     } catch (error) {
       this.metrics.errors++;
-      console.error('[CacheService] Error in distributed sync:', error);
+      console.error("[CacheService] Error in distributed sync:", error);
     }
   }
 
@@ -767,7 +785,7 @@ class DistributedCacheService {
       clearInterval(this.syncTimer);
       this.syncTimer = null;
     }
-    
+
     if (this.compressionWorker) {
       this.compressionWorker.terminate();
       this.compressionWorker = null;
@@ -782,9 +800,4 @@ class DistributedCacheService {
 // Exportar instância singleton
 export const cacheService = DistributedCacheService.getInstance();
 export default DistributedCacheService;
-export type {
-  CacheItem,
-  CacheStats,
-  CacheConfig,
-  CacheMetrics,
-};
+export type { CacheItem, CacheStats, CacheConfig, CacheMetrics };

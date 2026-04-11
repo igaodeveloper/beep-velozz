@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
   TouchableOpacity,
   Text,
@@ -8,13 +8,19 @@ import {
   ActivityIndicator,
   Animated,
   View,
-} from 'react-native';
-import { useAppTheme } from '@/utils/useAppTheme';
-import * as Haptics from 'expo-haptics';
+} from "react-native";
+import { useAppTheme } from "@/utils/useAppTheme";
+import * as Haptics from "expo-haptics";
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'gradient' | 'glass';
-export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-export type ButtonStatus = 'default' | 'loading' | 'disabled' | 'success';
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "outline"
+  | "ghost"
+  | "gradient"
+  | "glass";
+export type ButtonSize = "xs" | "sm" | "md" | "lg" | "xl";
+export type ButtonStatus = "default" | "loading" | "disabled" | "success";
 
 interface ModernButtonProps {
   title: string;
@@ -23,7 +29,7 @@ interface ModernButtonProps {
   size?: ButtonSize;
   status?: ButtonStatus;
   icon?: React.ReactNode;
-  iconPosition?: 'left' | 'right';
+  iconPosition?: "left" | "right";
   fullWidth?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
@@ -34,11 +40,11 @@ interface ModernButtonProps {
 export default function ModernButton({
   title,
   onPress,
-  variant = 'primary',
-  size = 'md',
-  status = 'default',
+  variant = "primary",
+  size = "md",
+  status = "default",
   icon,
-  iconPosition = 'left',
+  iconPosition = "left",
   fullWidth = false,
   style,
   textStyle,
@@ -52,13 +58,13 @@ export default function ModernButton({
   useEffect(() => {
     if (animated) {
       Animated.timing(scaleAnim, {
-        toValue: status === 'loading' ? 0.95 : 1,
+        toValue: status === "loading" ? 0.95 : 1,
         duration: 150,
         useNativeDriver: true,
       }).start();
 
       Animated.timing(opacityAnim, {
-        toValue: status === 'disabled' ? 0.5 : 1,
+        toValue: status === "disabled" ? 0.5 : 1,
         duration: 150,
         useNativeDriver: true,
       }).start();
@@ -66,10 +72,10 @@ export default function ModernButton({
   }, [status, animated]);
 
   const handlePressIn = () => {
-    if (status === 'default' && hapticFeedback) {
+    if (status === "default" && hapticFeedback) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    if (animated && status === 'default') {
+    if (animated && status === "default") {
       Animated.spring(scaleAnim, {
         toValue: 0.96,
         useNativeDriver: true,
@@ -80,7 +86,7 @@ export default function ModernButton({
   };
 
   const handlePressOut = () => {
-    if (animated && status === 'default') {
+    if (animated && status === "default") {
       Animated.spring(scaleAnim, {
         toValue: 1,
         useNativeDriver: true,
@@ -91,7 +97,7 @@ export default function ModernButton({
   };
 
   const handlePress = () => {
-    if (status === 'default' && onPress) {
+    if (status === "default" && onPress) {
       onPress();
     }
   };
@@ -100,16 +106,16 @@ export default function ModernButton({
     const baseStyle: ViewStyle = {
       borderRadius: getBorderRadius(),
       borderWidth: getBorderWidth(),
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: iconPosition === 'right' ? 'row-reverse' : 'row',
-      opacity: status === 'disabled' ? 0.5 : 1,
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: iconPosition === "right" ? "row-reverse" : "row",
+      opacity: status === "disabled" ? 0.5 : 1,
     };
 
     const variantStyles = {
       primary: {
         backgroundColor: colors.primary,
-        borderColor: 'transparent',
+        borderColor: "transparent",
         shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
@@ -126,17 +132,17 @@ export default function ModernButton({
         elevation: 2,
       },
       outline: {
-        backgroundColor: 'transparent',
+        backgroundColor: "transparent",
         borderColor: colors.primary,
         borderWidth: 2,
       },
       ghost: {
-        backgroundColor: 'transparent',
-        borderColor: 'transparent',
+        backgroundColor: "transparent",
+        borderColor: "transparent",
       },
       gradient: {
         backgroundColor: colors.primary,
-        borderColor: 'transparent',
+        borderColor: "transparent",
         shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.4,
@@ -144,10 +150,10 @@ export default function ModernButton({
         elevation: 8,
       },
       glass: {
-        backgroundColor: colors.surface + '20',
-        borderColor: colors.border + '40',
+        backgroundColor: colors.surface + "20",
+        borderColor: colors.border + "40",
         borderWidth: 1,
-        backdropFilter: 'blur(10px)',
+        backdropFilter: "blur(10px)",
       },
     };
 
@@ -160,16 +166,16 @@ export default function ModernButton({
 
   const getTextStyle = (): TextStyle => {
     const baseStyle: TextStyle = {
-      fontWeight: '600',
-      textAlign: 'center',
+      fontWeight: "600",
+      textAlign: "center",
     };
 
     const variantStyles = {
-      primary: { color: '#ffffff' },
+      primary: { color: "#ffffff" },
       secondary: { color: colors.text },
       outline: { color: colors.primary },
       ghost: { color: colors.primary },
-      gradient: { color: '#ffffff' },
+      gradient: { color: "#ffffff" },
       glass: { color: colors.text },
     };
 
@@ -192,12 +198,15 @@ export default function ModernButton({
   };
 
   const getBorderWidth = (): number => {
-    if (variant === 'outline') return 2;
-    if (variant === 'secondary') return 1;
+    if (variant === "outline") return 2;
+    if (variant === "secondary") return 1;
     return 0;
   };
 
-  const getPadding = (): { paddingHorizontal: number; paddingVertical: number } => {
+  const getPadding = (): {
+    paddingHorizontal: number;
+    paddingVertical: number;
+  } => {
     const paddingMap = {
       xs: { paddingHorizontal: 12, paddingVertical: 6 },
       sm: { paddingHorizontal: 16, paddingVertical: 8 },
@@ -238,41 +247,52 @@ export default function ModernButton({
     : {};
 
   return (
-    <Animated.View style={[{ width: fullWidth ? '100%' : 'auto' }, animatedStyle]}>
+    <Animated.View
+      style={[{ width: fullWidth ? "100%" : "auto" }, animatedStyle]}
+    >
       <TouchableOpacity
         style={[
           getButtonStyle(),
           getPadding(),
-          { minWidth: fullWidth ? '100%' : getMinWidth() },
+          { minWidth: fullWidth ? "100%" : getMinWidth() },
         ]}
         onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        disabled={status === 'loading' || status === 'disabled'}
+        disabled={status === "loading" || status === "disabled"}
         activeOpacity={0.8}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
-        {status === 'loading' ? (
+        {status === "loading" ? (
           <ActivityIndicator
             size="small"
-            color={variant === 'outline' || variant === 'ghost' ? colors.primary : '#ffffff'}
+            color={
+              variant === "outline" || variant === "ghost"
+                ? colors.primary
+                : "#ffffff"
+            }
             style={{ marginRight: 8 }}
           />
         ) : (
           icon && (
-            <View style={{ 
-              marginHorizontal: 8,
-              opacity: status === 'disabled' ? 0.5 : 1 
-            }}>
+            <View
+              style={{
+                marginHorizontal: 8,
+                opacity: status === "disabled" ? 0.5 : 1,
+              }}
+            >
               {React.cloneElement(icon as React.ReactElement<any>, {
                 width: getIconSize(),
                 height: getIconSize(),
-                color: variant === 'primary' || variant === 'gradient' ? '#ffffff' : colors.primary,
+                color:
+                  variant === "primary" || variant === "gradient"
+                    ? "#ffffff"
+                    : colors.primary,
               })}
             </View>
           )
         )}
-        
+
         <Text
           style={[
             getTextStyle(),
@@ -293,10 +313,10 @@ function getMinWidth(): number {
 
 const styles = StyleSheet.create({
   button: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   text: {
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
-import { useWindowDimensions, Dimensions } from 'react-native';
+import { useMemo } from "react";
+import { useWindowDimensions, Dimensions } from "react-native";
 
 // Tipos de dispositivo
-export type DeviceType = 'phone' | 'tablet' | 'ultraWide' | 'compact';
+export type DeviceType = "phone" | "tablet" | "ultraWide" | "compact";
 
 export interface ResponsiveConfig {
   deviceType: DeviceType;
@@ -60,28 +60,30 @@ export interface ResponsiveConfig {
 
 export function useResponsive(): ResponsiveConfig {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const { width: deviceWidth, height: deviceHeight } = Dimensions.get('window');
-  
+  const { width: deviceWidth, height: deviceHeight } = Dimensions.get("window");
+
   const config = useMemo(() => {
-    const aspectRatio = Math.max(screenWidth, screenHeight) / Math.min(screenWidth, screenHeight);
+    const aspectRatio =
+      Math.max(screenWidth, screenHeight) / Math.min(screenWidth, screenHeight);
     const minDimension = Math.min(screenWidth, screenHeight);
     const maxDimension = Math.max(screenWidth, screenHeight);
-    
+
     // Detectar tipo de dispositivo
-    const isTablet = minDimension >= 768 || (aspectRatio < 1.3 && minDimension >= 600);
+    const isTablet =
+      minDimension >= 768 || (aspectRatio < 1.3 && minDimension >= 600);
     const isUltraWide = aspectRatio > 2.0;
     const isCompact = minDimension < 360;
     const isPhone = !isTablet && !isUltraWide;
-    
-    let deviceType: DeviceType = 'phone';
-    if (isTablet) deviceType = 'tablet';
-    else if (isUltraWide) deviceType = 'ultraWide';
-    else if (isCompact) deviceType = 'compact';
-    
+
+    let deviceType: DeviceType = "phone";
+    if (isTablet) deviceType = "tablet";
+    else if (isUltraWide) deviceType = "ultraWide";
+    else if (isCompact) deviceType = "compact";
+
     // Scale factor baseado no tamanho
     const baseSize = 375; // iPhone base
     const scale = Math.max(0.8, Math.min(1.5, minDimension / baseSize));
-    
+
     // Configurações responsivas
     const spacing = {
       xs: Math.round(4 * scale),
@@ -92,7 +94,7 @@ export function useResponsive(): ResponsiveConfig {
       xxl: Math.round(24 * scale),
       xxxl: Math.round(32 * scale),
     };
-    
+
     const fontSize = {
       xs: Math.round(10 * scale),
       sm: Math.round(12 * scale),
@@ -103,7 +105,7 @@ export function useResponsive(): ResponsiveConfig {
       xxxl: Math.round(24 * scale),
       xxxxl: Math.round(32 * scale),
     };
-    
+
     const borderRadius = {
       sm: Math.round(6 * scale),
       md: Math.round(8 * scale),
@@ -111,7 +113,7 @@ export function useResponsive(): ResponsiveConfig {
       xl: Math.round(16 * scale),
       xxl: Math.round(20 * scale),
     };
-    
+
     const padding = {
       xs: Math.round(8 * scale),
       sm: Math.round(12 * scale),
@@ -120,7 +122,7 @@ export function useResponsive(): ResponsiveConfig {
       xl: Math.round(24 * scale),
       xxl: Math.round(32 * scale),
     };
-    
+
     const maxWidth = {
       sm: Math.round(480 * scale),
       md: Math.round(640 * scale),
@@ -129,7 +131,7 @@ export function useResponsive(): ResponsiveConfig {
       xxl: Math.round(1280 * scale),
       full: screenWidth,
     };
-    
+
     return {
       deviceType,
       isTablet,
@@ -147,7 +149,7 @@ export function useResponsive(): ResponsiveConfig {
       maxWidth,
     };
   }, [screenWidth, screenHeight, deviceWidth, deviceHeight]);
-  
+
   return config;
 }
 
@@ -155,7 +157,7 @@ export function useResponsive(): ResponsiveConfig {
 export function responsiveValue<T>(
   responsive: ResponsiveConfig,
   values: Partial<Record<DeviceType, T>>,
-  defaultValue: T
+  defaultValue: T,
 ): T {
   return values[responsive.deviceType] ?? defaultValue;
 }
@@ -165,7 +167,7 @@ export function responsiveSize(
   phone: number,
   tablet?: number,
   ultraWide?: number,
-  compact?: number
+  compact?: number,
 ): number {
   if (responsive.isTablet && tablet !== undefined) return tablet;
   if (responsive.isUltraWide && ultraWide !== undefined) return ultraWide;

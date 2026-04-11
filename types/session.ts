@@ -1,16 +1,20 @@
-export type PackageType = 'shopee' | 'mercado_livre' | 'avulso';
+import { PackageType } from "./scanner";
 
 export interface ScannedPackage {
   id: string;
   code: string;
   type: PackageType;
+  value?: number; // Optional value property for backwards compatibility
   scannedAt: string; // ISO timestamp
 }
 
 export interface Session {
+  notes: any;
   id: string;
   operatorName: string;
+  operatorId?: string;
   driverName: string;
+  driverId?: string;
   declaredCount: number;
   declaredCounts: {
     shopee: number;
@@ -28,4 +32,19 @@ export interface SessionMetrics {
   mercadoLivre: number;
   avulsos: number;
   total: number;
+  valueShopee: number;
+  valueMercadoLivre: number;
+  valueAvulsos: number;
+  valueTotal: number;
+}
+
+export interface OperatorStats {
+  name: string;
+  totalSessions: number;
+  totalPackages: number;
+  avgRatePerMinute: number;
+  errorRate: number;
+  avgResponseTime: number;
+  preferredMarketplace: PackageType;
+  accuracyScore: number;
 }

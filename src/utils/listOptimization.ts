@@ -248,7 +248,8 @@ export const createOptimizedFlatListProps = (
 export const OptimizedFlatList = React.memo(
   React.forwardRef<FlatList<any>, FlatListProps<any>>((props, ref) => {
     const optimizedProps = createOptimizedFlatListProps();
-    return <FlatList ref={ref} {...props} {...optimizedProps} />;
+    const finalProps = { ...props, ...optimizedProps };
+    return React.createElement(FlatList, { ...finalProps, ref });
   })
 );
 

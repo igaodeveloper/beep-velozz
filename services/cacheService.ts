@@ -64,7 +64,7 @@ class DistributedCacheService {
   private distributedCache: Map<string, CacheItem<any>> = new Map();
   private metrics: CacheMetrics;
   private config: CacheConfig;
-  private syncTimer: number | null = null;
+  private syncTimer: ReturnType<typeof setInterval> | null = null;
   private compressionWorker: Worker | null = null;
   private encryptionKey: string = "";
   private isOnline: boolean = true;

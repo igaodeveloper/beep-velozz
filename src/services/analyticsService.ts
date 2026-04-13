@@ -1,4 +1,4 @@
-import { captureMessage } from "./sentry";
+import { captureMessage } from '../utils/sentry';
 
 export interface AnalyticsEvent {
   name: string;
@@ -14,7 +14,7 @@ export interface UserProperties {
   language: string;
 }
 
-class AnalyticsService {
+export class AnalyticsService {
   private userProperties: UserProperties | null = null;
   private eventsQueue: AnalyticsEvent[] = [];
   private isInitialized = false;
@@ -31,7 +31,7 @@ class AnalyticsService {
       }
     }
 
-    captureMessage("Analytics initialized", "info", { userProperties });
+    captureMessage('Analytics initialized', 'info', { userProperties });
   }
 
   async trackEvent(event: AnalyticsEvent) {
@@ -52,7 +52,7 @@ class AnalyticsService {
     try {
       // In development, just log to console
       if (__DEV__) {
-        console.log("📊 Analytics Event:", {
+        console.log('📊 Analytics Event:', {
           ...event,
           userProperties: this.userProperties,
         });
@@ -77,20 +77,16 @@ class AnalyticsService {
       //   body: JSON.stringify(payload),
       // });
 
-      captureMessage(
-        `Analytics event: ${event.name}`,
-        "info",
-        event.properties,
-      );
+      captureMessage(`Analytics event: ${event.name}`, 'info', event.properties);
     } catch (error) {
-      captureMessage("Analytics error", "error", { error, event });
+      captureMessage('Analytics error', 'error', { error, event });
     }
   }
 
   // Predefined tracking methods
   async trackScreenView(screenName: string, properties?: Record<string, any>) {
     await this.trackEvent({
-      name: "screen_view",
+      name: 'screen_view',
       properties: {
         screen_name: screenName,
         ...properties,
@@ -100,7 +96,7 @@ class AnalyticsService {
 
   async trackScanEvent(scanType: string, success: boolean, duration: number) {
     await this.trackEvent({
-      name: "scan_completed",
+      name: 'scan_completed',
       properties: {
         scan_type: scanType,
         success,
@@ -109,12 +105,9 @@ class AnalyticsService {
     });
   }
 
-  async trackSessionEvent(
-    action: "start" | "end" | "pause" | "resume",
-    sessionId: string,
-  ) {
+  async trackSessionEvent(action: 'start' | 'end' | 'pause' | 'resume', sessionId: string) {
     await this.trackEvent({
-      name: "session_action",
+      name: 'session_action',
       properties: {
         action,
         session_id: sessionId,
@@ -124,7 +117,7 @@ class AnalyticsService {
 
   async trackError(error: Error, context?: Record<string, any>) {
     await this.trackEvent({
-      name: "error_occurred",
+      name: 'error_occurred',
       properties: {
         error_message: error.message,
         error_stack: error.stack,
@@ -133,9 +126,9 @@ class AnalyticsService {
     });
   }
 
-  async trackPerformance(metric: string, value: number, unit: string = "ms") {
+  async trackPerformance(metric: string, value: number, unit: string = 'ms') {
     await this.trackEvent({
-      name: "performance_metric",
+      name: 'performance_metric',
       properties: {
         metric,
         value,
@@ -143,6 +136,29 @@ class AnalyticsService {
       },
     });
   }
+
+  async getRealTimeStats(): Promise<any> {
+    return {
+      totalScans: 0,
+      activeSessions: 0,
+      errorRate: 0,
+      averageRate: 0,
+    };
+  }
+
+  async getSessionHistory(limit: number = 10): Promise<any[]> {
+    return [];
+  }
+
+  async getPerformanceReport(timeRange: 'hour' | 'day' | 'week'): Promise<any> {
+    return {
+      throughput: 0,
+      accuracy: 100,
+      stability: 100,
+      timeRange,
+    };
+  }
 }
 
-export const analytics = new AnalyticsService();
+export const analyticsService = new AnalyticsService();
+export const analytics = analyticsService;

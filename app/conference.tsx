@@ -117,12 +117,8 @@ export default function ConferenceScreen() {
 
       await advancedHaptics.trigger({ type: "success" });
       
-      // Navigate back or to scanner
-      if (params.returnTo) {
-        router.back();
-      } else {
-        router.push("/");
-      }
+      // Return to previous screen after conference initialization
+      router.back();
     } catch (error) {
       console.error("Failed to create session:", error);
       Alert.alert("Erro", "Não foi possível iniciar a conferência. Tente novamente.");

@@ -63,7 +63,7 @@ export function AnimatedIcon({
   const opacity = useSharedValue(1);
   const glowOpacity = useSharedValue(0);
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const animatedStyle = useAnimatedStyle((): any => ({
     transform: [
       { scale: scale.value },
       { rotate: `${rotate.value}rad` },
@@ -73,7 +73,7 @@ export function AnimatedIcon({
     opacity: opacity.value,
   }));
 
-  const glowStyle = useAnimatedStyle(() => ({
+  const glowStyle = useAnimatedStyle((): any => ({
     opacity: glowOpacity.value,
     shadowOpacity: glowOpacity.value,
     shadowRadius: glowOpacity.value * 20,
@@ -229,9 +229,9 @@ export function AnimatedIcon({
   const iconColor = color || colors.primary;
 
   return (
-    <View style={[styles.container, style]}>
-      <Animated.View style={[styles.glowContainer, glowStyle]}>
-        <Animated.View style={[animatedStyle, styles.iconContainer]}>
+    <View style={[styles.container, style] as any}>
+      <Animated.View style={[styles.glowContainer as any, glowStyle] as any}>
+        <Animated.View style={[animatedStyle as any, styles.iconContainer as any]}>
           {React.cloneElement(children, {
             size,
             color: iconColor,
@@ -316,7 +316,7 @@ export function AnimatedLoadingIcon({
   const rotate = useSharedValue(0);
   const scale = useSharedValue(1);
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const animatedStyle = useAnimatedStyle((): any => ({
     transform: [{ rotate: `${rotate.value}rad` }, { scale: scale.value }],
   }));
 
@@ -347,7 +347,7 @@ export function AnimatedLoadingIcon({
   const { colors } = useAppTheme();
 
   return (
-    <Animated.View style={animatedStyle}>
+    <Animated.View style={animatedStyle as any}>
       <Loader size={size} color={color || colors.primary} />
     </Animated.View>
   );
@@ -365,7 +365,7 @@ export function AnimatedSuccessIcon({
   const rotate = useSharedValue(0);
   const opacity = useSharedValue(0);
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const animatedStyle = useAnimatedStyle((): any => ({
     transform: [{ scale: scale.value }, { rotate: `${rotate.value}rad` }],
     opacity: opacity.value,
   }));
@@ -400,7 +400,7 @@ export function AnimatedSuccessIcon({
   const { colors } = useAppTheme();
 
   return (
-    <Animated.View style={animatedStyle}>
+    <Animated.View style={animatedStyle as any}>
       <CheckCircle size={size} color={colors.success} />
     </Animated.View>
   );
@@ -417,7 +417,7 @@ export function AnimatedErrorIcon({
   const scale = useSharedValue(0);
   const translateX = useSharedValue(0);
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const animatedStyle = useAnimatedStyle((): any => ({
     transform: [{ scale: scale.value }, { translateX: translateX.value }],
   }));
 
@@ -445,7 +445,7 @@ export function AnimatedErrorIcon({
   const { colors } = useAppTheme();
 
   return (
-    <Animated.View style={animatedStyle}>
+    <Animated.View style={animatedStyle as any}>
       <XCircle size={size} color={colors.danger} />
     </Animated.View>
   );

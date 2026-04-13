@@ -186,7 +186,7 @@ export function createLazyComponent<T extends ComponentType<any>>(
   }
 
   // Componente com Suspense e tratamento de erro
-  return function LazyWrapper(props: T) {
+  return function LazyWrapper(props: React.ComponentProps<T>) {
     return React.createElement(
       ErrorBoundary,
       {
@@ -218,11 +218,11 @@ class ErrorBoundary extends React.Component<
     this.state = { hasError: false, error: null };
   }
 
-  static getDerivedStateFromError(error: Error) {
+  static override getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("Lazy component error:", error, errorInfo);
   }
 

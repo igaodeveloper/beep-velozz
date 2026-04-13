@@ -49,7 +49,7 @@ export default function LanguageSelector({
   // Render language item
   const renderLanguageItem = ({ item }: { item: Language }) => {
     const isSelected = item.code === selectedLanguage;
-    const isRTL = localization.isRTL();
+    const isRTL = localization.isRTL;
 
     return (
       <TouchableOpacity
@@ -58,7 +58,7 @@ export default function LanguageSelector({
           {
             backgroundColor: isSelected ? colors.primary : colors.card,
             borderColor: isSelected ? colors.primary : colors.border,
-            flexDirection: localization.isRTL() ? "row-reverse" : "row",
+            flexDirection: localization.isRTL ? "row-reverse" : "row",
           },
         ]}
         onPress={() => handleLanguageSelect(item)}

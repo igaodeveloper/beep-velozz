@@ -4,7 +4,7 @@
  * Implements virtualization, memoization, and lazy loading
  */
 
-import React, { useMemo, useCallback, useRef } from 'react';
+import React, { useMemo, useCallback, useRef, useState, useEffect } from 'react';
 import { FlatList, FlatListProps, ViewToken } from 'react-native';
 
 export interface OptimizedListConfig {
@@ -73,7 +73,7 @@ export const useOptimizedList = <T extends { id: string | number }>(
 export const useVisibleItems = <T extends { id: string | number }>(
   items: T[]
 ) => {
-  const [visibleItems, setVisibleItems] = React.useState<Set<string | number>>(
+  const [visibleItems, setVisibleItems] = useState<Set<string | number>>(
     new Set()
   );
 
@@ -111,10 +111,10 @@ export const useVisibleItems = <T extends { id: string | number }>(
 export const usePaginatedList = <T extends { id: string | number }>(
   pageSize: number = 20
 ) => {
-  const [page, setPage] = React.useState(0);
-  const [items, setItems] = React.useState<T[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [hasMore, setHasMore] = React.useState(true);
+  const [page, setPage] = useState(0);
+  const [items, setItems] = useState<T[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
   const addItems = useCallback((newItems: T[]) => {
     setItems((prev) => [...prev, ...newItems]);
@@ -164,8 +164,8 @@ export const useListSearch = <T extends { id: string | number }>(
   searchFields: (keyof T)[],
   debounceMs: number = 300
 ) => {
-  const [searchText, setSearchText] = React.useState('');
-  const [searchResults, setSearchResults] = React.useState<T[]>(items);
+  const [searchText, setSearchText] = useState('');
+  const [searchResults, setSearchResults] = useState<T[]>(items);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const performSearch = useCallback((query: string) => {
@@ -205,7 +205,7 @@ export const useListSearch = <T extends { id: string | number }>(
     setSearchResults(items);
   }, [items]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -281,7 +281,7 @@ export const useListPerformance = (componentName: string) => {
     };
   }, [componentName]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (__DEV__ && metricsRef.current.renders % 10 === 0) {
       console.log(
         `📊 ${componentName} metrics:`,

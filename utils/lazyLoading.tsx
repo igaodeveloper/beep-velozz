@@ -3,8 +3,8 @@
  * Sistema de lazy loading otimizado para ambiente industrial
  */
 
-import React, { Suspense, lazy, ComponentType } from 'react';
-import { View, ActivityIndicator, Text } from 'react-native';
+import React, { Suspense, lazy, ComponentType, useCallback } from 'react';
+import { View, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
 import { useAppTheme } from './useAppTheme';
 
 interface LazyComponentProps {
@@ -148,7 +148,7 @@ export function createLazyComponent<T extends ComponentType<any>>(
   }
 
   // Componente com Suspense e tratamento de erro
-  return function LazyWrapper(props: T) {
+  return function LazyWrapper(props: React.ComponentProps<T>) {
     return (
       <ErrorBoundary fallback={ErrorFallback}>
         <Suspense fallback={<Fallback />}>
@@ -174,15 +174,15 @@ class ErrorBoundary extends React.Component<
     this.state = { hasError: false, error: null };
   }
 
-  static getDerivedStateFromError(error: Error) {
+  static override getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Lazy component error:', error, errorInfo);
   }
 
-  render() {
+  override render() {
     if (this.state.hasError && this.state.error) {
       const Fallback = this.props.fallback;
       return (
@@ -312,7 +312,7 @@ export function useIntelligentPreload() {
 export class PrefetchManager {
   private static instance: PrefetchManager;
   private prefetchedComponents = new Set<string>();
-  private prefetchQueue: Array<() => Promise<any>> = [];
+  private prefetchQueue: Array<() => void> = [];
 
   static getInstance(): PrefetchManager {
     if (!PrefetchManager.instance) {
@@ -340,7 +340,7 @@ export class PrefetchManager {
     // Processar um item por vez para não sobrecarregar
     const next = this.prefetchQueue.shift();
     if (next) {
-      next().catch(console.warn);
+      next();
       
       // Processar próximo após 500ms
       setTimeout(() => this.processQueue(), 500);

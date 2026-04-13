@@ -9,7 +9,7 @@ export interface ScannedPackage {
 }
 
 export interface Session {
-  notes: any;
+  notes?: any;
   id: string;
   operatorName: string;
   operatorId?: string;

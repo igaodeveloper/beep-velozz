@@ -53,7 +53,7 @@ export function MicroInteractions({
   const { colors } = useAppTheme();
   const [isPressed, setIsPressed] = useState(false);
   const [isLongPressed, setIsLongPressed] = useState(false);
-  const longPressTimerRef = useRef<number | null>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { animatedStyle, pressIn, pressOut, shake, bounce, pulse } =
     useBasicAnimation();

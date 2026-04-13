@@ -37,7 +37,7 @@ import { debounce, throttle } from "@/utils/performanceOptimizer";
 interface OptimizedIndustrialScannerProps {
   maxScans: {
     shopee: number;
-    mercado_livre: number;
+    mercadoLivre: number;
     avulso: number;
   };
   onScanned: (code: string, type: string) => void;

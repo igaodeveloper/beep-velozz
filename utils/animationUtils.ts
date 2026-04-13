@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -320,7 +320,7 @@ export function useModalAnimation(isVisible: boolean) {
     modalOpacity.value = withTiming(0, ANIMATION_PRESETS.timing);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isVisible) {
       show();
     } else {

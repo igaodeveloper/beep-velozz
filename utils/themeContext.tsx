@@ -6,6 +6,8 @@ import { ThemeName, themePresets, getTheme } from "./theme";
 interface ThemeContextType {
   themeName: ThemeName;
   setThemeName: (theme: ThemeName) => void;
+  colorScheme: "light" | "dark";
+  setColorScheme: (theme: "light" | "dark") => void;
   isDark: boolean;
   colors: any;
   theme: any;
@@ -57,6 +59,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     themeName === "amber" ||
     themeName === "sunset";
 
+  const colorScheme: "light" | "dark" = isDark ? "dark" : "light";
+
+  const setColorScheme = async (theme: "light" | "dark") => {
+    setThemeNameState(theme);
+    try {
+      await AsyncStorage.setItem("theme-preference", theme);
+    } catch (error) {
+      console.warn("Failed to save theme preference:", error);
+    }
+  };
+
   if (!isLoaded) {
     return null;
   }
@@ -66,6 +79,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       value={{
         themeName,
         setThemeName,
+        colorScheme,
+        setColorScheme,
         isDark,
         colors: currentTheme.colors,
         theme: currentTheme,

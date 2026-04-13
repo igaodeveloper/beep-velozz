@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Platform, InteractionManager } from "react-native";
 import Animated, {
   cancelAnimation,
@@ -157,7 +157,7 @@ export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number = PERFORMANCE_CONFIG.DEBOUNCE_TIME,
 ): (...args: Parameters<T>) => void {
-  let timeout: number;
+  let timeout: NodeJS.Timeout;
 
   return (...args: Parameters<T>) => {
     clearTimeout(timeout);
@@ -298,9 +298,9 @@ export function shouldAnimate(): boolean {
 // Hook para gerenciar animações condicionais
 export function useConditionalAnimation() {
   const [isAnimationEnabled, setIsAnimationEnabled] =
-    React.useState(shouldAnimate());
+    useState(shouldAnimate());
 
-  React.useEffect(() => {
+  useEffect(() => {
     const unsubscribe = performanceMonitor.onFPSUpdate((fps) => {
       setIsAnimationEnabled(shouldAnimate());
     });

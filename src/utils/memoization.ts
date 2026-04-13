@@ -4,7 +4,7 @@
  * Provides memoization helpers and best practices
  */
 
-import React, { useMemo, useCallback, useRef } from "react";
+import React, { useMemo, useCallback, useRef, useEffect } from "react";
 
 /**
  * Custom hook for shallow comparison memoization
@@ -152,9 +152,9 @@ export const createMemoComponent = <P extends object>(
  * Track previous prop/state value
  */
 export const usePrevious = <T>(value: T): T | undefined => {
-  const ref = useRef<T>();
+  const ref = useRef<T>(undefined);
 
-  React.useEffect(() => {
+  useEffect(() => {
     ref.current = value;
   }, [value]);
 
@@ -165,18 +165,21 @@ export const usePrevious = <T>(value: T): T | undefined => {
  * Performance measurement hook
  * Measure render time and component lifecycle
  */
-export const usePerformanceMetrics = (componentName: string) => {
+export const usePerformanceMetrics = (componentName: string, debugName: string) => {
   const startTimeRef = useRef(Date.now());
   const renderCountRef = useRef(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     renderCountRef.current++;
 
     if (__DEV__ && renderCountRef.current === 1) {
-      const renderTime = Date.now() - startTimeRef.current;
-      console.log(`⏱️  ${componentName} mounted in ${renderTime}ms`);
+      const now = Date.now();
+      const duration = now - startTimeRef.current;
+      console.log(`⚡ ${debugName} first render: ${duration}ms`);
     }
+  }, [debugName]);
 
+  useEffect(() => {
     return () => {
       if (__DEV__ && renderCountRef.current > 0) {
         console.log(
@@ -224,7 +227,7 @@ export const useReducerOptimized = <S, A>(
   initialState: S,
   init?: (initial: S) => S,
 ) => {
-  const [state, dispatch] = React.useReducer(reducer, initialState, init);
+  const [state, dispatch] = React.useReducer(reducer, initialState, init || ((s: S) => s));
 
   // Memoize dispatch to ensure it's always the same reference
   const memoizedDispatch = useCallback((action: A) => {

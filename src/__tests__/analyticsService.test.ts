@@ -1,17 +1,17 @@
-import { AnalyticsService } from "../../services/analyticsService";
+import { analyticsService as AnalyticsService } from '../../services/analyticsService';
 
 // Mock AsyncStorage
-jest.mock("@react-native-async-storage/async-storage", () => ({
+jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(),
   getItem: jest.fn(),
   removeItem: jest.fn(),
 }));
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const mockAsyncStorage = AsyncStorage as jest.Mocked<typeof AsyncStorage>;
 
-describe("AnalyticsService", () => {
+describe('AnalyticsService', () => {
   let analyticsService: AnalyticsService;
 
   beforeEach(() => {
@@ -19,11 +19,11 @@ describe("AnalyticsService", () => {
     jest.clearAllMocks();
   });
 
-  describe("Event Tracking", () => {
-    it("should track scan events", async () => {
+  describe('Event Tracking', () => {
+    it('should track scan events', async () => {
       const scanData = {
-        barcode: "123456789",
-        type: "ean13",
+        barcode: '123456789',
+        type: 'ean13',
         timestamp: Date.now(),
       };
 
@@ -36,13 +36,13 @@ describe("AnalyticsService", () => {
       const storedData = JSON.parse(callArgs[1]);
 
       expect(storedData.events).toHaveLength(1);
-      expect(storedData.events[0].event).toBe("scan");
+      expect(storedData.events[0].event).toBe('scan');
       expect(storedData.events[0].data).toEqual(scanData);
     });
 
-    it("should track session events", async () => {
+    it('should track session events', async () => {
       const sessionData = {
-        sessionId: "session_123",
+        sessionId: 'session_123',
         startTime: Date.now(),
         endTime: Date.now() + 3600000,
         totalScans: 50,
@@ -57,14 +57,14 @@ describe("AnalyticsService", () => {
       const storedData = JSON.parse(callArgs[1]);
 
       expect(storedData.events).toHaveLength(1);
-      expect(storedData.events[0].event).toBe("session");
+      expect(storedData.events[0].event).toBe('session');
       expect(storedData.events[0].data).toEqual(sessionData);
     });
 
-    it("should track error events", async () => {
+    it('should track error events', async () => {
       const errorData = {
-        error: "Camera permission denied",
-        context: "scanner",
+        error: 'Camera permission denied',
+        context: 'scanner',
         timestamp: Date.now(),
       };
 
@@ -77,34 +77,32 @@ describe("AnalyticsService", () => {
       const storedData = JSON.parse(callArgs[1]);
 
       expect(storedData.events).toHaveLength(1);
-      expect(storedData.events[0].event).toBe("error");
+      expect(storedData.events[0].event).toBe('error');
       expect(storedData.events[0].data).toEqual(errorData);
     });
   });
 
-  describe("Analytics Retrieval", () => {
-    it("should get analytics data", async () => {
+  describe('Analytics Retrieval', () => {
+    it('should get analytics data', async () => {
       const mockAnalyticsData = {
         events: [
           {
-            event: "scan",
-            data: { barcode: "123456789" },
+            event: 'scan',
+            data: { barcode: '123456789' },
             timestamp: Date.now(),
           },
         ],
         lastSync: null,
       };
 
-      mockAsyncStorage.getItem.mockResolvedValue(
-        JSON.stringify(mockAnalyticsData),
-      );
+      mockAsyncStorage.getItem.mockResolvedValue(JSON.stringify(mockAnalyticsData));
 
       const result = await analyticsService.getAnalytics();
 
       expect(result).toEqual(mockAnalyticsData);
     });
 
-    it("should return default data when no stored data", async () => {
+    it('should return default data when no stored data', async () => {
       mockAsyncStorage.getItem.mockResolvedValue(null);
 
       const result = await analyticsService.getAnalytics();
@@ -114,26 +112,24 @@ describe("AnalyticsService", () => {
     });
   });
 
-  describe("Data Synchronization", () => {
-    it("should sync data to server", async () => {
+  describe('Data Synchronization', () => {
+    it('should sync data to server', async () => {
       const mockAnalyticsData = {
         events: [
           {
-            event: "scan",
-            data: { barcode: "123456789" },
+            event: 'scan',
+            data: { barcode: '123456789' },
             timestamp: Date.now(),
           },
         ],
         lastSync: null,
       };
 
-      mockAsyncStorage.getItem.mockResolvedValue(
-        JSON.stringify(mockAnalyticsData),
-      );
+      mockAsyncStorage.getItem.mockResolvedValue(JSON.stringify(mockAnalyticsData));
       mockAsyncStorage.setItem.mockResolvedValue(undefined);
 
       // Mock fetch
-      global.fetch = jest.fn().mockResolvedValue({
+      (global as any).fetch = jest.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ success: true }),
       });
@@ -141,29 +137,27 @@ describe("AnalyticsService", () => {
       const result = await analyticsService.syncToServer();
 
       expect(result).toBe(true);
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/analytics/sync"),
+      expect((global as any).fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/analytics/sync'),
         expect.objectContaining({
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: expect.any(String),
-        }),
+        })
       );
     });
 
-    it("should handle sync failure", async () => {
+    it('should handle sync failure', async () => {
       const mockAnalyticsData = {
         events: [],
         lastSync: null,
       };
 
-      mockAsyncStorage.getItem.mockResolvedValue(
-        JSON.stringify(mockAnalyticsData),
-      );
+      mockAsyncStorage.getItem.mockResolvedValue(JSON.stringify(mockAnalyticsData));
 
-      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
+      (global as any).fetch = jest.fn().mockRejectedValue(new Error('Network error'));
 
       const result = await analyticsService.syncToServer();
 
@@ -171,8 +165,8 @@ describe("AnalyticsService", () => {
     });
   });
 
-  describe("Performance Metrics", () => {
-    it("should track performance metrics", async () => {
+  describe('Performance Metrics', () => {
+    it('should track performance metrics', async () => {
       const metrics = {
         scanTime: 150,
         processingTime: 50,
@@ -188,7 +182,7 @@ describe("AnalyticsService", () => {
       const storedData = JSON.parse(callArgs[1]);
 
       expect(storedData.events).toHaveLength(1);
-      expect(storedData.events[0].event).toBe("performance");
+      expect(storedData.events[0].event).toBe('performance');
       expect(storedData.events[0].data).toEqual(metrics);
     });
   });

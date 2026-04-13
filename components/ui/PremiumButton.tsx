@@ -295,10 +295,10 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
   const renderContent = () => {
     if (loading) {
       return (
-        <View style={styles.loadingContainer}>
+        <View style={styles.loadingContainer as any}>
           <Animated.View
             style={[
-              styles.spinner,
+              styles.spinner as any,
               {
                 transform: [
                   {
@@ -331,7 +331,7 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
     return (
       <>
         {icon && iconPosition === "left" && (
-          <View style={styles.iconLeft}>{icon}</View>
+          <View style={styles.iconLeft as any}>{icon}</View>
         )}
 
         <Text
@@ -348,7 +348,7 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
         </Text>
 
         {icon && iconPosition === "right" && (
-          <View style={styles.iconRight}>{icon}</View>
+          <View style={styles.iconRight as any}>{icon}</View>
         )}
 
         {children}
@@ -397,16 +397,16 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
     : null;
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container as any}>
       {/* Glow Effect */}
-      {glowStyle && <Animated.View style={glowStyle} />}
+      {glowStyle && <Animated.View style={glowStyle as any} />}
 
       {/* Ripple Effects */}
       {ripples.map((ripple) => (
         <Animated.View
           key={ripple.id}
           style={[
-            styles.ripple,
+            styles.ripple as any,
             {
               left: `${ripple.x}%`,
               top: `${ripple.y}%`,
@@ -423,11 +423,11 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
             transform: [{ scale: Animated.multiply(scaleAnim, pulseAnim) }],
           },
           shadowStyle,
-        ]}
+        ] as any}
         ref={buttonRef}
       >
         <TouchableOpacity
-          style={styles.touchable}
+          style={styles.touchable as any}
           onPress={handlePress}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
@@ -435,7 +435,7 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
           activeOpacity={0.8}
         >
           {variant === "glass" ? (
-            <BlurView intensity={20} style={styles.glassContainer} tint="light">
+            <BlurView intensity={20} style={styles.glassContainer as any} tint="light">
               {renderContent()}
             </BlurView>
           ) : (
@@ -449,7 +449,7 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
-              style={styles.gradientContainer}
+              style={styles.gradientContainer as any}
             >
               {renderContent()}
             </LinearGradient>

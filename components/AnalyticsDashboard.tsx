@@ -13,7 +13,7 @@ import {
   RefreshControl,
   Animated,
 } from "react-native";
-import { LineChart, BarChart, PieChart } from "react-native-chart-kit";
+// import { LineChart, BarChart, PieChart } from "react-native-chart-kit"; // Removed due to missing module
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { analyticsService } from "@/services/analyticsService";

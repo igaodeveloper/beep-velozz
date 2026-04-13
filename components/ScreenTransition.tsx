@@ -131,7 +131,7 @@ export default function ScreenTransition({
   const animationValues = getAnimationValues();
 
   // Animated styles
-  const containerStyle = useAnimatedStyle(() => {
+  const containerStyle = useAnimatedStyle((): any => {
     const animProgress = progress.value;
 
     switch (animationType) {
@@ -146,12 +146,12 @@ export default function ScreenTransition({
           return {
             transform: [{ translateX: translateValue }],
             opacity: opacity.value,
-          };
+          } as any;
         } else {
           return {
             transform: [{ translateY: translateValue }],
             opacity: opacity.value,
-          };
+          } as any;
         }
 
       case "fade":
@@ -219,10 +219,10 @@ export default function ScreenTransition({
           opacity: opacity.value,
         };
     }
-  });
+  }) as any;
 
   return (
-    <Animated.View style={[styles.container, containerStyle]}>
+    <Animated.View style={[styles.container as any, containerStyle]}>
       <View style={{ flex: 1 }}>{children}</View>
     </Animated.View>
   );

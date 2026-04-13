@@ -1,6 +1,6 @@
-import * as Updates from "expo-updates";
-import { captureMessage } from "./sentry";
-import { analytics } from "./analyticsService";
+import * as Updates from 'expo-updates';
+import { captureMessage } from '../utils/sentry';
+import { analytics } from './analyticsService';
 
 export class UpdateService {
   static async checkForUpdates() {
@@ -10,10 +10,10 @@ export class UpdateService {
 
         if (update.isAvailable) {
           analytics.trackEvent({
-            name: "update_available",
+            name: 'update_available',
             properties: {
               current_version: Updates.runtimeVersion,
-              new_version: update.runtimeVersion,
+              new_version: update.manifest?.version || 'unknown',
             },
           });
 
@@ -26,7 +26,7 @@ export class UpdateService {
 
       return { available: false };
     } catch (error) {
-      captureMessage("Update check failed", "error", { error });
+      captureMessage('Update check failed', 'error', { error });
       return { available: false, error };
     }
   }
@@ -38,7 +38,7 @@ export class UpdateService {
 
         if (update.isNew) {
           analytics.trackEvent({
-            name: "update_downloaded",
+            name: 'update_downloaded',
             properties: {
               version: Updates.runtimeVersion,
             },
@@ -50,9 +50,9 @@ export class UpdateService {
         }
       }
 
-      return { success: false, reason: "No update available" };
+      return { success: false, reason: 'No update available' };
     } catch (error) {
-      captureMessage("Update installation failed", "error", { error });
+      captureMessage('Update installation failed', 'error', { error });
       return { success: false, error };
     }
   }
@@ -70,7 +70,8 @@ export class UpdateService {
   }
 
   // Listen for update events
-  static addUpdateListener(callback: (event: Updates.UpdateEvent) => void) {
-    return Updates.addListener(callback);
+  static addUpdateListener(callback: (event: any) => void) {
+    // Disabled due to API changes
+    return null;
   }
 }

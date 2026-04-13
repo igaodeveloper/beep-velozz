@@ -148,7 +148,7 @@ export default function BottomTabNavigator({
   );
 
   const getAnimatedTabStyle = (tabId: TabType) => {
-    const scaleStyle = useAnimatedStyle(() => {
+    const scaleStyle = useAnimatedStyle((): any => {
       return {
         transform: [
           { scale: tabScales[tabId].value },
@@ -255,7 +255,7 @@ export default function BottomTabNavigator({
                 activeOpacity={0.85}
               >
                 <Animated.View
-                  style={[tabAnimation.animatedStyle, animatedStyle]}
+                  style={[tabAnimation.animatedStyle as any, animatedStyle as any]}
                 >
                   <ModernIcon
                     icon={<Icon />}
@@ -273,8 +273,8 @@ export default function BottomTabNavigator({
                       fontWeight: activeTab === tab.id ? "700" : "500",
                       fontSize: activeTab === tab.id ? 11 : 10,
                     },
-                    tabAnimation.animatedStyle,
-                    animatedStyle,
+                    tabAnimation.animatedStyle as any,
+                    animatedStyle as any,
                   ]}
                 >
                   {tab.label}

@@ -1,5 +1,5 @@
 // https://docs.expo.dev/guides/using-eslint/
-const { defineConfig } = require("eslint/config");
+const { defineConfig } = require('eslint/config');
 const expoConfig = require("eslint-config-expo/flat");
 
 module.exports = defineConfig([
@@ -11,14 +11,11 @@ module.exports = defineConfig([
       ".expo/*",
       "coverage/*",
       "**/*.config.js",
-      "**/*.config.ts",
+      "**/*.config.ts"
     ],
     rules: {
       // TypeScript strict rules
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        { argsIgnorePattern: "^_" },
-      ],
+      "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/no-explicit-any": "warn",
 
@@ -27,23 +24,13 @@ module.exports = defineConfig([
       "react-hooks/exhaustive-deps": "warn",
 
       // Import rules
-      "import/order": [
-        "error",
-        {
-          groups: [
-            "builtin",
-            "external",
-            "internal",
-            "parent",
-            "sibling",
-            "index",
-          ],
-          "newlines-between": "always",
-        },
-      ],
+      "import/order": ["error", {
+        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
+        "newlines-between": "always"
+      }],
 
       // General code quality
-      "no-console": ["warn", { allow: ["warn", "error", "debug"] }],
+      "no-console": ["warn", { "allow": ["warn", "error", "debug"] }],
       "prefer-const": "error",
       "no-var": "error",
       "object-shorthand": "error",
@@ -54,10 +41,10 @@ module.exports = defineConfig([
     },
     settings: {
       "import/resolver": {
-        typescript: {
-          alwaysTryTypes: true,
+        "typescript": {
+          "alwaysTryTypes": true,
         },
       },
     },
-  },
+  }
 ]);

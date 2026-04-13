@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { View, SafeAreaView, StatusBar } from "react-native";
+import { View, Text, SafeAreaView, StatusBar } from "react-native";
 import { useRouter } from "expo-router";
 import { Session, ScannedPackage } from "@/types/session";
 import { getSessionMetrics, generateId } from "@/utils/session";
@@ -124,6 +124,7 @@ export default function UltraOptimizedApp() {
         packages: [],
         startedAt: new Date().toISOString(),
         hasDivergence: false,
+        notes: '',
       };
 
       setCurrentSession(session);
@@ -199,7 +200,11 @@ export default function UltraOptimizedApp() {
       case "scanning":
         return currentSession
           ? React.createElement(LazyComponents.OptimizedIndustrialScanner, {
-              maxScans: currentSession.declaredCounts,
+              maxScans: {
+                shopee: currentSession.declaredCounts.shopee,
+                mercado_livre: currentSession.declaredCounts.mercadoLivre,
+                avulso: currentSession.declaredCounts.avulso,
+              },
               onScanned: handleScanned,
               onEndSession: handleEndSession,
             })
@@ -263,18 +268,15 @@ export default function UltraOptimizedApp() {
             </View>
           }
         >
-          {currentComponent}
+          <LazyComponents.TabLayout
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            showScannerTab={true}
+          >
+            {currentComponent}
+          </LazyComponents.TabLayout>
         </React.Suspense>
       </View>
-
-      {/* Bottom Tab - lazy loaded */}
-      <React.Suspense fallback={null}>
-        <LazyComponents.TabLayout
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          showScannerTab={true}
-        />
-      </React.Suspense>
 
       {/* Modais - lazy loaded */}
       <React.Suspense fallback={null}>

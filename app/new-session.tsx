@@ -95,8 +95,6 @@ export default function NewSessionScreen() {
     // Navigate to other screens if needed
     if (tab === "scanner") {
       router.push("/");
-    } else if (tab === "analytics") {
-      router.push("/");
     } else if (tab === "history") {
       router.push("/");
     } else if (tab === "settings") {

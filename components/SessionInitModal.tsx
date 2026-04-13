@@ -28,11 +28,13 @@ interface SessionInitModalProps {
     declaredCounts: { shopee: number; mercadoLivre: number; avulso: number },
     driverId?: string,
   ) => void;
+  onClose?: () => void;
 }
 
 export default function SessionInitModal({
   visible,
   onStart,
+  onClose,
 }: SessionInitModalProps) {
   const { colors } = useAppTheme();
   const responsive = useResponsive();
@@ -157,8 +159,32 @@ export default function SessionInitModal({
                 alignItems: "center",
                 marginBottom: responsive.spacing.xxl,
                 marginTop: responsive.padding.lg,
+                position: "relative",
               }}
             >
+              {/* Close Button */}
+              {onClose && (
+                <TouchableOpacity
+                  onPress={onClose}
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    top: 0,
+                    backgroundColor: colors.surface2,
+                    borderRadius: responsive.borderRadius.lg,
+                    padding: responsive.padding.sm,
+                    borderWidth: 1,
+                    borderColor: colors.border2,
+                  }}
+                >
+                  <MaterialIcons
+                    name="close"
+                    size={24}
+                    color={colors.textMuted}
+                  />
+                </TouchableOpacity>
+              )}
+
               {/* larger square container with no solid background and rounded corners */}
               <View
                 style={{

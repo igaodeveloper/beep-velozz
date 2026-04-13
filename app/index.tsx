@@ -39,9 +39,6 @@ const TabLayout = React.lazy(() => import("@/components/TabLayout"));
 const HomeScreen = React.lazy(() => import("@/components/HomeScreen"));
 const SettingsScreen = React.lazy(() => import("@/components/SettingsScreen"));
 const ThemeSelector = React.lazy(() => import("@/components/ThemeSelector"));
-const SessionInitModal = React.lazy(
-  () => import("@/components/SessionInitModal"),
-);
 const BottomTabNavigator = React.lazy(
   () => import("@/components/BottomTabNavigator"),
 );
@@ -120,8 +117,6 @@ export default function App() {
   // History
   const [sessions, setSessions] = useState<Session[]>([]);
 
-  // Modal de inicialização de sessão (INICIAR CONFERÊNCIA)
-  const [sessionModalVisible, setSessionModalVisible] = useState(false);
 
   // Fluxo antigo via rota /new-session desativado – agora usamos apenas o modal SessionInitModal.
 
@@ -175,8 +170,8 @@ export default function App() {
           break;
         case "scanner":
           if (!currentSession) {
-            // Abre modal de INICIAR CONFERÊNCIA em vez de navegar para outra tela
-            setSessionModalVisible(true);
+            // Navega para a tela de conferência
+            router.push("/conference");
           } else {
             changeScreenWithAnimation("scanning");
           }
@@ -375,14 +370,13 @@ export default function App() {
 
   const handleStartScanner = useCallback(() => {
     if (!currentSession) {
-      // Quando não existe sessão, abrimos o modal de INICIAR CONFERÊNCIA
+      // Quando não existe sessão, navegamos para a tela de conferência
       setActiveTab("scanner");
-      setSessionModalVisible(true);
+      router.push("/conference");
     } else {
-      setScreen("scanning");
-      setActiveTab("scanner");
+      changeScreenWithAnimation("scanning");
     }
-  }, [currentSession]);
+  }, [currentSession, changeScreenWithAnimation]);
 
   // Memoização de métricas para performance
   const metrics = useMemo(() => {
@@ -444,7 +438,7 @@ export default function App() {
           <HomeScreen
             onStartSession={() => {
               setActiveTab("scanner");
-              setSessionModalVisible(true);
+              router.push("/conference");
             }}
             onViewHistory={handleViewHistory}
             onStartScanner={handleStartScanner}
@@ -544,14 +538,6 @@ export default function App() {
             }}
           />
         )}
-        {/* Modal de inicialização de sessão (INICIAR CONFERÊNCIA) */}
-        <SessionInitModal
-          visible={sessionModalVisible}
-          onStart={(operatorName, driverName, declaredCounts) => {
-            handleStartSession(operatorName, driverName, declaredCounts);
-            setSessionModalVisible(false);
-          }}
-        />
         <TutorialModal
           visible={tutorialVisible}
           onClose={() => setTutorialVisible(false)}

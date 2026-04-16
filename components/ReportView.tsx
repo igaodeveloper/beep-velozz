@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Share,
   Platform,
   Linking,
+  Alert,
 } from "react-native";
 import { Session } from "@/types/session";
 import {
@@ -21,6 +22,7 @@ import { useAppTheme } from "@/utils/useAppTheme";
 import PackagePhotoGallery from "@/components/PackagePhotoGallery";
 import { exportSessionWithPhotosToPDF } from "@/utils/pdfExport";
 import MainLayout from "@/components/MainLayout";
+import { debounce } from "@/utils/performanceOptimizer";
 
 interface ReportViewProps {
   session: Session;
@@ -38,24 +40,66 @@ export default function ReportView({
   const hasDivergence = session.hasDivergence;
 
   const [showPhotoGallery, setShowPhotoGallery] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [isWhatsAppLoading, setIsWhatsAppLoading] = useState(false);
 
-  const handleWhatsApp = async () => {
-    const message = formatWhatsAppMessage(session);
-    const encoded = encodeURIComponent(message);
-    const url = `whatsapp://send?text=${encoded}`;
-    const canOpen = await Linking.canOpenURL(url);
-    if (canOpen) {
-      await Linking.openURL(url);
-    } else {
-      // Fallback: share
-      await Share.share({ message });
+  // Memoizar mensagem formatada para evitar recálculos
+  const formattedMessage = useMemo(() => {
+    return formatWhatsAppMessage(session);
+  }, [session.id, session.packages.length, session.declaredCount]);
+
+  // Função otimizada para WhatsApp com feedback visual
+  const handleWhatsApp = useCallback(async () => {
+    if (isWhatsAppLoading) return;
+    
+    setIsWhatsAppLoading(true);
+    try {
+      const message = formattedMessage;
+      const encoded = encodeURIComponent(message);
+      const url = `whatsapp://send?text=${encoded}`;
+      
+      // Timeout para evitar travamento
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 3000)
+      );
+      
+      const canOpenPromise = Linking.canOpenURL(url);
+      const canOpen = await Promise.race([canOpenPromise, timeoutPromise]);
+      
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        // Fallback rápido
+        await Share.share({ message });
+      }
+    } catch (error) {
+      console.error('Erro ao abrir WhatsApp:', error);
+      // Fallback imediato
+      try {
+        await Share.share({ message: formattedMessage });
+      } catch (shareError) {
+        Alert.alert('Erro', 'Não foi possível compartilhar o relatório.');
+      }
+    } finally {
+      setIsWhatsAppLoading(false);
     }
-  };
+  }, [formattedMessage, isWhatsAppLoading]);
 
-  const handleShare = async () => {
-    const message = formatWhatsAppMessage(session);
-    await Share.share({ message });
-  };
+  // Função otimizada para compartilhar com debounce
+  const handleShare = useCallback(debounce(async () => {
+    if (isSharing) return;
+    
+    setIsSharing(true);
+    try {
+      const message = formattedMessage;
+      await Share.share({ message });
+    } catch (error) {
+      console.error('Erro ao compartilhar:', error);
+      // Silencioso - usuário cancelou ou erro não crítico
+    } finally {
+      setIsSharing(false);
+    }
+  }, 300), [formattedMessage, isSharing]);
 
   const handleExportWithPhotos = async () => {
     try {
@@ -166,15 +210,20 @@ export default function ReportView({
           <InfoRow label="Motorista" value={session.driverName} />
         </View>
 
-        {/* Summary metrics */}
+        {/* Status de Conformidade com Bolinhas Coloridas */}
         <View
           style={{
             backgroundColor: colors.surface,
-            borderRadius: 14,
+            borderRadius: 16,
             borderWidth: 1,
             borderColor: colors.surface2,
-            padding: 16,
+            padding: 20,
             marginBottom: 16,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 8,
+            elevation: 2,
           }}
         >
           <Text
@@ -183,128 +232,329 @@ export default function ReportView({
               fontSize: 11,
               fontWeight: "700",
               letterSpacing: 1,
-              marginBottom: 12,
+              marginBottom: 16,
+              textAlign: "center",
             }}
           >
-            RESUMO DE PACOTES
+            STATUS DE CONFORMIDADE
           </Text>
 
           <View
             style={{
               flexDirection: "row",
-              gap: 10,
-              marginBottom: 12,
-              flexWrap: "wrap",
-            }}
-          >
-            <SummaryBox
-              label="Shopee"
-              count={metrics.shopee}
-              value={metrics.valueShopee}
-              color="#ff5722"
-            />
-            <SummaryBox
-              label="Merc. Livre"
-              count={metrics.mercadoLivre}
-              value={metrics.valueMercadoLivre}
-              color="#ffe600"
-            />
-            <SummaryBox
-              label="Avulsos"
-              count={metrics.avulsos}
-              value={metrics.valueAvulsos}
-              color="#64748b"
-            />
-          </View>
-
-          <View
-            style={{
-              backgroundColor: colors.surface2,
-              borderRadius: 10,
-              padding: 14,
-              flexDirection: "row",
-              justifyContent: "space-between",
+              justifyContent: "space-around",
               alignItems: "center",
+              marginBottom: 16,
             }}
           >
-            <View>
-              <Text
+            {/* Shopee - Bolinha Laranja */}
+            <View style={{ alignItems: "center" }}>
+              <View
                 style={{
-                  color: colors.textMuted,
-                  fontSize: 10,
-                  fontWeight: "700",
-                  letterSpacing: 1,
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: "#ff5722",
+                  marginBottom: 8,
+                  shadowColor: "#ff5722",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 4,
+                  elevation: 3,
                 }}
-              >
-                TOTAL CONFERIDO
-              </Text>
+              />
               <Text
                 style={{
-                  color: colors.primary,
-                  fontSize: 28,
-                  fontWeight: "800",
-                }}
-              >
-                {metrics.total}
-              </Text>
-              <Text
-                style={{
-                  color: colors.primary,
+                  color: colors.text,
                   fontSize: 12,
                   fontWeight: "700",
-                  marginTop: 4,
+                  marginBottom: 2,
                 }}
               >
-                R$ {metrics.valueTotal.toFixed(2)}
+                SHOPEE
               </Text>
-            </View>
-            <View style={{ alignItems: "flex-end" }}>
               <Text
                 style={{
                   color: colors.textMuted,
                   fontSize: 10,
-                  fontWeight: "700",
-                  letterSpacing: 1,
+                  fontWeight: "600",
                 }}
               >
-                DECLARADO
+                {metrics.shopee} unid.
+              </Text>
+            </View>
+
+            {/* Mercado Livre - Bolinha Amarela */}
+            <View style={{ alignItems: "center" }}>
+              <View
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: "#ffe600",
+                  marginBottom: 8,
+                  shadowColor: "#ffe600",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}
+              />
+              <Text
+                style={{
+                  color: colors.text,
+                  fontSize: 12,
+                  fontWeight: "700",
+                  marginBottom: 2,
+                }}
+              >
+                MERC. LIVRE
               </Text>
               <Text
-                style={{ color: colors.text, fontSize: 28, fontWeight: "800" }}
+                style={{
+                  color: colors.textMuted,
+                  fontSize: 10,
+                  fontWeight: "600",
+                }}
               >
-                {session.declaredCount}
+                {metrics.mercadoLivre} unid.
+              </Text>
+            </View>
+
+            {/* Avulsos - Bolinha Verde */}
+            <View style={{ alignItems: "center" }}>
+              <View
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: "#22c55e",
+                  marginBottom: 8,
+                  shadowColor: "#22c55e",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}
+              />
+              <Text
+                style={{
+                  color: colors.text,
+                  fontSize: 12,
+                  fontWeight: "700",
+                  marginBottom: 2,
+                }}
+              >
+                AVULSOS
+              </Text>
+              <Text
+                style={{
+                  color: colors.textMuted,
+                  fontSize: 10,
+                  fontWeight: "600",
+                }}
+              >
+                {metrics.avulsos} unid.
               </Text>
             </View>
           </View>
 
-          {hasDivergence && (
+          {/* Linha Divisória */}
+          <View
+            style={{
+              height: 1,
+              backgroundColor: colors.border,
+              marginVertical: 12,
+            }}
+          />
+
+          {/* Status Final */}
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
             <View
               style={{
-                backgroundColor: "#78350f",
-                borderRadius: 10,
-                padding: 12,
-                marginTop: 10,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 8,
+                width: 12,
+                height: 12,
+                borderRadius: 6,
+                backgroundColor: hasDivergence ? colors.warning : colors.success,
+                shadowColor: hasDivergence ? colors.warning : colors.success,
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.4,
+                shadowRadius: 2,
+                elevation: 2,
+              }}
+            />
+            <Text
+              style={{
+                color: hasDivergence ? colors.warning : colors.success,
+                fontSize: 14,
+                fontWeight: "800",
+                letterSpacing: 0.5,
               }}
             >
-              <Text style={{ fontSize: 18 }}>⚠️</Text>
-              <Text
+              {hasDivergence ? "COM DIVERGÊNCIA" : "CONFORMIDADE TOTAL"}
+            </Text>
+          </View>
+        </View>
+
+        
+          {/* Resumo Financeiro Profissional */}
+        <View
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: colors.surface2,
+              padding: 20,
+              marginBottom: 16,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 8,
+              elevation: 2,
+            }}
+          >
+            <Text
+              style={{
+                color: colors.textSubtle,
+                fontSize: 11,
+                fontWeight: "700",
+                letterSpacing: 1,
+                marginBottom: 16,
+                textAlign: "center",
+              }}
+            >
+              RESUMO FINANCEIRO
+            </Text>
+
+            <View
+              style={{
+                backgroundColor: colors.surface2,
+                borderRadius: 12,
+                padding: 16,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <View>
+                <Text
+                  style={{
+                    color: colors.textMuted,
+                    fontSize: 10,
+                    fontWeight: "700",
+                    letterSpacing: 1,
+                    marginBottom: 4,
+                  }}
+                >
+                  TOTAL CONFERIDO
+                </Text>
+                <Text
+                  style={{
+                    color: colors.primary,
+                    fontSize: 32,
+                    fontWeight: "800",
+                    lineHeight: 36,
+                  }}
+                >
+                  {metrics.total}
+                </Text>
+                <Text
+                  style={{
+                    color: colors.primary,
+                    fontSize: 14,
+                    fontWeight: "700",
+                    marginTop: 4,
+                  }}
+                >
+                  R$ {metrics.valueTotal.toFixed(2)}
+                </Text>
+              </View>
+              <View style={{ alignItems: "flex-end" }}>
+                <Text
+                  style={{
+                    color: colors.textMuted,
+                    fontSize: 10,
+                    fontWeight: "700",
+                    letterSpacing: 1,
+                    marginBottom: 4,
+                  }}
+                >
+                  DECLARADO
+                </Text>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 32,
+                    fontWeight: "800",
+                    lineHeight: 36,
+                  }}
+                >
+                  {session.declaredCount}
+                </Text>
+              </View>
+            </View>
+
+            {hasDivergence && (
+              <View
                 style={{
-                  color: colors.warning,
-                  fontSize: 13,
-                  fontWeight: "700",
-                  flex: 1,
+                  backgroundColor: "#78350f",
+                  borderRadius: 12,
+                  padding: 14,
+                  marginTop: 12,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 10,
+                  borderWidth: 1,
+                  borderColor: colors.warning,
                 }}
               >
-                Divergência:{" "}
-                {metrics.total - session.declaredCount > 0 ? "+" : ""}
-                {metrics.total - session.declaredCount} pacote(s)
-              </Text>
-            </View>
-          )}
-        </View>
+                <View
+                  style={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: 10,
+                    backgroundColor: colors.warning,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text style={{ fontSize: 12, fontWeight: "800", color: "#78350f" }}>
+                    !
+                  </Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      color: colors.warning,
+                      fontSize: 13,
+                      fontWeight: "700",
+                      marginBottom: 2,
+                    }}
+                  >
+                    DIVERGÊNCIA DETECTADA
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.warning,
+                      fontSize: 11,
+                      fontWeight: "600",
+                      opacity: 0.9,
+                    }}
+                  >
+                    Diferença: {metrics.total - session.declaredCount > 0 ? "+" : ""}
+                    {metrics.total - session.declaredCount} pacote(s)
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
 
         {/* Package list */}
         <View
@@ -416,27 +666,32 @@ export default function ReportView({
       >
         <TouchableOpacity
           onPress={handleWhatsApp}
+          disabled={isWhatsAppLoading}
           activeOpacity={0.85}
           style={{
-            backgroundColor: "#25d366",
+            backgroundColor: isWhatsAppLoading ? "#1ebe55" : "#25d366",
             borderRadius: 12,
             padding: 16,
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
             gap: 8,
+            opacity: isWhatsAppLoading ? 0.7 : 1,
           }}
         >
-          <Text style={{ fontSize: 20 }}>💬</Text>
+          <Text style={{ fontSize: 20 }}>
+            {isWhatsAppLoading ? "⏳" : "💬"}
+          </Text>
           <Text
             style={{ color: colors.secondary, fontSize: 16, fontWeight: "800" }}
           >
-            ENVIAR VIA WHATSAPP
+            {isWhatsAppLoading ? "ABRINDO..." : "ENVIAR VIA WHATSAPP"}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={handleShare}
+          disabled={isSharing}
           activeOpacity={0.85}
           style={{
             backgroundColor: colors.surface,
@@ -448,13 +703,16 @@ export default function ReportView({
             gap: 8,
             borderWidth: 1,
             borderColor: colors.border,
+            opacity: isSharing ? 0.7 : 1,
           }}
         >
-          <Text style={{ fontSize: 18 }}>📤</Text>
+          <Text style={{ fontSize: 18 }}>
+            {isSharing ? "⏳" : "📤"}
+          </Text>
           <Text
             style={{ color: colors.textMuted, fontSize: 16, fontWeight: "700" }}
           >
-            Compartilhar
+            {isSharing ? "Compartilhando..." : "Compartilhar"}
           </Text>
         </TouchableOpacity>
 

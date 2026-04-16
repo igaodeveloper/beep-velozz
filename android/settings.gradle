@@ -43,4 +43,4 @@ include ':app'
 includeBuild(expoAutolinking.reactNativeGradlePlugin)
 
 // Apply Expo autolinking configuration
-apply from: new File(["node", "--print", "require.resolve('expo-modules-autolinking')"].execute().text.trim(), "../scripts/autolinking.gradle")
+apply from: new File(["node", "--print", "require.resolve('expo-modules-autolinking')"].execute().text.trim(), "../scripts/android/autolinking_implementation.gradle")

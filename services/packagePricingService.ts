@@ -207,6 +207,37 @@ class PackagePricingService {
   }
 
   /**
+   * Update package values manually
+   */
+  async updatePackageValues(values: Record<string, number>): Promise<void> {
+    try {
+      if (!this.cache) {
+        this.cache = DEFAULT_PRICING;
+      }
+
+      // Update values in cache
+      this.cache.packages = this.cache.packages.map((pkg) => {
+        if (values.hasOwnProperty(pkg.type)) {
+          return {
+            ...pkg,
+            value: values[pkg.type],
+            updatedAt: Date.now(),
+          };
+        }
+        return pkg;
+      });
+
+      // Save to cache
+      await this.savePricingToCache(this.cache);
+      
+      console.log("✅ Package values updated:", values);
+    } catch (error) {
+      console.error("❌ Failed to update package values:", error);
+      throw error;
+    }
+  }
+
+  /**
    * Get cache info for debugging
    */
   getCacheInfo() {

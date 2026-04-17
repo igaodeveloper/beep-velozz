@@ -8,6 +8,7 @@ import {
   Platform,
   Linking,
   Alert,
+  Modal,
 } from "react-native";
 import { Session } from "@/types/session";
 import {
@@ -23,6 +24,7 @@ import PackagePhotoGallery from "@/components/PackagePhotoGallery";
 import { exportSessionWithPhotosToPDF } from "@/utils/pdfExport";
 import MainLayout from "@/components/MainLayout";
 import { debounce } from "@/utils/performanceOptimizer";
+import PackageValueConfig from "@/components/PackageValueConfig";
 
 interface ReportViewProps {
   session: Session;
@@ -42,6 +44,7 @@ export default function ReportView({
   const [showPhotoGallery, setShowPhotoGallery] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [isWhatsAppLoading, setIsWhatsAppLoading] = useState(false);
+  const [showValueConfig, setShowValueConfig] = useState(false);
 
   // Memoizar mensagem formatada para evitar recálculos
   const formattedMessage = useMemo(() => {
@@ -739,6 +742,26 @@ export default function ReportView({
 
         <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
           <TouchableOpacity
+            onPress={() => setShowValueConfig(true)}
+            activeOpacity={0.85}
+            style={{
+              flex: 1,
+              backgroundColor: colors.surface,
+              borderRadius: 12,
+              padding: 14,
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          >
+            <Text
+              style={{ color: colors.text, fontSize: 14, fontWeight: "700" }}
+            >
+              ⚙️ Valores
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             onPress={onViewHistory}
             activeOpacity={0.85}
             style={{
@@ -788,6 +811,15 @@ export default function ReportView({
         onClose={() => setShowPhotoGallery(false)}
         onExportWithPhotos={handleExportWithPhotos}
       />
+
+      {/* Modal de Configuração de Valores */}
+      <Modal
+        visible={showValueConfig}
+        animationType="slide"
+        presentationStyle="fullScreen"
+      >
+        <PackageValueConfig onClose={() => setShowValueConfig(false)} />
+      </Modal>
     </View>
   );
 }

@@ -33,21 +33,11 @@ allprojects {
   
   // Fix for deprecated Kotlin options in all projects
   tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-      jvmTarget = "17"
-      freeCompilerArgs += [
+    compilerOptions {
+      jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+      freeCompilerArgs.addAll([
         "-opt-in=kotlin.RequiresOptIn"
-      ]
-    }
-    
-    // Use new compilerOptions DSL for Kotlin 2.0+
-    if (project.hasProperty('compilerOptions')) {
-      compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        freeCompilerArgs.addAll([
-          "-opt-in=kotlin.RequiresOptIn"
-        ])
-      }
+      ])
     }
   }
 }
@@ -68,15 +58,8 @@ subprojects {
     
     // Fix deprecated kotlinOptions warnings - use compilerOptions DSL
     project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-      kotlinOptions {
-        jvmTarget = "17"
-      }
-      
-      // Use new compilerOptions DSL for Kotlin 2.0+
-      if (project.hasProperty('compilerOptions')) {
-        compilerOptions {
-          jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
+      compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
       }
     }
     

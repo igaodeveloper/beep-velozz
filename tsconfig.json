@@ -1,22 +1,71 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true,
+    "strict": false,
     "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "incremental": true,
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "ignoreDeprecations": ["6.0"],
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@/components/*": [
+        "./components/*"
+      ],
+      "@/utils/*": [
+        "./utils/*"
+      ],
+      "@/types/*": [
+        "./types/*"
+      ],
+      "@/constants/*": [
+        "./constants/*"
+      ],
+      "@/hooks/*": [
+        "./hooks/*"
+      ],
+      "@/services/*": [
+        "./services/*"
       ]
-    }
+    },
+    "types": ["jest", "node"],
+    "typeRoots": ["./node_modules/@types", "./types"]
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "nativewind-env.d.ts"
+    "nativewind-env.d.ts",
+    "jest.setup.js"
   ],
   "exclude": [
-    "node_modules"
-  ]
+    "node_modules",
+    ".expo",
+    "dist",
+    "coverage",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  }
 }

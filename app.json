@@ -1,28 +1,43 @@
 {
   "expo": {
-    "name": "test-tempo",
-    "slug": "test-tempo",
+    "name": "Beep Velozz",
+    "slug": "beep-velozz",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "beepvelozz",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "jsEngine": "hermes",
+    "nodeModulesPath": ".expo",
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.igaonamikaze.beepvelozz",
       "infoPlist": {
-        "NSCameraUsageDescription": "Precisamos de acesso à câmera para ler QR Codes e códigos de barras."
-      }
+        "NSCameraUsageDescription": "Precisamos de acesso à câmera para ler QR Codes e códigos de barras.",
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ],
+        "UISupportedInterfaceOrientations~ipad": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationPortraitUpsideDown",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ]
+      },
+      "jsEngine": "hermes"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": [
-        "CAMERA"
-      ],
-      "package": "com.igaonamikaze.testtempo"
+      "permissions": ["CAMERA", "VIBRATE"],
+      "package": "com.igaonamikaze.beepvelozz",
+      "screenOrientation": "user",
+      "jsEngine": "hermes"
     },
     "web": {
       "bundler": "metro",
@@ -35,22 +50,57 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "resizeMode": "cover",
+          "backgroundColor": "#ffffff",
+          "splash": {
+            "imageWidth": 200,
+            "imageHeight": 200,
+            "resizeMode": "contain",
+            "backgroundColor": "#ffffff"
+          },
+          "platform": {
+            "ios": {
+              "splashImage": "./assets/images/splash-icon.png",
+              "backgroundColor": "#ffffff",
+              "imageWidth": 200,
+              "imageHeight": 200,
+              "resizeMode": "contain"
+            },
+            "android": {
+              "splash": {
+                "image": "./assets/images/splash-icon.png",
+                "backgroundColor": "#ffffff",
+                "resizeMode": "contain",
+                "imageWidth": 200,
+                "imageHeight": 200
+              }
+            }
+          }
         }
       ],
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-secure-store",
+      "@sentry/react-native"
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "turboMode": true
     },
+    "assetBundlePatterns": ["**/*"],
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "f4819179-45f8-4d20-af4d-6ccc206ab57f"
-      }
-    }
+        "projectId": "6c8f82da-9e01-4276-a3ee-1d413458d4d4"
+      },
+      "firebaseApiKey": "AIzaSyAqS_rWdY5yhXwBLXL48Nooc-xfHpi5f5c",
+      "firebaseAuthDomain": "beepvelozz.firebaseapp.com",
+      "firebaseProjectId": "beepvelozz",
+      "firebaseStorageBucket": "beepvelozz.firebasestorage.app",
+      "firebaseMessagingSenderId": "418888118827",
+      "firebaseAppId": "1:418888118827:web:155021bed2f6cf095c706e",
+      "measurementId": "G-PVB66RW3B7"
+    },
+    "owner": "shopiii2025"
   }
 }

@@ -6,13 +6,28 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "20.18.2",
+      "env": {
+        "NPM_CONFIG_FETCH_TIMEOUT": "600000",
+        "NPM_CONFIG_FETCH_RETRIES": "5"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "20.18.2",
+      "env": {
+        "NPM_CONFIG_FETCH_TIMEOUT": "600000",
+        "NPM_CONFIG_FETCH_RETRIES": "5"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "node": "20.18.2",
+      "env": {
+        "NPM_CONFIG_FETCH_TIMEOUT": "600000",
+        "NPM_CONFIG_FETCH_RETRIES": "5"
+      }
     }
   },
   "submit": {

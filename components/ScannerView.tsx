@@ -515,7 +515,7 @@ export default function ScannerView({
       <View
         style={{ flex: 1, backgroundColor: colors.bg, position: "relative" }}
       >
-        {/* Camera area (mock/placeholder for web compat) */}
+        {/* Camera area */}
         <View
           style={{
             flex: 1,

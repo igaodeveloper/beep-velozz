@@ -186,7 +186,7 @@ export function createLazyComponent<T extends ComponentType<any>>(
   }
 
   // Componente com Suspense e tratamento de erro
-  return function LazyWrapper(props: React.ComponentProps<T>) {
+  return function LazyWrapper(props: any) {
     return React.createElement(
       ErrorBoundary,
       {
@@ -218,7 +218,7 @@ class ErrorBoundary extends React.Component<
     this.state = { hasError: false, error: null };
   }
 
-  static override getDerivedStateFromError(error: Error) {
+  static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
   }
 
@@ -226,7 +226,7 @@ class ErrorBoundary extends React.Component<
     console.error("Lazy component error:", error, errorInfo);
   }
 
-  render() {
+  override render() {
     if (this.state.hasError && this.state.error) {
       const Fallback = this.props.fallback;
       return React.createElement(Fallback, {
@@ -367,7 +367,7 @@ export class PrefetchManager {
       return;
     }
 
-    this.prefetchQueue.push(() => {
+    this.prefetchQueue.push(async () => {
       LazyComponents[componentName];
       this.prefetchedComponents.add(componentName);
     });

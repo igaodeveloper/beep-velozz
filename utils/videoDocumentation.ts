@@ -91,13 +91,12 @@ class VideoDocumentationManager {
       // });
 
       const recordingId = `session_${sessionId}_${Date.now()}`;
-      const mockUri = `file://videos/${recordingId}.mp4`;
 
       const recording: VideoRecord = {
         id: recordingId,
         sessionId,
         type: "session",
-        uri: mockUri,
+        uri: "",
         duration: 0,
         fileSize: 0,
         timestamp: Date.now(),
@@ -138,14 +137,13 @@ class VideoDocumentationManager {
       console.log("📦 Iniciando gravação de pacote...");
 
       const recordingId = `package_${packageId}_${Date.now()}`;
-      const mockUri = `file://videos/${recordingId}.mp4`;
 
       const recording: VideoRecord = {
         id: recordingId,
         sessionId,
         packageId,
         type: "package",
-        uri: mockUri,
+        uri: "",
         duration: 0,
         fileSize: 0,
         timestamp: Date.now(),

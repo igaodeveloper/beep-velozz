@@ -126,7 +126,13 @@ class PackageAPIIntegration {
     type: PackageType,
   ): Promise<APIValidationResult> {
     if (!this.config.enableRealTimeValidation) {
-      return this.createMockResult(code, type);
+      return {
+        isValid: false,
+        packageInfo: undefined,
+        warnings: ["Validação em tempo real desabilitada"],
+        timestamp: Date.now(),
+        source: "Local",
+      };
     }
 
     // Verifica cache primeiro
@@ -173,7 +179,13 @@ class PackageAPIIntegration {
     const provider = this.providers.get(providerKey);
 
     if (!provider || !provider.enabled) {
-      return this.createMockResult(code, type);
+      return {
+        isValid: false,
+        packageInfo: undefined,
+        warnings: ["Provedor não disponível"],
+        timestamp: Date.now(),
+        source: "Local",
+      };
     }
 
     try {
@@ -283,31 +295,15 @@ class PackageAPIIntegration {
     }
 
     // Todos os fallbacks falharam
-    return this.createMockResult(code, type);
-  }
-
-  /**
-   * Cria resultado simulado
-   */
-  private createMockResult(
-    code: string,
-    type: PackageType,
-  ): APIValidationResult {
     return {
-      isValid: true,
-      packageInfo: {
-        trackingCode: code,
-        status: "in_transit",
-        carrier: "Local Scanner",
-        origin: "Local",
-        destination: "Local",
-        lastUpdate: new Date().toISOString(),
-      },
-      warnings: ["Validação offline - Sem conexão com APIs externas"],
+      isValid: false,
+      packageInfo: undefined,
+      warnings: ["Todos os provedores falharam"],
       timestamp: Date.now(),
       source: "Local",
     };
   }
+
 
   /**
    * Obtém provedor para tipo de pacote

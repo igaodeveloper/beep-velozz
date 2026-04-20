@@ -13,7 +13,7 @@ export class UpdateService {
             name: 'update_available',
             properties: {
               current_version: Updates.runtimeVersion,
-              new_version: update.manifest?.version || 'unknown',
+              new_version: (update.manifest as any)?.version || 'unknown',
             },
           });
 

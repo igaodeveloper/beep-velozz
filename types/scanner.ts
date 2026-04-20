@@ -53,7 +53,7 @@ export interface ScannerStats {
 export interface ScannerConfig {
   maxAllowedScans: {
     shopee: number;
-    mercadoLivre: number;
+    mercado_livre: number;
     avulso: number;
     total?: number; // Opcional: limite total global
   };

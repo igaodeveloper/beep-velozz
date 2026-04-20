@@ -242,6 +242,7 @@ export function identifyPackage(normalizedCode: string): PackageIdentification {
       type: "unknown",
       matched: false,
       confidence: "low",
+      description: "Código inválido ou muito curto",
     };
   }
 
@@ -483,6 +484,7 @@ export function identifyPackageUltraFast(code: string): PackageIdentification {
       type: "unknown",
       matched: false,
       confidence: "low",
+      description: "Código inválido ou muito curto",
     };
   }
 

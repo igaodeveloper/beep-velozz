@@ -77,7 +77,11 @@ export class IndustrialScannerController {
     this.debounceMs = config.debounceMs ?? 400;
     this.audioService = getScannerAudioService();
 
-    this.limitController = new ScanLimitController(config.maxAllowedScans);
+    this.limitController = new ScanLimitController({
+      shopee: config.maxAllowedScans.shopee,
+      mercado_livre: config.maxAllowedScans.mercado_livre,
+      avulso: config.maxAllowedScans.avulso,
+    });
 
     this.internalState = {
       state: ScannerState.ACTIVE,

@@ -182,7 +182,7 @@ interface Lote {
   id: string;
   createdAt: Date;
   shopee: number;
-  mercadoLivre: number;
+  mercado_livre: number;
   avulso: number;
   packages: any[];
   completed: boolean;
@@ -201,7 +201,7 @@ export function MultiLoteManager() {
       id: `lote_${Date.now()}`,
       createdAt: new Date(),
       shopee: 50,
-      mercadoLivre: 30,
+      mercado_livre: 30,
       avulso: 20,
       packages: [],
       completed: false,

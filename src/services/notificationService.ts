@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import { NotificationTriggerInput, SchedulableTriggerInputTypes } from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
 import * as BackgroundFetch from 'expo-background-fetch';
 import { captureMessage } from '../utils/sentry';
@@ -68,7 +69,10 @@ export class NotificationService {
         body: 'Você tem uma sessão de escaneamento em andamento',
         data: { sessionId, type: 'session_reminder' },
       },
-      trigger: { date: trigger },
+      trigger: { 
+        type: SchedulableTriggerInputTypes.DATE,
+        date: trigger 
+      },
     });
   }
 

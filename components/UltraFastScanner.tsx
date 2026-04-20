@@ -46,7 +46,7 @@ import { Ionicons } from "@expo/vector-icons";
 interface UltraFastScannerProps {
   maxScans: {
     shopee: number;
-    mercado_livre: number;
+    mercadoLivre: number;
     avulso: number;
   };
   onScanned?: (code: string, type: string) => void;

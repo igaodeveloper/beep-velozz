@@ -25,6 +25,7 @@ import Animated, {
   Easing as ReEasing,
 } from "react-native-reanimated";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { ScannedPackage } from "@/types/session";
 import { PackageType } from "@/types/scanner";
@@ -568,21 +569,21 @@ export default function ScannerView({
             >
               <TouchableOpacity
                 onPress={() => setTorchEnabled((v) => !v)}
-                activeOpacity={0.85}
+                activeOpacity={0.7}
                 style={{
                   backgroundColor: torchEnabled
                     ? colors.primary
-                    : "rgba(15,23,42,0.85)",
+                    : "rgba(0, 0, 0, 0.6)",
                   borderRadius: responsive.borderRadius.lg,
                   paddingHorizontal: responsive.padding.md,
                   paddingVertical: responsive.padding.md,
                   borderWidth: 1,
-                  borderColor: torchEnabled ? colors.primary : colors.border2,
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 4,
-                  elevation: 3,
+                  borderColor: torchEnabled ? colors.primary : "rgba(255, 255, 255, 0.2)",
+                  shadowColor: torchEnabled ? colors.primary : "#000",
+                  shadowOffset: { width: 0, height: 3 },
+                  shadowOpacity: torchEnabled ? 0.4 : 0.2,
+                  shadowRadius: torchEnabled ? 6 : 3,
+                  elevation: torchEnabled ? 4 : 2,
                   minWidth: responsive.fontSize.xl * 2,
                   minHeight: responsive.fontSize.xl * 2,
                   justifyContent: "center",
@@ -593,9 +594,12 @@ export default function ScannerView({
                   style={{
                     color: "#fff",
                     fontSize: responsive.fontSize.md,
-                    fontWeight: "800",
+                    fontWeight: "700",
                     letterSpacing: 0.5,
                     lineHeight: responsive.fontSize.lg,
+                    textShadowColor: torchEnabled ? colors.primary : "transparent",
+                    textShadowOffset: { width: 0, height: 0 },
+                    textShadowRadius: torchEnabled ? 4 : 0,
                   }}
                 >
                   {torchEnabled ? "💡" : "🔦"}
@@ -604,19 +608,19 @@ export default function ScannerView({
 
               <TouchableOpacity
                 onPress={onEndSession}
-                activeOpacity={0.85}
+                activeOpacity={0.7}
                 style={{
-                  backgroundColor: "rgba(239, 68, 68, 0.9)",
+                  backgroundColor: "rgba(239, 68, 68, 0.85)",
                   borderRadius: responsive.borderRadius.lg,
                   paddingHorizontal: responsive.padding.md,
                   paddingVertical: responsive.padding.md,
                   borderWidth: 1,
-                  borderColor: "#ef4444",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 4,
-                  elevation: 3,
+                  borderColor: "rgba(239, 68, 68, 0.6)",
+                  shadowColor: "#ef4444",
+                  shadowOffset: { width: 0, height: 3 },
+                  shadowOpacity: 0.4,
+                  shadowRadius: 6,
+                  elevation: 4,
                   minWidth: responsive.fontSize.xl * 2,
                   minHeight: responsive.fontSize.xl * 2,
                   justifyContent: "center",
@@ -627,7 +631,7 @@ export default function ScannerView({
                   style={{
                     color: "#fff",
                     fontSize: responsive.fontSize.md,
-                    fontWeight: "800",
+                    fontWeight: "700",
                     letterSpacing: 0.5,
                     lineHeight: responsive.fontSize.lg,
                   }}
@@ -677,7 +681,7 @@ export default function ScannerView({
             ))}
           </View>
 
-          {/* Scanner Reticle */}
+          {/* Scanner Reticle - Minimalista */}
           <Animated.View
             style={[
               {
@@ -690,20 +694,22 @@ export default function ScannerView({
               pulseStyle,
             ]}
           >
-            {/* Overlay escuro */}
-            <View
+            {/* Overlay com glassmorphism */}
+            <BlurView
+              intensity={20}
+              tint="dark"
               style={{
                 position: "absolute",
                 top: -overlayExtraY,
                 left: -overlayExtraX,
                 right: -overlayExtraX,
                 bottom: -overlayExtraY,
-                backgroundColor: "rgba(2,6,23,0.6)",
-                borderRadius: 20,
+                borderRadius: 24,
+                backgroundColor: "rgba(0, 0, 0, 0.3)",
               }}
             />
 
-            {/* Border principal */}
+            {/* Border minimalista */}
             <View
               style={{
                 position: "absolute",
@@ -711,25 +717,25 @@ export default function ScannerView({
                 left: 0,
                 right: 0,
                 bottom: 0,
-                borderWidth: 2,
+                borderWidth: 1,
                 borderColor: colors.primary,
-                borderRadius: 16,
-                opacity: 0.8,
+                borderRadius: 20,
+                opacity: 0.6,
               }}
             />
 
-            {/* Corner brackets - superior esquerdo */}
+            {/* Corner brackets elegantes - superior esquerdo */}
             <View
               style={{
                 position: "absolute",
-                top: -4,
-                left: -4,
-                width: 32,
-                height: 32,
-                borderTopWidth: 3,
-                borderLeftWidth: 3,
+                top: -2,
+                left: -2,
+                width: 28,
+                height: 28,
+                borderTopWidth: 2,
+                borderLeftWidth: 2,
                 borderColor: colors.primary,
-                borderTopLeftRadius: 8,
+                borderTopLeftRadius: 6,
               }}
             />
 
@@ -737,14 +743,14 @@ export default function ScannerView({
             <View
               style={{
                 position: "absolute",
-                top: -4,
-                right: -4,
-                width: 32,
-                height: 32,
-                borderTopWidth: 3,
-                borderRightWidth: 3,
+                top: -2,
+                right: -2,
+                width: 28,
+                height: 28,
+                borderTopWidth: 2,
+                borderRightWidth: 2,
                 borderColor: colors.primary,
-                borderTopRightRadius: 8,
+                borderTopRightRadius: 6,
               }}
             />
 
@@ -752,14 +758,14 @@ export default function ScannerView({
             <View
               style={{
                 position: "absolute",
-                bottom: -4,
-                left: -4,
-                width: 32,
-                height: 32,
-                borderBottomWidth: 3,
-                borderLeftWidth: 3,
+                bottom: -2,
+                left: -2,
+                width: 28,
+                height: 28,
+                borderBottomWidth: 2,
+                borderLeftWidth: 2,
                 borderColor: colors.primary,
-                borderBottomLeftRadius: 8,
+                borderBottomLeftRadius: 6,
               }}
             />
 
@@ -767,229 +773,323 @@ export default function ScannerView({
             <View
               style={{
                 position: "absolute",
-                bottom: -4,
-                right: -4,
-                width: 32,
-                height: 32,
-                borderBottomWidth: 3,
-                borderRightWidth: 3,
+                bottom: -2,
+                right: -2,
+                width: 28,
+                height: 28,
+                borderBottomWidth: 2,
+                borderRightWidth: 2,
                 borderColor: colors.primary,
-                borderBottomRightRadius: 8,
+                borderBottomRightRadius: 6,
               }}
             />
 
-            {/* Scan line animada */}
+            {/* Scan line com gradiente */}
             <Animated.View
               style={[
                 {
                   position: "absolute",
-                  left: 8,
-                  right: 8,
-                  height: 2,
+                  left: 12,
+                  right: 12,
+                  height: 1.5,
                   backgroundColor: colors.primary,
-                  opacity: 0.7,
+                  opacity: 0.8,
                   shadowColor: colors.primary,
                   shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.6,
-                  shadowRadius: 8,
-                  elevation: 5,
+                  shadowOpacity: 0.8,
+                  shadowRadius: 12,
+                  elevation: 6,
                 },
                 scanLineStyle,
               ]}
             />
 
-            {/* Center dot */}
+            {/* Center point minimalista */}
             <View
               style={{
-                width: 6,
-                height: 6,
-                borderRadius: 3,
+                width: 4,
+                height: 4,
+                borderRadius: 2,
                 backgroundColor: colors.primary,
-                opacity: 0.9,
-                shadowColor: colors.primary,
-                shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.7,
-                shadowRadius: 4,
-                elevation: 3,
+                opacity: 0.7,
               }}
             />
           </Animated.View>
 
-          <Text
+          {/* Status hint com glassmorphism */}
+          <BlurView
+            intensity={15}
+            tint="dark"
             style={{
-              color: colors.text,
-              fontSize: responsive.fontSize.sm,
               marginTop: responsive.spacing.lg,
-              fontWeight: "600",
-              letterSpacing: 0.3,
-              textAlign: "center",
               paddingHorizontal: responsive.padding.md,
+              paddingVertical: responsive.padding.sm,
+              borderRadius: 12,
+              backgroundColor: "rgba(0, 0, 0, 0.2)",
+              borderWidth: 1,
+              borderColor: "rgba(255, 255, 255, 0.1)",
             }}
           >
-            Apenas códigos dentro da área verde serão lidos
-          </Text>
-          {/* counts vs declared with compact progress */}
+            <Text
+              style={{
+                color: colors.text,
+                fontSize: responsive.fontSize.sm,
+                fontWeight: "500",
+                letterSpacing: 0.2,
+                textAlign: "center",
+              }}
+            >
+              Posicione o código dentro da área de扫描
+            </Text>
+          </BlurView>
+          {/* Progress Cards com Glassmorphism */}
           <View
             style={{
-              marginTop: responsive.spacing.sm,
+              marginTop: responsive.spacing.md,
               width: responsive.isTablet
                 ? "70%"
                 : responsive.isUltraWide
                   ? "60%"
-                  : "86%",
-              alignItems: "center",
+                  : "90%",
               maxWidth: responsive.maxWidth.md,
             }}
           >
-            <View
+            {/* Shopee Card */}
+            <BlurView
+              intensity={10}
+              tint="dark"
               style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                width: "100%",
-              }}
-            >
-              <Text
-                style={{
-                  color: colors.textMuted,
-                  fontSize: 11,
-                  fontWeight: "600",
-                }}
-              >
-                Shopee
-              </Text>
-              <Text
-                style={{ color: colors.text, fontSize: 11, fontWeight: "700" }}
-              >
-                {metrics.shopee}/{declaredCounts.shopee}
-              </Text>
-            </View>
-            <View
-              style={{
-                height: 8,
-                width: "100%",
-                backgroundColor: colors.surface2,
-                borderRadius: 8,
-                marginTop: 6,
-                overflow: "hidden",
+                backgroundColor: "rgba(0, 0, 0, 0.25)",
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.1)",
+                padding: responsive.padding.md,
+                marginBottom: responsive.spacing.sm,
               }}
             >
               <View
                 style={{
-                  width: `${Math.min(100, declaredCounts.shopee ? Math.round((metrics.shopee / declaredCounts.shopee) * 100) : 0)}%`,
-                  height: "100%",
-                  backgroundColor: "#fb923c",
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: responsive.spacing.xs,
                 }}
-              />
-            </View>
-            <View style={{ height: 8 }} />
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                width: "100%",
-              }}
-            >
-              <Text
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <View
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: "#fb923c",
+                    }}
+                  />
+                  <Text
+                    style={{
+                      color: colors.text,
+                      fontSize: 12,
+                      fontWeight: "600",
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    Shopee
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 12,
+                    fontWeight: "700",
+                  }}
+                >
+                  {metrics.shopee}/{declaredCounts.shopee}
+                </Text>
+              </View>
+              <View
                 style={{
-                  color: colors.textMuted,
-                  fontSize: 11,
-                  fontWeight: "600",
+                  height: 6,
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  borderRadius: 3,
+                  overflow: "hidden",
                 }}
               >
-                Mercado Livre
-              </Text>
-              <Text
-                style={{ color: colors.text, fontSize: 11, fontWeight: "700" }}
-              >
-                {metrics.mercadoLivre}/{declaredCounts.mercadoLivre}
-              </Text>
-            </View>
-            <View
+                <View
+                  style={{
+                    width: `${Math.min(100, declaredCounts.shopee ? Math.round((metrics.shopee / declaredCounts.shopee) * 100) : 0)}%`,
+                    height: "100%",
+                    backgroundColor: "#fb923c",
+                    borderRadius: 3,
+                  }}
+                />
+              </View>
+            </BlurView>
+
+            {/* Mercado Livre Card */}
+            <BlurView
+              intensity={10}
+              tint="dark"
               style={{
-                height: 8,
-                width: "100%",
-                backgroundColor: colors.surface2,
-                borderRadius: 8,
-                marginTop: 6,
-                overflow: "hidden",
+                backgroundColor: "rgba(0, 0, 0, 0.25)",
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.1)",
+                padding: responsive.padding.md,
+                marginBottom: responsive.spacing.sm,
               }}
             >
               <View
                 style={{
-                  width: `${Math.min(100, declaredCounts.mercadoLivre ? Math.round((metrics.mercadoLivre / declaredCounts.mercadoLivre) * 100) : 0)}%`,
-                  height: "100%",
-                  backgroundColor: "#ffe600",
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: responsive.spacing.xs,
                 }}
-              />
-            </View>
-            <View style={{ height: 8 }} />
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                width: "100%",
-              }}
-            >
-              <Text
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <View
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: "#ffe600",
+                    }}
+                  />
+                  <Text
+                    style={{
+                      color: colors.text,
+                      fontSize: 12,
+                      fontWeight: "600",
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    Mercado Livre
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 12,
+                    fontWeight: "700",
+                  }}
+                >
+                  {metrics.mercadoLivre}/{declaredCounts.mercadoLivre}
+                </Text>
+              </View>
+              <View
                 style={{
-                  color: colors.textMuted,
-                  fontSize: 11,
-                  fontWeight: "600",
+                  height: 6,
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  borderRadius: 3,
+                  overflow: "hidden",
                 }}
               >
-                Avulso
-              </Text>
-              <Text
-                style={{ color: colors.text, fontSize: 11, fontWeight: "700" }}
-              >
-                {metrics.avulsos}/{declaredCounts.avulso}
-              </Text>
-            </View>
-            <View
+                <View
+                  style={{
+                    width: `${Math.min(100, declaredCounts.mercadoLivre ? Math.round((metrics.mercadoLivre / declaredCounts.mercadoLivre) * 100) : 0)}%`,
+                    height: "100%",
+                    backgroundColor: "#ffe600",
+                    borderRadius: 3,
+                  }}
+                />
+              </View>
+            </BlurView>
+
+            {/* Avulso Card */}
+            <BlurView
+              intensity={10}
+              tint="dark"
               style={{
-                height: 8,
-                width: "100%",
-                backgroundColor: colors.surface2,
-                borderRadius: 8,
-                marginTop: 6,
-                overflow: "hidden",
+                backgroundColor: "rgba(0, 0, 0, 0.25)",
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.1)",
+                padding: responsive.padding.md,
               }}
             >
               <View
                 style={{
-                  width: `${Math.min(100, declaredCounts.avulso ? Math.round((metrics.avulsos / declaredCounts.avulso) * 100) : 0)}%`,
-                  height: "100%",
-                  backgroundColor: colors.success,
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: responsive.spacing.xs,
                 }}
-              />
-            </View>
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <View
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: colors.success,
+                    }}
+                  />
+                  <Text
+                    style={{
+                      color: colors.text,
+                      fontSize: 12,
+                      fontWeight: "600",
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    Avulso
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 12,
+                    fontWeight: "700",
+                  }}
+                >
+                  {metrics.avulsos}/{declaredCounts.avulso}
+                </Text>
+              </View>
+              <View
+                style={{
+                  height: 6,
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  borderRadius: 3,
+                  overflow: "hidden",
+                }}
+              >
+                <View
+                  style={{
+                    width: `${Math.min(100, declaredCounts.avulso ? Math.round((metrics.avulsos / declaredCounts.avulso) * 100) : 0)}%`,
+                    height: "100%",
+                    backgroundColor: colors.success,
+                    borderRadius: 3,
+                  }}
+                />
+              </View>
+            </BlurView>
           </View>
 
           {lastScanned && lastBadge && (
-            <View
+            <BlurView
+              intensity={20}
+              tint="dark"
               style={{
                 position: "absolute",
-                left: 14,
-                right: 14,
-                bottom: 14,
-                backgroundColor: "rgba(15,23,42,0.92)",
+                left: 16,
+                right: 16,
+                bottom: 16,
+                backgroundColor: "rgba(0, 0, 0, 0.4)",
                 borderWidth: 1,
-                borderColor: colors.border2,
-                borderRadius: 14,
-                paddingHorizontal: 12,
-                paddingVertical: 10,
+                borderColor: "rgba(255, 255, 255, 0.15)",
+                borderRadius: 16,
+                paddingHorizontal: 16,
+                paddingVertical: 12,
                 flexDirection: "row",
                 alignItems: "center",
-                gap: 10,
+                gap: 12,
               }}
             >
               <View
                 style={{
                   backgroundColor: lastBadge.bg,
-                  paddingHorizontal: 10,
-                  paddingVertical: 5,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
                   borderRadius: 999,
-                  marginRight: 4,
                 }}
               >
                 <Text
@@ -997,6 +1097,7 @@ export default function ScannerView({
                     color: lastBadge.text,
                     fontSize: 11,
                     fontWeight: "800",
+                    letterSpacing: 0.3,
                   }}
                 >
                   {packageTypeLabel(lastScanned.type)}
@@ -1006,8 +1107,9 @@ export default function ScannerView({
                 <Text
                   style={{
                     color: colors.text,
-                    fontSize: 12,
-                    fontWeight: "800",
+                    fontSize: 13,
+                    fontWeight: "700",
+                    letterSpacing: 0.2,
                   }}
                   numberOfLines={1}
                 >
@@ -1015,12 +1117,13 @@ export default function ScannerView({
                 </Text>
                 <Text
                   style={{
-                    color: colors.textSubtle,
+                    color: colors.textMuted,
                     fontSize: 11,
-                    fontWeight: "600",
+                    fontWeight: "500",
+                    marginTop: 2,
                   }}
                 >
-                  Último lido
+                  Escaneado agora
                 </Text>
               </View>
               <View style={{ alignItems: "flex-end" }}>
@@ -1037,12 +1140,19 @@ export default function ScannerView({
               {onRequestPhoto && (
                 <TouchableOpacity
                   onPress={() => onRequestPhoto(lastScanned)}
+                  activeOpacity={0.6}
                   style={{
-                    marginLeft: 8,
-                    paddingHorizontal: 10,
-                    paddingVertical: 6,
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
                     borderRadius: 999,
-                    backgroundColor: colors.surface2,
+                    backgroundColor: "rgba(255, 255, 255, 0.15)",
+                    borderWidth: 1,
+                    borderColor: "rgba(255, 255, 255, 0.25)",
+                    shadowColor: colors.primary,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 2,
                   }}
                 >
                   <Text
@@ -1052,21 +1162,25 @@ export default function ScannerView({
                       fontWeight: "700",
                     }}
                   >
-                    📸 Foto
+                    📸
                   </Text>
                 </TouchableOpacity>
               )}
-            </View>
+            </BlurView>
           )}
 
-          {/* Status: camera not available on web, show manual entry hint */}
-          <View
+          {/* Status Card com Glassmorphism */}
+          <BlurView
+            intensity={15}
+            tint="dark"
             style={{
-              marginTop: 12,
-              backgroundColor: colors.surface2,
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              paddingVertical: 6,
+              marginTop: responsive.spacing.md,
+              backgroundColor: "rgba(0, 0, 0, 0.3)",
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: "rgba(255, 255, 255, 0.1)",
+              paddingHorizontal: responsive.padding.md,
+              paddingVertical: responsive.padding.sm,
             }}
           >
             {Platform.OS === "web" ? (
@@ -1074,35 +1188,37 @@ export default function ScannerView({
                 style={{
                   color: colors.textMuted,
                   fontSize: 11,
-                  fontWeight: "600",
+                  fontWeight: "500",
+                  textAlign: "center",
                 }}
               >
-                📱 Câmera não disponível no Web. Use a entrada manual abaixo
+                📱 Câmera não disponível • Use entrada manual
               </Text>
             ) : permission?.granted ? (
               <Text
                 style={{
                   color: colors.textMuted,
                   fontSize: 11,
-                  fontWeight: "600",
+                  fontWeight: "500",
+                  textAlign: "center",
                 }}
               >
-                📷 Aponte para o QR Code ou código de barras
+                📷 Aponte para o código • Escaneamento automático
               </Text>
             ) : permission?.status === "undetermined" ? (
               <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+                style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
               >
                 <ActivityIndicator size="small" color={colors.primary} />
                 <Text
                   style={{
                     color: colors.textMuted,
                     fontSize: 11,
-                    fontWeight: "600",
+                    fontWeight: "500",
                     flex: 1,
                   }}
                 >
-                  Solicitando permissão da câmera...
+                  Solicitando permissão...
                 </Text>
               </View>
             ) : (
@@ -1110,7 +1226,7 @@ export default function ScannerView({
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: 10,
+                  gap: 12,
                   flexWrap: "wrap",
                 }}
               >
@@ -1118,34 +1234,43 @@ export default function ScannerView({
                   style={{
                     color: colors.textMuted,
                     fontSize: 11,
-                    fontWeight: "600",
+                    fontWeight: "500",
                     flex: 1,
                   }}
                 >
-                  🔒 Permissão de câmera necessária. Você pode usar a entrada
-                  manual, ou liberar a câmera.
+                  🔒 Câmera bloqueada • Use entrada manual
                 </Text>
                 <TouchableOpacity
                   onPress={() => requestPermission()}
                   accessibilityRole="button"
                   accessibilityLabel="Permitir câmera"
-                  activeOpacity={0.85}
+                  activeOpacity={0.7}
                   style={{
                     backgroundColor: colors.primary,
                     borderRadius: 8,
-                    paddingHorizontal: 10,
+                    paddingHorizontal: 12,
                     paddingVertical: 8,
+                    shadowColor: colors.primary,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
                   }}
                 >
                   <Text
-                    style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}
+                    style={{ 
+                      color: "#fff", 
+                      fontSize: 11, 
+                      fontWeight: "700",
+                      letterSpacing: 0.3,
+                    }}
                   >
                     PERMITIR
                   </Text>
                 </TouchableOpacity>
               </View>
             )}
-          </View>
+          </BlurView>
 
           {/* Out of area warning overlay */}
           {showOutOfAreaWarning && (

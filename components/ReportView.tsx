@@ -24,7 +24,6 @@ import PackagePhotoGallery from "@/components/PackagePhotoGallery";
 import { exportSessionWithPhotosToPDF } from "@/utils/pdfExport";
 import MainLayout from "@/components/MainLayout";
 import { debounce } from "@/utils/performanceOptimizer";
-import PackageValueConfig from "@/components/PackageValueConfig";
 import WhatsAppShareButton from "@/components/ui/WhatsAppShareButton";
 import { ShareResult } from "@/services/whatsappShareService";
 
@@ -46,7 +45,6 @@ export default function ReportView({
   const [showPhotoGallery, setShowPhotoGallery] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [isWhatsAppLoading, setIsWhatsAppLoading] = useState(false);
-  const [showValueConfig, setShowValueConfig] = useState(false);
   const [shareOptions, setShareOptions] = useState({
     includeDetailedList: false,
     includePhotos: false,
@@ -710,26 +708,6 @@ export default function ReportView({
 
         <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
           <TouchableOpacity
-            onPress={() => setShowValueConfig(true)}
-            activeOpacity={0.85}
-            style={{
-              flex: 1,
-              backgroundColor: colors.surface,
-              borderRadius: 12,
-              padding: 14,
-              alignItems: "center",
-              borderWidth: 1,
-              borderColor: colors.border,
-            }}
-          >
-            <Text
-              style={{ color: colors.text, fontSize: 14, fontWeight: "700" }}
-            >
-              ⚙️ Valores
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
             onPress={onViewHistory}
             activeOpacity={0.85}
             style={{
@@ -780,14 +758,6 @@ export default function ReportView({
         onExportWithPhotos={handleExportWithPhotos}
       />
 
-      {/* Modal de Configuração de Valores */}
-      <Modal
-        visible={showValueConfig}
-        animationType="slide"
-        presentationStyle="fullScreen"
-      >
-        <PackageValueConfig onClose={() => setShowValueConfig(false)} />
-      </Modal>
     </View>
   );
 }

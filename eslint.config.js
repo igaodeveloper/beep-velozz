@@ -1,8 +1,7 @@
 // https://docs.expo.dev/guides/using-eslint/
-const { defineConfig } = require('eslint/config');
-const expoConfig = require("eslint-config-expo/flat");
+const expoConfig = require("eslint-config-expo");
 
-module.exports = defineConfig([
+module.exports = [
   expoConfig,
   {
     ignores: [
@@ -47,4 +46,4 @@ module.exports = defineConfig([
       },
     },
   }
-]);
+];

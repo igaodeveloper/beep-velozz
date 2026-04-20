@@ -2,7 +2,7 @@
   "expo": {
     "name": "Beep Velozz",
     "slug": "beep-velozz",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "beepvelozz",
@@ -34,10 +34,22 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": ["CAMERA", "VIBRATE"],
+      "permissions": ["CAMERA", "VIBRATE", "WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE"],
       "package": "com.igaonamikaze.beepvelozz",
-      "screenOrientation": "user",
-      "jsEngine": "hermes"
+      "screenOrientation": "portrait",
+      "jsEngine": "hermes",
+      "compileSdkVersion": 34,
+      "targetSdkVersion": 34,
+      "buildToolsVersion": "34.0.0",
+      "minSdkVersion": 23,
+      "versionCode": 200,
+      "useNextNotificationsApi": true,
+      "icon": "./assets/images/icon.png",
+      "splash": {
+        "image": "./assets/images/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
+      }
     },
     "web": {
       "bundler": "metro",

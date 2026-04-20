@@ -9,27 +9,27 @@ import { savePackagePhoto } from '@/utils/photoStorage';
 import { TabType } from '@/components/BottomTabNavigator';
 import { ANIMATION_TYPES, DIRECTIONS } from '@/components/ScreenTransition';
 
-// Lazy loading de componentes para performance otimizada
-const IndustrialScannerView = React.lazy(() => import('@/components/IndustrialScannerView'));
-const MetricsDashboard = React.lazy(() => import('@/components/MetricsDashboard'));
-const PackageList = React.lazy(() => import('@/components/PackageList'));
-const DuplicateModal = React.lazy(() => import('@/components/DuplicateModal'));
-const DivergenceScreen = React.lazy(() => import('@/components/DivergenceScreen'));
-const ReportView = React.lazy(() => import('@/components/ReportView'));
-const HistoryBrowser = React.lazy(() => import('@/components/HistoryBrowser'));
-const AppHeader = React.lazy(() => import('@/components/AppHeader'));
-const EmptyStateWelcome = React.lazy(() => import('@/components/EmptyStateWelcome'));
-const MainLayout = React.lazy(() => import('@/components/MainLayout'));
-const PackagePhotoCapture = React.lazy(() => import('@/components/PackagePhotoCapture'));
-const TabLayout = React.lazy(() => import('@/components/TabLayout'));
-const HomeScreen = React.lazy(() => import('@/components/HomeScreen'));
-const SettingsScreen = React.lazy(() => import('@/components/SettingsScreen'));
-const ThemeSelector = React.lazy(() => import('@/components/ThemeSelector'));
-const SessionInitModal = React.lazy(() => import('@/components/SessionInitModal'));
-const BottomTabNavigator = React.lazy(() => import('@/components/BottomTabNavigator'));
-const TutorialModal = React.lazy(() => import('@/components/TutorialModal'));
-const ScreenTransition = React.lazy(() => import('@/components/ScreenTransition'));
-const DeliveryBoyLoading = React.lazy(() => import('@/components/DeliveryBoyLoading'));
+// Importações diretas para React Native (lazy loading não funciona nativamente)
+import IndustrialScannerView from '@/components/IndustrialScannerView';
+import MetricsDashboard from '@/components/MetricsDashboard';
+import PackageList from '@/components/PackageList';
+import DuplicateModal from '@/components/DuplicateModal';
+import DivergenceScreen from '@/components/DivergenceScreen';
+import ReportView from '@/components/ReportView';
+import HistoryBrowser from '@/components/HistoryBrowser';
+import AppHeader from '@/components/AppHeader';
+import EmptyStateWelcome from '@/components/EmptyStateWelcome';
+import MainLayout from '@/components/MainLayout';
+import PackagePhotoCapture from '@/components/PackagePhotoCapture';
+import TabLayout from '@/components/TabLayout';
+import HomeScreen from '@/components/HomeScreen';
+import SettingsScreen from '@/components/SettingsScreen';
+import ThemeSelector from '@/components/ThemeSelector';
+import SessionInitModal from '@/components/SessionInitModal';
+import BottomTabNavigator from '@/components/BottomTabNavigator';
+import TutorialModal from '@/components/TutorialModal';
+import ScreenTransition from '@/components/ScreenTransition';
+import DeliveryBoyLoading from '@/components/DeliveryBoyLoading';
 
 type AppScreen = 'scanning' | 'report' | 'history' | 'welcome' | 'settings';
 

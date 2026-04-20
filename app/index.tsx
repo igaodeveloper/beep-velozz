@@ -42,10 +42,6 @@ const SCREEN_ANIMATIONS = {
   settings: { type: ANIMATION_TYPES.FLIP, direction: DIRECTIONS.RIGHT, duration: 150 },
 } as const;
 
-// Memoização de cálculos pesados
-const memoizedGetSessionMetrics = useMemo(() => getSessionMetrics, []);
-const memoizedGenerateId = useMemo(() => generateId, []);
-const memoizedGetPackageValue = useMemo(() => getPackageValue, []);
 
 export default function App() {
   const router = useRouter();
@@ -312,9 +308,9 @@ export default function App() {
   // Memoização de métricas para performance
   const metrics = useMemo(() => {
     return currentSession
-      ? memoizedGetSessionMetrics(currentSession.packages)
+      ? getSessionMetrics(currentSession.packages)
       : { shopee: 0, mercadoLivre: 0, avulsos: 0, total: 0, valueShopee: 0, valueMercadoLivre: 0, valueAvulsos: 0, valueTotal: 0 };
-  }, [currentSession?.packages, memoizedGetSessionMetrics]);
+  }, [currentSession?.packages]);
 
   return (
     <TabLayout

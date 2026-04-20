@@ -29,7 +29,7 @@ const DEFAULT_PRICING: PricingConfig = {
     {
       type: "shopee",
       displayName: "Shopee",
-      value: 6,
+      value: 6.00,
       currency: "BRL",
       active: true,
       updatedAt: Date.now(),

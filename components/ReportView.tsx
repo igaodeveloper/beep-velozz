@@ -20,8 +20,6 @@ import {
   packageTypeBadgeColors,
 } from "@/utils/session";
 import { useAppTheme } from "@/utils/useAppTheme";
-import PackagePhotoGallery from "@/components/PackagePhotoGallery";
-import { exportSessionWithPhotosToPDF } from "@/utils/pdfExport";
 import MainLayout from "@/components/MainLayout";
 import { debounce } from "@/utils/performanceOptimizer";
 import WhatsAppShareButton from "@/components/ui/WhatsAppShareButton";
@@ -42,12 +40,10 @@ export default function ReportView({
   const metrics = getSessionMetrics(session.packages);
   const hasDivergence = session.hasDivergence;
 
-  const [showPhotoGallery, setShowPhotoGallery] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
-  const [isWhatsAppLoading, setIsWhatsAppLoading] = useState(false);
-  const [shareOptions, setShareOptions] = useState({
-    includeDetailedList: false,
-    includePhotos: false,
+  const [shareOptions] = useState({
+    includeDetailedList: true,
+    includePhotos: true,
   });
 
   // Memoizar mensagem formatada para evitar recálculos
@@ -80,13 +76,6 @@ export default function ReportView({
     }
   }, 300), [formattedMessage, isSharing]);
 
-  const handleExportWithPhotos = async () => {
-    try {
-      await exportSessionWithPhotosToPDF(session);
-    } catch (error) {
-      console.error("Erro ao exportar PDF com fotos:", error);
-    }
-  };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -632,15 +621,13 @@ export default function ReportView({
         </View>
       </ScrollView>
 
-      {/* Action buttons */}
+      {/* Botão único de compartilhamento WhatsApp */}
       <View
         style={{
-          padding: 16,
-          gap: 10,
+          padding: 20,
           borderTopWidth: 1,
           borderTopColor: colors.border,
           backgroundColor: colors.bg,
-          flexWrap: "wrap",
         }}
       >
         <WhatsAppShareButton
@@ -648,115 +635,14 @@ export default function ReportView({
           options={shareOptions}
           size="large"
           variant="primary"
-          style={{
-            marginBottom: 12,
-          }}
           onShareStart={() => setIsSharing(true)}
           onShareComplete={(result) => {
             setIsSharing(false);
             handleShareComplete(result);
           }}
         />
-
-        <TouchableOpacity
-          onPress={handleShare}
-          disabled={isSharing}
-          activeOpacity={0.85}
-          style={{
-            backgroundColor: colors.surface,
-            borderRadius: 12,
-            padding: 14,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            borderWidth: 1,
-            borderColor: colors.border,
-            opacity: isSharing ? 0.7 : 1,
-          }}
-        >
-          <Text style={{ fontSize: 18 }}>
-            {isSharing ? "⏳" : "📤"}
-          </Text>
-          <Text
-            style={{ color: colors.textMuted, fontSize: 16, fontWeight: "700" }}
-          >
-            {isSharing ? "Compartilhando..." : "Compartilhar (Outros)"}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => setShowPhotoGallery(true)}
-          activeOpacity={0.85}
-          style={{
-            backgroundColor: colors.surface,
-            borderRadius: 12,
-            padding: 14,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            borderWidth: 1,
-            borderColor: colors.border,
-          }}
-        >
-          <Text style={{ fontSize: 18 }}>📸</Text>
-          <Text style={{ color: colors.text, fontSize: 14, fontWeight: "700" }}>
-            Fotos dos pacotes (opcional)
-          </Text>
-        </TouchableOpacity>
-
-        <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
-          <TouchableOpacity
-            onPress={onViewHistory}
-            activeOpacity={0.85}
-            style={{
-              flex: 1,
-              backgroundColor: colors.surface,
-              borderRadius: 12,
-              padding: 14,
-              alignItems: "center",
-              borderWidth: 1,
-              borderColor: colors.border,
-            }}
-          >
-            <Text
-              style={{ color: colors.text, fontSize: 14, fontWeight: "700" }}
-            >
-              📋 Histórico
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={onNewSession}
-            activeOpacity={0.85}
-            style={{
-              flex: 1,
-              backgroundColor: colors.primary,
-              borderRadius: 12,
-              padding: 14,
-              alignItems: "center",
-            }}
-          >
-            <Text
-              style={{
-                color: colors.secondary,
-                fontSize: 14,
-                fontWeight: "800",
-              }}
-            >
-              + Nova Sessão
-            </Text>
-          </TouchableOpacity>
-        </View>
       </View>
 
-      <PackagePhotoGallery
-        session={session}
-        visible={showPhotoGallery}
-        onClose={() => setShowPhotoGallery(false)}
-        onExportWithPhotos={handleExportWithPhotos}
-      />
 
     </View>
   );

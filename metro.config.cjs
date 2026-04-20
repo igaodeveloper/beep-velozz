@@ -1,52 +1,35 @@
-const { getDefaultConfig } = require('expo/metro-config');
-const { withNativeWind } = require('nativewind/metro');
+/**
+ * Metro Config Simples para Windows
+ * Configuração minimalista que evita todos os problemas de ESM e paths
+ */
 
+const { getDefaultConfig } = require('expo/metro-config');
+
+// Configuração básica sem complexidades
 const config = getDefaultConfig(__dirname);
 
-// Configurações otimizadas para produção
-config.resolver.alias = {
-  ...config.resolver.alias,
-  '@': './',
-  '@/components': './components',
-  '@/utils': './utils',
-  '@/services': './services',
-  '@/types': './types',
-  '@/hooks': './hooks',
-  '@/constants': './constants',
-};
-
-// Configurações de cache
-config.cacheStores = [
-  new (require('metro-cache').FileStore)({
-    root: require('path').join(__dirname, '.metro-cache'),
-    maxSize: 200 * 1024 * 1024, // 200MB
-  }),
+// Adicionar suporte a CSS sem transformers complexos
+config.resolver.assetExts = [
+  ...config.resolver.assetExts,
+  'css',
+  'scss',
 ];
 
-// Otimizações de transformação
-config.transformer = {
-  ...config.transformer,
-  minifierConfig: {
-    compress: {
-      dead_code: true,
-      drop_console: process.env.NODE_ENV === 'production',
-      drop_debugger: true,
-      unused: true,
-    },
-    mangle: {
-      toplevel: true,
-    },
-    output: {
-      comments: false,
-    },
-  },
+// Alias básico para CSS interop
+config.resolver.alias = {
+  ...config.resolver.alias,
+  'react-native-css-interop/jsx-runtime': 'react-native-css-interop',
 };
 
-// Aplicar NativeWind
-module.exports = withNativeWind(config, {
-  input: './global.css',
-  configPath: './tailwind.config.js',
-  projectRoot: __dirname,
-  inlineRem: false,
-  logLevel: 'warn',
-});
+// Tentar NativeWind de forma simples
+try {
+  const { withNativeWind } = require('nativewind/metro');
+  module.exports = withNativeWind(config, { 
+    input: './global.css',
+    config: './tailwind.config.js'
+  });
+  console.log('✅ NativeWind simples configurado');
+} catch (error) {
+  console.log('⚠️ Usando config padrão (sem NativeWind)');
+  module.exports = config;
+}

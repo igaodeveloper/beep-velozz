@@ -3,54 +3,9 @@
     "name": "Beep Velozz",
     "slug": "beep-velozz",
     "version": "2.0.0",
-    "orientation": "default",
-    "icon": "./assets/images/icon.png",
-    "scheme": "beepvelozz",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "jsEngine": "hermes",
-    "nodeModulesPath": ".expo",
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.igaonamikaze.beepvelozz",
-      "infoPlist": {
-        "NSCameraUsageDescription": "Precisamos de acesso à câmera para ler QR Codes e códigos de barras.",
-        "UISupportedInterfaceOrientations": [
-          "UIInterfaceOrientationPortrait",
-          "UIInterfaceOrientationLandscapeLeft",
-          "UIInterfaceOrientationLandscapeRight"
-        ],
-        "UISupportedInterfaceOrientations~ipad": [
-          "UIInterfaceOrientationPortrait",
-          "UIInterfaceOrientationPortraitUpsideDown",
-          "UIInterfaceOrientationLandscapeLeft",
-          "UIInterfaceOrientationLandscapeRight"
-        ]
-      },
-      "jsEngine": "hermes"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "permissions": ["CAMERA", "VIBRATE", "WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE"],
-      "package": "com.igaonamikaze.beepvelozz",
-      "screenOrientation": "portrait",
-      "jsEngine": "hermes",
-      "compileSdkVersion": 34,
-      "targetSdkVersion": 34,
-      "buildToolsVersion": "34.0.0",
-      "minSdkVersion": 23,
-      "versionCode": 200,
-      "useNextNotificationsApi": true,
-      "icon": "./assets/images/icon.png",
-      "splash": {
-        "image": "./assets/images/splash-icon.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff"
-      }
-    },
+    "platforms": ["ios", "android", "web"],
+    "userInterfaceStyle": "automatic",
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -96,14 +51,17 @@
       "@sentry/react-native"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "turboMode": true
+      "typedRoutes": true
     },
     "assetBundlePatterns": ["**/*"],
     "extra": {
       "router": {},
       "eas": {
         "projectId": "6c8f82da-9e01-4276-a3ee-1d413458d4d4"
+      },
+      "sentry": {
+        "org": "igaonamikaze",
+        "project": "beep-velozz"
       },
       "firebaseApiKey": "AIzaSyAqS_rWdY5yhXwBLXL48Nooc-xfHpi5f5c",
       "firebaseAuthDomain": "beepvelozz.firebaseapp.com",

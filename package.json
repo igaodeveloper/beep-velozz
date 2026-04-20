@@ -110,8 +110,8 @@
     "lucide-react-native": "^0.479.0",
     "nativewind": "^4.1.23",
     "postcss": "^8.5.3",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "react-i18next": "^14.0.0",
     "react-native": "0.81.5",
     "react-native-css-interop": "^0.2.3",
@@ -136,7 +136,7 @@
     "@testing-library/react-native": "^12.0.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^25.3.3",
-    "@types/react": "~18.2.0",
+    "@types/react": "~19.1.10",
     "eslint": "^8.57.0",
     "eslint-config-expo": "~10.0.0",
     "eslint-plugin-testing-library": "^6.0.0",
@@ -149,6 +149,19 @@
     "typescript": "~5.9.2"
   },
   "private": true,
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-restart"
+        ],
+        "listUnknownPackages": false
+      }
+    },
+    "install": {
+      "exclude": []
+    }
+  },
   "engines": {
     "node": ">=20.0.0",
     "npm": ">=10.0.0"

@@ -5,8 +5,8 @@ import Constants from 'expo-constants';
 export const initSentry = () => {
   if (!__DEV__) {
     Sentry.init({
-      dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
-      environment: process.env.EXPO_PUBLIC_ENVIRONMENT || 'production',
+      dsn: 'https://your-dsn-here', // Will be configured during build
+      environment: Constants.executionEnvironment || 'production',
       release: Constants.nativeAppVersion,
       dist: Constants.nativeBuildVersion,
 

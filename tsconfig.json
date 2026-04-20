@@ -57,11 +57,7 @@
     "node_modules",
     ".expo",
     "dist",
-    "coverage",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.spec.ts",
-    "**/*.spec.tsx"
+    "coverage"
   ],
   "ts-node": {
     "esm": true,

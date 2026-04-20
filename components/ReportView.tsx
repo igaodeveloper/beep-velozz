@@ -25,6 +25,8 @@ import { exportSessionWithPhotosToPDF } from "@/utils/pdfExport";
 import MainLayout from "@/components/MainLayout";
 import { debounce } from "@/utils/performanceOptimizer";
 import PackageValueConfig from "@/components/PackageValueConfig";
+import WhatsAppShareButton from "@/components/ui/WhatsAppShareButton";
+import { ShareResult } from "@/services/whatsappShareService";
 
 interface ReportViewProps {
   session: Session;
@@ -45,50 +47,26 @@ export default function ReportView({
   const [isSharing, setIsSharing] = useState(false);
   const [isWhatsAppLoading, setIsWhatsAppLoading] = useState(false);
   const [showValueConfig, setShowValueConfig] = useState(false);
+  const [shareOptions, setShareOptions] = useState({
+    includeDetailedList: false,
+    includePhotos: false,
+  });
 
   // Memoizar mensagem formatada para evitar recálculos
   const formattedMessage = useMemo(() => {
     return formatWhatsAppMessage(session);
   }, [session.id, session.packages.length, session.declaredCount]);
 
-  // Função otimizada para WhatsApp com feedback visual
-  const handleWhatsApp = useCallback(async () => {
-    if (isWhatsAppLoading) return;
-    
-    setIsWhatsAppLoading(true);
-    try {
-      const message = formattedMessage;
-      const encoded = encodeURIComponent(message);
-      const url = `whatsapp://send?text=${encoded}`;
-      
-      // Timeout para evitar travamento
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 3000)
-      );
-      
-      const canOpenPromise = Linking.canOpenURL(url);
-      const canOpen = await Promise.race([canOpenPromise, timeoutPromise]);
-      
-      if (canOpen) {
-        await Linking.openURL(url);
-      } else {
-        // Fallback rápido
-        await Share.share({ message });
-      }
-    } catch (error) {
-      console.error('Erro ao abrir WhatsApp:', error);
-      // Fallback imediato
-      try {
-        await Share.share({ message: formattedMessage });
-      } catch (shareError) {
-        Alert.alert('Erro', 'Não foi possível compartilhar o relatório.');
-      }
-    } finally {
-      setIsWhatsAppLoading(false);
+  // Handler profissional para compartilhamento
+  const handleShareComplete = useCallback((result: ShareResult) => {
+    if (result.success) {
+      console.log(`Compartilhado via ${result.method}`);
+    } else {
+      console.error('Erro no compartilhamento:', result.error);
     }
-  }, [formattedMessage, isWhatsAppLoading]);
+  }, []);
 
-  // Função otimizada para compartilhar com debounce
+  // Handler para compartilhamento genérico (fallback)
   const handleShare = useCallback(debounce(async () => {
     if (isSharing) return;
     
@@ -667,30 +645,20 @@ export default function ReportView({
           flexWrap: "wrap",
         }}
       >
-        <TouchableOpacity
-          onPress={handleWhatsApp}
-          disabled={isWhatsAppLoading}
-          activeOpacity={0.85}
+        <WhatsAppShareButton
+          session={session}
+          options={shareOptions}
+          size="large"
+          variant="primary"
           style={{
-            backgroundColor: isWhatsAppLoading ? "#1ebe55" : "#25d366",
-            borderRadius: 12,
-            padding: 16,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            opacity: isWhatsAppLoading ? 0.7 : 1,
+            marginBottom: 12,
           }}
-        >
-          <Text style={{ fontSize: 20 }}>
-            {isWhatsAppLoading ? "⏳" : "💬"}
-          </Text>
-          <Text
-            style={{ color: colors.secondary, fontSize: 16, fontWeight: "800" }}
-          >
-            {isWhatsAppLoading ? "ABRINDO..." : "ENVIAR VIA WHATSAPP"}
-          </Text>
-        </TouchableOpacity>
+          onShareStart={() => setIsSharing(true)}
+          onShareComplete={(result) => {
+            setIsSharing(false);
+            handleShareComplete(result);
+          }}
+        />
 
         <TouchableOpacity
           onPress={handleShare}
@@ -715,7 +683,7 @@ export default function ReportView({
           <Text
             style={{ color: colors.textMuted, fontSize: 16, fontWeight: "700" }}
           >
-            {isSharing ? "Compartilhando..." : "Compartilhar"}
+            {isSharing ? "Compartilhando..." : "Compartilhar (Outros)"}
           </Text>
         </TouchableOpacity>
 

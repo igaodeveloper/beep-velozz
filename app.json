@@ -3,9 +3,41 @@
     "name": "Beep Velozz",
     "slug": "beep-velozz",
     "version": "2.0.0",
+    "orientation": "portrait",
     "jsEngine": "hermes",
     "platforms": ["ios", "android", "web"],
     "userInterfaceStyle": "automatic",
+    "android": {
+      "package": "com.shopiii2025.beepvelozz",
+      "versionCode": 200,
+      "compileSdkVersion": 34,
+      "targetSdkVersion": 34,
+      "buildToolsVersion": "34.0.0",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "icon": "./assets/images/icon.png",
+      "splash": {
+        "image": "./assets/images/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.VIBRATE",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.ACCESS_WIFI_STATE",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.shopiii2025.beepvelozz",
+      "buildNumber": "2.0.0",
+      "supportsTablet": false
+    },
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -14,41 +46,31 @@
     "plugins": [
       "expo-router",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "resizeMode": "cover",
-          "backgroundColor": "#ffffff",
-          "splash": {
-            "imageWidth": 200,
-            "imageHeight": 200,
-            "resizeMode": "contain",
-            "backgroundColor": "#ffffff"
-          },
-          "platform": {
-            "ios": {
-              "splashImage": "./assets/images/splash-icon.png",
-              "backgroundColor": "#ffffff",
-              "imageWidth": 200,
-              "imageHeight": 200,
-              "resizeMode": "contain"
-            },
-            "android": {
-              "splash": {
-                "image": "./assets/images/splash-icon.png",
-                "backgroundColor": "#ffffff",
-                "resizeMode": "contain",
-                "imageWidth": 200,
-                "imageHeight": 200
-              }
-            }
-          }
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
         }
       ],
       "expo-font",
       "expo-web-browser",
       "expo-secure-store",
-      "@sentry/react-native"
+      [
+        "@sentry/react-native",
+        {
+          "org": "igaonamikaze",
+          "project": "beep-velozz"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

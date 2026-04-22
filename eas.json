@@ -38,6 +38,19 @@
       "ios": {
         "buildConfiguration": "Release"
       }
+    },
+    "apk": {
+      "autoIncrement": false,
+      "node": "20.18.2",
+      "channel": "apk",
+      "env": {
+        "NPM_CONFIG_FETCH_TIMEOUT": "600000",
+        "NPM_CONFIG_FETCH_RETRIES": "5"
+      },
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      }
     }
   },
   "submit": {

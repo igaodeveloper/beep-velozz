@@ -1,210 +1,363 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   TextInput,
-  Animated,
+  Animated as RNAnimated,
   Easing,
   Platform,
   useWindowDimensions,
-} from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import * as Haptics from 'expo-haptics';
-import { ScannedPackage } from '@/types/session';
-import { classifyPackage, packageTypeLabel, packageTypeBadgeColors, generateId } from '../utils/session';
-import { theme } from '../utils/theme';
-import { playBeep, playError, preloadSounds, unloadSounds } from '../utils/sound';
-import { TIMING } from '../utils/constants';
+  Modal,
+  ActivityIndicator,
+  StatusBar,
+  SafeAreaView,
+  Dimensions,
+} from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  withRepeat,
+  withSequence,
+  interpolate,
+  Easing as ReEasing,
+} from "react-native-reanimated";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
+import { ScannedPackage } from "@/types/session";
+import { PackageType } from "@/types/scanner";
+import {
+  packageTypeLabel,
+  packageTypeBadgeColors,
+  generateId,
+  getPackageValue,
+  getSessionMetrics,
+} from "@/utils/session";
+import {
+  normalizeCode as normalizeScannerCode,
+  identifyPackage,
+} from "@/utils/scannerIdentification";
+import { useAppTheme } from "@/utils/useAppTheme";
+import {
+  useResponsive,
+  responsiveSize,
+  responsiveValue,
+} from "@/utils/useResponsive";
+import { preloadSounds, unloadSounds } from "@/utils/sound";
+import { ScannerAudioService, ScannerAudioType } from "@/utils/scannerAudio";
 
 interface ScannerViewProps {
-  onScan: (pkg: ScannedPackage) => void;
+  // Return true if the package was accepted, false for duplicates/limits
+  onScan: (pkg: ScannedPackage) => boolean;
   onDuplicate: (code: string) => void;
   packages: ScannedPackage[];
+  declaredCounts: { shopee: number; mercadoLivre: number; avulso: number };
   lastScanned?: ScannedPackage | null;
   onEndSession: () => void;
-  isLoading?: boolean;
+  onRequestPhoto?: (pkg: ScannedPackage) => void;
 }
 
 export default function ScannerView({
   onScan,
   onDuplicate,
   packages,
+  declaredCounts,
   lastScanned,
   onEndSession,
-  isLoading = false,
+  onRequestPhoto,
 }: ScannerViewProps) {
+  const { colors } = useAppTheme();
   const { width: windowWidth } = useWindowDimensions();
-  const [manualCode, setManualCode] = useState('');
+  const responsive = useResponsive();
+  const [manualCode, setManualCode] = useState("");
+  const [manualError, setManualError] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
-  const feedbackAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const scanLineAnim = useRef(new Animated.Value(0)).current;
+  const [manualInputExpanded, setManualInputExpanded] = useState(false);
+  const [showOutOfAreaWarning, setShowOutOfAreaWarning] = useState(false);
+  const feedbackAnim = useSharedValue(0);
+  const pulseAnim = useSharedValue(1);
+  const scanLineAnim = useSharedValue(0);
+  const outOfAreaAnim = useSharedValue(0);
   const [permission, requestPermission] = useCameraPermissions();
   const [barcodeLocked, setBarcodeLocked] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
-  const [facing, setFacing] = useState<'back' | 'front'>('back');
   const lastAcceptedRef = useRef<{ code: string; at: number } | null>(null);
+  const audioService = useRef(new ScannerAudioService()).current;
 
-  const scannedCodes = useMemo(() => new Set(packages.map(p => p.code)), [packages]);
+  const metrics = getSessionMetrics(packages);
 
-  const normalizeCode = (raw: string) => {
-    const trimmed = (raw ?? '').trim();
-    const upperRaw = trimmed.toUpperCase();
+  // quick lookup set for faster duplicate detection
+  const packageSet = useMemo(
+    () => new Set(packages.map((p) => p.code)),
+    [packages],
+  );
 
-    const extracted =
-      upperRaw.match(/(BR[0-9A-Z]{6,})/)?.[1] ||
-      upperRaw.match(/(20000[0-9]{6,})/)?.[1] ||
-      upperRaw.match(/(46[0-9]{6,})/)?.[1] ||
-      upperRaw.match(/(45[0-9]{6,})/)?.[1] ||
-      upperRaw.match(/(LM[0-9A-Z]{2,})/)?.[1];
-
-    if (extracted) return extracted;
-
-    const cleaned = trimmed.replace(/[^0-9a-zA-Z]/g, '');
-    return cleaned.toUpperCase();
+  // Helper para mapear tipo de pacote para áudio
+  const getAudioTypeForPackage = (type: PackageType): ScannerAudioType => {
+    switch (type) {
+      case "shopee":
+        return ScannerAudioType.BEEP_A;
+      case "mercado_livre":
+        return ScannerAudioType.BEEP_B;
+      case "avulso":
+        return ScannerAudioType.BEEP_C;
+      case "unknown":
+      default:
+        return ScannerAudioType.BEEP_ERROR;
+    }
   };
 
-  const forceTypeByPrefix = (upperCleaned: string) => {
-    if (upperCleaned.startsWith('BR')) return 'shopee' as const;
-    if (upperCleaned.startsWith('20000') || upperCleaned.startsWith('46')) return 'mercado_livre' as const;
-    if (upperCleaned.startsWith('LM')) return 'avulso' as const;
-    return null;
+  const [limitVisible, setLimitVisible] = useState(false);
+  const [limitLabel, setLimitLabel] = useState("");
+  const [limitValue, setLimitValue] = useState(0);
+
+  const checkLimit = (type: PackageType) => {
+    // Se for unknown, não verifica limite
+    if (type === "unknown") return true;
+
+    let currentCount = 0;
+    let limit = 0;
+    let label = "";
+    switch (type) {
+      case "shopee":
+        currentCount = metrics.shopee;
+        limit = declaredCounts.shopee;
+        label = "Shopee";
+        break;
+      case "mercado_livre":
+        currentCount = metrics.mercadoLivre;
+        limit = declaredCounts.mercadoLivre;
+        label = "Mercado Livre";
+        break;
+      case "avulso":
+        currentCount = metrics.avulsos;
+        limit = declaredCounts.avulso;
+        label = "Avulso";
+        break;
+    }
+    if (currentCount >= limit) {
+      setLimitLabel(label);
+      setLimitValue(limit);
+      setLimitVisible(true);
+      return false;
+    }
+    return true;
   };
 
   // Pulse animation for reticle
   useEffect(() => {
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.04,
-          duration: TIMING.DEBOUNCE_DELAY,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
+    pulseAnim.value = withRepeat(
+      withSequence(
+        withTiming(1.04, {
+          duration: 900,
+          easing: ReEasing.inOut(ReEasing.ease),
         }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: TIMING.DEBOUNCE_DELAY,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
+        withTiming(1, { duration: 900, easing: ReEasing.inOut(ReEasing.ease) }),
+      ),
+      -1,
+      true,
     );
-    pulse.start();
-    return () => pulse.stop();
   }, []);
 
   useEffect(() => {
-    preloadSounds();
-    return () => {
-      unloadSounds();
-    };
-  }, []);
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(scanLineAnim, {
-          toValue: 1,
+    scanLineAnim.value = withRepeat(
+      withSequence(
+        withTiming(1, {
           duration: 1100,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
+          easing: ReEasing.inOut(ReEasing.ease),
         }),
-        Animated.timing(scanLineAnim, {
-          toValue: 0,
+        withTiming(0, {
           duration: 1100,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
+          easing: ReEasing.inOut(ReEasing.ease),
         }),
-      ])
+      ),
+      -1,
+      true,
     );
-    loop.start();
-    return () => loop.stop();
   }, []);
 
-  // Feedback flash when scanned
   useEffect(() => {
     if (lastScanned) {
       setShowFeedback(true);
-      Animated.sequence([
-        Animated.timing(feedbackAnim, { toValue: 1, duration: TIMING.MODAL_DURATION, useNativeDriver: true }),
-        Animated.timing(feedbackAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
-      ]).start(() => setShowFeedback(false));
+      feedbackAnim.value = withSequence(
+        withTiming(1, { duration: 150 }),
+        withTiming(0, { duration: 600 }),
+      );
+      setTimeout(() => setShowFeedback(false), 750);
     }
   }, [lastScanned]);
 
   useEffect(() => {
-    if (Platform.OS === 'web') return;
+    if (Platform.OS === "web") return;
     if (!permission) return;
-    if (permission.status === 'undetermined') {
+    if (permission.status === "undetermined") {
       requestPermission();
     }
   }, [permission, requestPermission]);
 
   const handleManualSubmit = () => {
-    const code = normalizeCode(manualCode);
-    if (!code) return;
-
-    const duplicate = scannedCodes.has(code);
-    if (duplicate) {
-      onDuplicate(code);
-      playError();
-      if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-      }
-      setManualCode('');
+    console.log(`[ScannerView] 🎯 MANUAL SUBMIT TRIGGERED`);
+    setManualError(null);
+    console.log(`[ScannerView] 📝 MANUAL INPUT: "${manualCode}"`);
+    const code = normalizeScannerCode(manualCode);
+    console.log(`[ScannerView] 🔄 MANUAL NORMALIZADO: "${code}"`);
+    if (!code) {
+      setManualError("Código inválido");
       return;
     }
 
-    const forced = forceTypeByPrefix(code);
-    const type = forced ?? classifyPackage(code);
+    if (packageSet.has(code)) {
+      onDuplicate(code);
+      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Warning,
+        ).catch(() => {});
+      }
+      setManualCode("");
+      setManualError("Código já escaneado");
+      return;
+    }
+
+    const pkgInfo = identifyPackage(code);
+    console.log(
+      `[ScannerView] 🎯 MANUAL IDENTIFICADO: type="${pkgInfo.type}", matched=${pkgInfo.matched}, confidence=${pkgInfo.confidence}`,
+    );
+    const type = pkgInfo.type;
+
+    // check limit
+    if (type === "unknown" || !checkLimit(type)) {
+      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Warning,
+        ).catch(() => {});
+      }
+      setManualCode("");
+      setManualError(
+        type === "unknown"
+          ? "Tipo de pacote não identificado"
+          : "Limite atingido para este tipo",
+      );
+      return;
+    }
+
     const pkg: ScannedPackage = {
       id: generateId(),
       code,
       type,
+      value: getPackageValue(type),
       scannedAt: new Date().toISOString(),
     };
-    onScan(pkg);
-    playBeep();
-    if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    console.log(
+      `[ScannerView] 📦 MANUAL PACOTE CRIADO: ${JSON.stringify(pkg)}`,
+    );
+    const accepted = onScan(pkg);
+    console.log(`[ScannerView] ✅ MANUAL ACEITO: ${accepted}`);
+    if (accepted) {
+      lastAcceptedRef.current = { code, at: Date.now() };
+      const audioType = getAudioTypeForPackage(type);
+      console.log(
+        `[ScannerView] 🔊 MANUAL ÁUDIO: type="${type}" -> audioType="${audioType}"`,
+      );
+      audioService.playAudio(audioType);
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success,
+        ).catch(() => {});
+      }
+    } else {
+      console.log(`[ScannerView] ❌ MANUAL REJEITADO: onScan retornou false`);
+      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Warning,
+        ).catch(() => {});
+      }
+      setManualError("Não foi possível aceitar o pacote");
     }
-    setManualCode('');
+    setManualCode("");
   };
 
   const handleScannedCode = (raw: string) => {
-    const code = normalizeCode(raw);
-    if (!code) return;
-
-    const now = Date.now();
-    const lastAccepted = lastAcceptedRef.current;
-    if (lastAccepted && lastAccepted.code === code && now - lastAccepted.at < TIMING.SCAN_COOLDOWN) {
+    console.log(`[ScannerView] 📥 ENTRADA: "${raw}"`);
+    const code = normalizeScannerCode(raw);
+    console.log(`[ScannerView] 🔄 NORMALIZADO: "${code}"`);
+    if (!code) {
+      console.log(`[ScannerView] ❌ CÓDIGO VAZIO APÓS NORMALIZAÇÃO`);
       return;
     }
 
-    const duplicate = scannedCodes.has(code);
-    if (duplicate) {
+    const now = Date.now();
+    const lastAccepted = lastAcceptedRef.current;
+    if (
+      lastAccepted &&
+      lastAccepted.code === code &&
+      now - lastAccepted.at < 500
+    ) {
+      // Reduzido de 2000ms para 500ms - permite bipagens mais rápidas
+      return;
+    }
+
+    if (packageSet.has(code)) {
       onDuplicate(code);
-      playError();
-      if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Warning,
+        ).catch(() => {});
       }
       return;
     }
 
-    const forced = forceTypeByPrefix(code);
-    const type = forced ?? classifyPackage(code);
+    const pkgInfo = identifyPackage(code);
+    const type = pkgInfo.type;
+    console.log(
+      `[ScannerView] 🎯 IDENTIFICADO: type="${type}", matched=${pkgInfo.matched}, confidence=${pkgInfo.confidence}`,
+    );
+
+    // check per‑type limit before emitting
+    if (!checkLimit(type)) {
+      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Warning,
+        ).catch(() => {});
+      }
+      return;
+    }
+
     const pkg: ScannedPackage = {
       id: generateId(),
       code,
       type,
+      value: getPackageValue(type),
       scannedAt: new Date().toISOString(),
     };
-    onScan(pkg);
-    playBeep();
-    lastAcceptedRef.current = { code, at: now };
-    if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+
+    const accepted = onScan(pkg);
+    if (accepted) {
+      lastAcceptedRef.current = { code, at: now };
+      const audioType = getAudioTypeForPackage(type);
+      console.log(
+        `[ScannerView] ✅ ACEITO: type="${type}" -> audioType="${audioType}"`,
+      );
+      audioService.playAudio(audioType);
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success,
+        ).catch(() => {});
+      }
+    } else {
+      audioService.playAudio(ScannerAudioType.BEEP_ERROR);
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Warning,
+        ).catch(() => {});
+      }
     }
   };
 
@@ -212,393 +365,1278 @@ export default function ScannerView({
     if (barcodeLocked) return;
     setBarcodeLocked(true);
 
+    // DESABILITADO: Validação de área do reticle causava rejeição de códigos válidos
+    // Agora aceita qualquer código lido pela câmera
+    // if (event?.bounds && !isCodeInReticleArea(event.bounds)) {
+    //   console.log(`[ScannerView] ❌ Código fora da área do reticle - ignorando`);
+    //   ...
+    // }
+
     handleScannedCode(event?.data);
 
     setTimeout(() => {
       setBarcodeLocked(false);
-    }, TIMING.DEBOUNCE_DELAY);
+    }, 100); // Ultra-rápido: redução de 900ms para 100ms
   };
 
-  const lastBadge = lastScanned ? packageTypeBadgeColors(lastScanned.type) : null;
+  // Função para verificar se o código está dentro da área do reticle
+  const isCodeInReticleArea = (bounds: any): boolean => {
+    if (!bounds) return true; // Se não tiver bounds, assume que está dentro
 
-  const reticleWidth = Math.max(200, Math.min(windowWidth - 64, 320));
-  const reticleHeight = Math.max(120, Math.min(reticleWidth * 0.62, 220));
-  const overlayExtraX = Math.min(260, Math.max(180, Math.round(reticleWidth * 1.15)));
-  const overlayExtraY = Math.min(220, Math.max(160, Math.round(reticleHeight * 1.3)));
+    const { width: screenWidth, height: screenHeight } =
+      Dimensions.get("window");
+
+    // Calcular centro do reticle (baseado nas dimensões atuais)
+    const reticleCenterX = screenWidth / 2;
+    const reticleCenterY = screenHeight / 2;
+
+    // Área do reticle com margem de tolerância
+    const reticleAreaWidth = reticleWidth * 0.9; // 90% do reticle para margem
+    const reticleAreaHeight = reticleHeight * 0.9;
+
+    // Limites do reticle
+    const reticleLeft = reticleCenterX - reticleAreaWidth / 2;
+    const reticleRight = reticleCenterX + reticleAreaWidth / 2;
+    const reticleTop = reticleCenterY - reticleAreaHeight / 2;
+    const reticleBottom = reticleCenterY + reticleAreaHeight / 2;
+
+    // Coordenadas do código escaneado
+    const codeLeft = bounds.x || 0;
+    const codeRight = (bounds.x || 0) + (bounds.width || 0);
+    const codeTop = bounds.y || 0;
+    const codeBottom = (bounds.y || 0) + (bounds.height || 0);
+
+    // Verificar se o código está completamente dentro do reticle
+    const isWithinArea =
+      codeLeft >= reticleLeft &&
+      codeRight <= reticleRight &&
+      codeTop >= reticleTop &&
+      codeBottom <= reticleBottom;
+
+    console.log(`[ScannerView] 🎯 Verificação de área:`, {
+      codeBounds: {
+        left: codeLeft,
+        right: codeRight,
+        top: codeTop,
+        bottom: codeBottom,
+      },
+      reticleBounds: {
+        left: reticleLeft,
+        right: reticleRight,
+        top: reticleTop,
+        bottom: reticleBottom,
+      },
+      isWithinArea,
+    });
+
+    return isWithinArea;
+  };
+
+  const lastBadge = lastScanned
+    ? packageTypeBadgeColors(lastScanned.type)
+    : null;
+
+  // Dimensões responsivas do reticle baseadas no tipo de dispositivo
+  const reticleWidth = useMemo(() => {
+    if (responsive.isTablet)
+      return responsiveSize(responsive, 280, 400, 450, 250);
+    if (responsive.isUltraWide)
+      return responsiveSize(responsive, 320, 450, 500, 280);
+    return Math.max(200, Math.min(windowWidth - 64, 320));
+  }, [responsive, windowWidth]);
+
+  const reticleHeight = useMemo(() => {
+    if (responsive.isTablet) return reticleWidth * 0.65;
+    if (responsive.isUltraWide) return reticleWidth * 0.6;
+    return Math.max(120, Math.min(reticleWidth * 0.62, 220));
+  }, [reticleWidth, responsive]);
+
+  const overlayExtraX = useMemo(() => {
+    if (responsive.isTablet) return Math.round(reticleWidth * 1.2);
+    if (responsive.isUltraWide) return Math.round(reticleWidth * 1.15);
+    return Math.min(260, Math.max(180, Math.round(reticleWidth * 1.15)));
+  }, [reticleWidth, responsive]);
+
+  const overlayExtraY = useMemo(() => {
+    if (responsive.isTablet) return Math.round(reticleHeight * 1.4);
+    if (responsive.isUltraWide) return Math.round(reticleHeight * 1.3);
+    return Math.min(220, Math.max(160, Math.round(reticleHeight * 1.3)));
+  }, [reticleHeight, responsive]);
+
+  // Animated styles
+  const pulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulseAnim.value }],
+  }));
+
+  const scanLineStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateY: interpolate(
+          scanLineAnim.value,
+          [0, 1],
+          [-(reticleHeight * 0.35), reticleHeight * 0.35],
+        ),
+      },
+    ],
+  }));
+
+  const feedbackStyle = useAnimatedStyle(() => ({
+    opacity: feedbackAnim.value,
+  }));
+
+  const outOfAreaStyle = useAnimatedStyle(() => ({
+    opacity: outOfAreaAnim.value,
+  }));
+
+  // Gerenciar fullscreen automático
+  useEffect(() => {
+    if (Platform.OS !== "web") {
+      StatusBar.setHidden(true, "fade");
+    }
+  }, []);
+
+  // Pré-carregararquivos de som ao montar
+  useEffect(() => {
+    console.log("[ScannerView] 🎵 Inicializando sistema de áudio...");
+    preloadSounds().catch((err) => {
+      console.error("[ScannerView] ❌ Erro ao carregar sons:", err);
+    });
+
+    return () => {
+      console.log("[ScannerView] 🎵 Limpando áudio...");
+      unloadSounds().catch((err) => {
+        console.error("[ScannerView] ❌ Erro ao descarregar sons:", err);
+      });
+    };
+  }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.bg, position: 'relative' }}>
-      {/* Camera area (mock/placeholder for web compat) */}
-      <View style={{
-        flex: 1,
-        backgroundColor: theme.colors.surface2,
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'relative',
-      }}>
-        {Platform.OS !== 'web' && permission?.granted && (
-          <CameraView
-            style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
-            facing={facing}
-            enableTorch={torchEnabled}
-            barcodeScannerSettings={{
-              barcodeTypes: [
-                'qr',
-                'code128',
-                'code39',
-                'ean13',
-                'ean8',
-                'upc_a',
-                'upc_e',
-                'pdf417',
-                'aztec',
-                'datamatrix',
-              ],
-            }}
-            onBarcodeScanned={handleBarcodeScanned}
-          />
-        )}
-
-        {Platform.OS !== 'web' && permission?.granted && (
-          <View style={{
-            position: 'absolute',
-            top: 14,
-            right: 14,
-            flexDirection: 'row',
-            gap: 10,
-            alignItems: 'center',
-          }}>
-            <TouchableOpacity
-              onPress={() => setTorchEnabled(v => !v)}
-              activeOpacity={0.85}
+    <View style={{ flex: 1, backgroundColor: colors.bg, position: "relative" }}>
+      <View
+        style={{ flex: 1, backgroundColor: colors.bg, position: "relative" }}
+      >
+        {/* Camera area */}
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: colors.surface2,
+            justifyContent: "center",
+            alignItems: "center",
+            position: "relative",
+          }}
+        >
+          {Platform.OS !== "web" && permission?.granted && (
+            <CameraView
               style={{
-                backgroundColor: torchEnabled ? theme.colors.primary : 'rgba(15,23,42,0.9)',
-                borderRadius: 10,
-                paddingHorizontal: 12,
-                paddingVertical: 10,
-                borderWidth: 1,
-                borderColor: torchEnabled ? theme.colors.primary2 : theme.colors.border2,
+                position: "absolute",
+                top: 0,
+                right: 0,
+                bottom: 0,
+                left: 0,
               }}
-            >
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800', letterSpacing: 0.5 }}>
-                {torchEnabled ? 'FLASH ON' : 'FLASH OFF'}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setFacing(v => (v === 'back' ? 'front' : 'back'))}
-              activeOpacity={0.85}
-              style={{
-                backgroundColor: 'rgba(15,23,42,0.9)',
-                borderRadius: 10,
-                paddingHorizontal: 12,
-                paddingVertical: 10,
-                borderWidth: 1,
-                borderColor: theme.colors.border2,
+              facing="back"
+              enableTorch={torchEnabled}
+              barcodeScannerSettings={{
+                barcodeTypes: [
+                  "qr",
+                  "code128",
+                  "code39",
+                  "ean13",
+                  "ean8",
+                  "upc_a",
+                  "upc_e",
+                  "pdf417",
+                  "aztec",
+                  "datamatrix",
+                ],
               }}
-            >
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800', letterSpacing: 0.5 }}>
-                {facing === 'back' ? 'CÂMERA TRAS.' : 'CÂMERA FRNT.'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Grid lines overlay */}
-        <View style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          opacity: 0.04,
-        }}>
-          {[...Array(8)].map((_, i) => (
-            <View key={i} style={{
-              position: 'absolute',
-              left: 0, right: 0,
-              top: `${(i + 1) * 12}%` as any,
-              height: 1,
-              backgroundColor: theme.colors.primary,
-            }} />
-          ))}
-          {[...Array(5)].map((_, i) => (
-            <View key={i} style={{
-              position: 'absolute',
-              top: 0, bottom: 0,
-              left: `${(i + 1) * 16}%` as any,
-              width: 1,
-              backgroundColor: theme.colors.primary,
-            }} />
-          ))}
-        </View>
-
-        {/* Scanner Reticle */}
-        <Animated.View style={{
-          width: reticleWidth,
-          height: reticleHeight,
-          transform: [{ scale: pulseAnim }],
-          position: 'relative',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <View style={{
-            position: 'absolute',
-            top: -overlayExtraY,
-            left: -overlayExtraX,
-            right: -overlayExtraX,
-            bottom: -overlayExtraY,
-            backgroundColor: 'rgba(2,6,23,0.55)',
-            borderRadius: 18,
-          }} />
-
-          <View style={{
-            position: 'absolute',
-            top: -8,
-            left: -8,
-            right: -8,
-            bottom: -8,
-            backgroundColor: 'rgba(249,115,22,0.05)',
-            borderWidth: 1,
-            borderColor: 'rgba(249,115,22,0.4)',
-            borderRadius: 18,
-          }} />
-
-          {/* Corner brackets */}
-          {[
-            { top: 0, left: 0 },
-            { top: 0, right: 0 },
-            { bottom: 0, left: 0 },
-            { bottom: 0, right: 0 },
-          ].map((pos, i) => (
-            <View
-              key={i}
-              style={{
-                position: 'absolute',
-                width: 24, height: 24,
-                ...pos,
-                borderColor: theme.colors.primary,
-                borderTopWidth: i < 2 ? 3 : 0,
-                borderBottomWidth: i >= 2 ? 3 : 0,
-                borderLeftWidth: i === 0 || i === 2 ? 3 : 0,
-                borderRightWidth: i === 1 || i === 3 ? 3 : 0,
-              }}
+              onBarcodeScanned={handleBarcodeScanned}
             />
-          ))}
+          )}
 
-          {/* Scan line */}
-          <Animated.View style={{
-            position: 'absolute',
-            left: 10,
-            right: 10,
-            height: 2,
-            backgroundColor: theme.colors.primary,
-            opacity: 0.75,
-            transform: [{
-              translateY: scanLineAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [-(reticleHeight * 0.35), reticleHeight * 0.35],
-              }),
-            }],
-          }} />
-
-          {/* Center dot */}
-          <View style={{
-            width: 8, height: 8, borderRadius: 4,
-            backgroundColor: theme.colors.primary, opacity: 0.8,
-          }} />
-        </Animated.View>
-
-        <Text style={{
-          color: '#334155', fontSize: 12, marginTop: 20,
-          fontWeight: '500', letterSpacing: 0.5,
-        }}>
-          Posicione o QR Code ou código de barras
-        </Text>
-
-        {lastScanned && lastBadge && (
-          <View style={{
-            position: 'absolute',
-            left: 14,
-            right: 14,
-            bottom: 14,
-            backgroundColor: 'rgba(15,23,42,0.92)',
-            borderWidth: 1,
-            borderColor: '#1e293b',
-            borderRadius: 14,
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 10,
-          }}>
-            <View style={{
-              backgroundColor: lastBadge.bg,
-              paddingHorizontal: 10,
-              paddingVertical: 5,
-              borderRadius: 999,
-            }}>
-              <Text style={{ color: lastBadge.text, fontSize: 11, fontWeight: '800' }}>
-                {packageTypeLabel(lastScanned.type)}
-              </Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }} numberOfLines={1}>
-                {lastScanned.code}
-              </Text>
-              <Text style={{ color: '#64748b', fontSize: 11, fontWeight: '600' }}>
-                Último lido
-              </Text>
-            </View>
-            <View style={{
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: theme.colors.primary,
-            }} />
-          </View>
-        )}
-
-        {/* Status: camera not available on web, show manual entry hint */}
-        <View style={{
-          marginTop: 12,
-          backgroundColor: '#1e293b',
-          borderRadius: 8,
-          paddingHorizontal: 12, paddingVertical: 6,
-        }}>
-          {Platform.OS === 'web' ? (
-            <Text style={{ color: '#475569', fontSize: 11, fontWeight: '600' }}>
-              📱 Câmera não disponível no Web. Use a entrada manual abaixo
-            </Text>
-          ) : permission?.granted ? (
-            <Text style={{ color: '#475569', fontSize: 11, fontWeight: '600' }}>
-              📷 Aponte para o QR Code ou código de barras
-            </Text>
-          ) : (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Text style={{ color: '#475569', fontSize: 11, fontWeight: '600', flex: 1 }}>
-                🔒 Permissão de câmera necessária. Você pode usar a entrada manual, ou liberar a câmera.
-              </Text>
+          {Platform.OS !== "web" && permission?.granted && (
+            <View
+              style={{
+                position: "absolute",
+                top:
+                  Platform.OS === "ios"
+                    ? responsive.padding.xxl
+                    : responsive.padding.lg,
+                right: responsive.padding.md,
+                zIndex: 10,
+                gap: responsive.spacing.sm,
+              }}
+            >
               <TouchableOpacity
-                onPress={() => requestPermission()}
-                activeOpacity={0.85}
+                onPress={() => setTorchEnabled((v) => !v)}
+                activeOpacity={0.7}
                 style={{
-                  backgroundColor: theme.colors.primary,
-                  borderRadius: 8,
-                  paddingHorizontal: 10,
-                  paddingVertical: 8,
+                  backgroundColor: torchEnabled
+                    ? colors.primary
+                    : "rgba(0, 0, 0, 0.6)",
+                  borderRadius: responsive.borderRadius.lg,
+                  paddingHorizontal: responsive.padding.md,
+                  paddingVertical: responsive.padding.md,
+                  borderWidth: 1,
+                  borderColor: torchEnabled ? colors.primary : "rgba(255, 255, 255, 0.2)",
+                  shadowColor: torchEnabled ? colors.primary : "#000",
+                  shadowOffset: { width: 0, height: 3 },
+                  shadowOpacity: torchEnabled ? 0.4 : 0.2,
+                  shadowRadius: torchEnabled ? 6 : 3,
+                  elevation: torchEnabled ? 4 : 2,
+                  minWidth: responsive.fontSize.xl * 2,
+                  minHeight: responsive.fontSize.xl * 2,
+                  justifyContent: "center",
+                  alignItems: "center",
                 }}
               >
-                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '800' }}>
-                  PERMITIR
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: responsive.fontSize.md,
+                    fontWeight: "700",
+                    letterSpacing: 0.5,
+                    lineHeight: responsive.fontSize.lg,
+                    textShadowColor: torchEnabled ? colors.primary : "transparent",
+                    textShadowOffset: { width: 0, height: 0 },
+                    textShadowRadius: torchEnabled ? 4 : 0,
+                  }}
+                >
+                  {torchEnabled ? "💡" : "🔦"}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={onEndSession}
+                activeOpacity={0.7}
+                style={{
+                  backgroundColor: "rgba(239, 68, 68, 0.85)",
+                  borderRadius: responsive.borderRadius.lg,
+                  paddingHorizontal: responsive.padding.md,
+                  paddingVertical: responsive.padding.md,
+                  borderWidth: 1,
+                  borderColor: "rgba(239, 68, 68, 0.6)",
+                  shadowColor: "#ef4444",
+                  shadowOffset: { width: 0, height: 3 },
+                  shadowOpacity: 0.4,
+                  shadowRadius: 6,
+                  elevation: 4,
+                  minWidth: responsive.fontSize.xl * 2,
+                  minHeight: responsive.fontSize.xl * 2,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: responsive.fontSize.md,
+                    fontWeight: "700",
+                    letterSpacing: 0.5,
+                    lineHeight: responsive.fontSize.lg,
+                  }}
+                >
+                  ⏹
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Grid lines overlay */}
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              opacity: 0.04,
+            }}
+          >
+            {[...Array(8)].map((_, i) => (
+              <View
+                key={i}
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  top: `${(i + 1) * 12}%` as any,
+                  height: 1,
+                  backgroundColor: colors.primary,
+                }}
+              />
+            ))}
+            {[...Array(5)].map((_, i) => (
+              <View
+                key={i}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  bottom: 0,
+                  left: `${(i + 1) * 16}%` as any,
+                  width: 1,
+                  backgroundColor: colors.primary,
+                }}
+              />
+            ))}
+          </View>
+
+          {/* Scanner Reticle - Minimalista */}
+          <Animated.View
+            style={[
+              {
+                width: reticleWidth,
+                height: reticleHeight,
+                position: "relative",
+                alignItems: "center",
+                justifyContent: "center",
+              },
+              pulseStyle,
+            ]}
+          >
+            {/* Overlay com glassmorphism */}
+            <BlurView
+              intensity={20}
+              tint="dark"
+              style={{
+                position: "absolute",
+                top: -overlayExtraY,
+                left: -overlayExtraX,
+                right: -overlayExtraX,
+                bottom: -overlayExtraY,
+                borderRadius: 24,
+                backgroundColor: "rgba(0, 0, 0, 0.3)",
+              }}
+            />
+
+            {/* Border minimalista */}
+            <View
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                borderWidth: 1,
+                borderColor: colors.primary,
+                borderRadius: 20,
+                opacity: 0.6,
+              }}
+            />
+
+            {/* Corner brackets elegantes - superior esquerdo */}
+            <View
+              style={{
+                position: "absolute",
+                top: -2,
+                left: -2,
+                width: 28,
+                height: 28,
+                borderTopWidth: 2,
+                borderLeftWidth: 2,
+                borderColor: colors.primary,
+                borderTopLeftRadius: 6,
+              }}
+            />
+
+            {/* Corner brackets - superior direito */}
+            <View
+              style={{
+                position: "absolute",
+                top: -2,
+                right: -2,
+                width: 28,
+                height: 28,
+                borderTopWidth: 2,
+                borderRightWidth: 2,
+                borderColor: colors.primary,
+                borderTopRightRadius: 6,
+              }}
+            />
+
+            {/* Corner brackets - inferior esquerdo */}
+            <View
+              style={{
+                position: "absolute",
+                bottom: -2,
+                left: -2,
+                width: 28,
+                height: 28,
+                borderBottomWidth: 2,
+                borderLeftWidth: 2,
+                borderColor: colors.primary,
+                borderBottomLeftRadius: 6,
+              }}
+            />
+
+            {/* Corner brackets - inferior direito */}
+            <View
+              style={{
+                position: "absolute",
+                bottom: -2,
+                right: -2,
+                width: 28,
+                height: 28,
+                borderBottomWidth: 2,
+                borderRightWidth: 2,
+                borderColor: colors.primary,
+                borderBottomRightRadius: 6,
+              }}
+            />
+
+            {/* Scan line com gradiente */}
+            <Animated.View
+              style={[
+                {
+                  position: "absolute",
+                  left: 12,
+                  right: 12,
+                  height: 1.5,
+                  backgroundColor: colors.primary,
+                  opacity: 0.8,
+                  shadowColor: colors.primary,
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.8,
+                  shadowRadius: 12,
+                  elevation: 6,
+                },
+                scanLineStyle,
+              ]}
+            />
+
+            {/* Center point minimalista */}
+            <View
+              style={{
+                width: 4,
+                height: 4,
+                borderRadius: 2,
+                backgroundColor: colors.primary,
+                opacity: 0.7,
+              }}
+            />
+          </Animated.View>
+
+          {/* Status hint com glassmorphism */}
+          <BlurView
+            intensity={15}
+            tint="dark"
+            style={{
+              marginTop: responsive.spacing.lg,
+              paddingHorizontal: responsive.padding.md,
+              paddingVertical: responsive.padding.sm,
+              borderRadius: 12,
+              backgroundColor: "rgba(0, 0, 0, 0.2)",
+              borderWidth: 1,
+              borderColor: "rgba(255, 255, 255, 0.1)",
+            }}
+          >
+            <Text
+              style={{
+                color: colors.text,
+                fontSize: responsive.fontSize.sm,
+                fontWeight: "500",
+                letterSpacing: 0.2,
+                textAlign: "center",
+              }}
+            >
+              Posicione o código dentro da área de扫描
+            </Text>
+          </BlurView>
+          {/* Progress Cards com Glassmorphism */}
+          <View
+            style={{
+              marginTop: responsive.spacing.md,
+              width: responsive.isTablet
+                ? "70%"
+                : responsive.isUltraWide
+                  ? "60%"
+                  : "90%",
+              maxWidth: responsive.maxWidth.md,
+            }}
+          >
+            {/* Shopee Card */}
+            <BlurView
+              intensity={10}
+              tint="dark"
+              style={{
+                backgroundColor: "rgba(0, 0, 0, 0.25)",
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.1)",
+                padding: responsive.padding.md,
+                marginBottom: responsive.spacing.sm,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: responsive.spacing.xs,
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <View
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: "#fb923c",
+                    }}
+                  />
+                  <Text
+                    style={{
+                      color: colors.text,
+                      fontSize: 12,
+                      fontWeight: "600",
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    Shopee
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 12,
+                    fontWeight: "700",
+                  }}
+                >
+                  {metrics.shopee}/{declaredCounts.shopee}
+                </Text>
+              </View>
+              <View
+                style={{
+                  height: 6,
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  borderRadius: 3,
+                  overflow: "hidden",
+                }}
+              >
+                <View
+                  style={{
+                    width: `${Math.min(100, declaredCounts.shopee ? Math.round((metrics.shopee / declaredCounts.shopee) * 100) : 0)}%`,
+                    height: "100%",
+                    backgroundColor: "#fb923c",
+                    borderRadius: 3,
+                  }}
+                />
+              </View>
+            </BlurView>
+
+            {/* Mercado Livre Card */}
+            <BlurView
+              intensity={10}
+              tint="dark"
+              style={{
+                backgroundColor: "rgba(0, 0, 0, 0.25)",
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.1)",
+                padding: responsive.padding.md,
+                marginBottom: responsive.spacing.sm,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: responsive.spacing.xs,
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <View
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: "#ffe600",
+                    }}
+                  />
+                  <Text
+                    style={{
+                      color: colors.text,
+                      fontSize: 12,
+                      fontWeight: "600",
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    Mercado Livre
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 12,
+                    fontWeight: "700",
+                  }}
+                >
+                  {metrics.mercadoLivre}/{declaredCounts.mercadoLivre}
+                </Text>
+              </View>
+              <View
+                style={{
+                  height: 6,
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  borderRadius: 3,
+                  overflow: "hidden",
+                }}
+              >
+                <View
+                  style={{
+                    width: `${Math.min(100, declaredCounts.mercadoLivre ? Math.round((metrics.mercadoLivre / declaredCounts.mercadoLivre) * 100) : 0)}%`,
+                    height: "100%",
+                    backgroundColor: "#ffe600",
+                    borderRadius: 3,
+                  }}
+                />
+              </View>
+            </BlurView>
+
+            {/* Avulso Card */}
+            <BlurView
+              intensity={10}
+              tint="dark"
+              style={{
+                backgroundColor: "rgba(0, 0, 0, 0.25)",
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.1)",
+                padding: responsive.padding.md,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: responsive.spacing.xs,
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <View
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: colors.success,
+                    }}
+                  />
+                  <Text
+                    style={{
+                      color: colors.text,
+                      fontSize: 12,
+                      fontWeight: "600",
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    Avulso
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 12,
+                    fontWeight: "700",
+                  }}
+                >
+                  {metrics.avulsos}/{declaredCounts.avulso}
+                </Text>
+              </View>
+              <View
+                style={{
+                  height: 6,
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  borderRadius: 3,
+                  overflow: "hidden",
+                }}
+              >
+                <View
+                  style={{
+                    width: `${Math.min(100, declaredCounts.avulso ? Math.round((metrics.avulsos / declaredCounts.avulso) * 100) : 0)}%`,
+                    height: "100%",
+                    backgroundColor: colors.success,
+                    borderRadius: 3,
+                  }}
+                />
+              </View>
+            </BlurView>
+          </View>
+
+          {lastScanned && lastBadge && (
+            <BlurView
+              intensity={20}
+              tint="dark"
+              style={{
+                position: "absolute",
+                left: 16,
+                right: 16,
+                bottom: 16,
+                backgroundColor: "rgba(0, 0, 0, 0.4)",
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.15)",
+                borderRadius: 16,
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: lastBadge.bg,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 999,
+                }}
+              >
+                <Text
+                  style={{
+                    color: lastBadge.text,
+                    fontSize: 11,
+                    fontWeight: "800",
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  {packageTypeLabel(lastScanned.type)}
+                </Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 13,
+                    fontWeight: "700",
+                    letterSpacing: 0.2,
+                  }}
+                  numberOfLines={1}
+                >
+                  {lastScanned.code}
+                </Text>
+                <Text
+                  style={{
+                    color: colors.textMuted,
+                    fontSize: 11,
+                    fontWeight: "500",
+                    marginTop: 2,
+                  }}
+                >
+                  Escaneado agora
+                </Text>
+              </View>
+              <View style={{ alignItems: "flex-end" }}>
+                <Text
+                  style={{
+                    color: colors.primary,
+                    fontSize: responsive.fontSize.sm,
+                    fontWeight: "800",
+                  }}
+                >
+                  R$ {(lastScanned.value || 0).toFixed(2)}
+                </Text>
+              </View>
+              {onRequestPhoto && (
+                <TouchableOpacity
+                  onPress={() => onRequestPhoto(lastScanned)}
+                  activeOpacity={0.6}
+                  style={{
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                    borderRadius: 999,
+                    backgroundColor: "rgba(255, 255, 255, 0.15)",
+                    borderWidth: 1,
+                    borderColor: "rgba(255, 255, 255, 0.25)",
+                    shadowColor: colors.primary,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 2,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: colors.primary,
+                      fontSize: 11,
+                      fontWeight: "700",
+                    }}
+                  >
+                    📸
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </BlurView>
+          )}
+
+          {/* Status Card com Glassmorphism */}
+          <BlurView
+            intensity={15}
+            tint="dark"
+            style={{
+              marginTop: responsive.spacing.md,
+              backgroundColor: "rgba(0, 0, 0, 0.3)",
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: "rgba(255, 255, 255, 0.1)",
+              paddingHorizontal: responsive.padding.md,
+              paddingVertical: responsive.padding.sm,
+            }}
+          >
+            {Platform.OS === "web" ? (
+              <Text
+                style={{
+                  color: colors.textMuted,
+                  fontSize: 11,
+                  fontWeight: "500",
+                  textAlign: "center",
+                }}
+              >
+                📱 Câmera não disponível • Use entrada manual
+              </Text>
+            ) : permission?.granted ? (
+              <Text
+                style={{
+                  color: colors.textMuted,
+                  fontSize: 11,
+                  fontWeight: "500",
+                  textAlign: "center",
+                }}
+              >
+                📷 Aponte para o código • Escaneamento automático
+              </Text>
+            ) : permission?.status === "undetermined" ? (
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
+              >
+                <ActivityIndicator size="small" color={colors.primary} />
+                <Text
+                  style={{
+                    color: colors.textMuted,
+                    fontSize: 11,
+                    fontWeight: "500",
+                    flex: 1,
+                  }}
+                >
+                  Solicitando permissão...
+                </Text>
+              </View>
+            ) : (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.textMuted,
+                    fontSize: 11,
+                    fontWeight: "500",
+                    flex: 1,
+                  }}
+                >
+                  🔒 Câmera bloqueada • Use entrada manual
+                </Text>
+                <TouchableOpacity
+                  onPress={() => requestPermission()}
+                  accessibilityRole="button"
+                  accessibilityLabel="Permitir câmera"
+                  activeOpacity={0.7}
+                  style={{
+                    backgroundColor: colors.primary,
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                    shadowColor: colors.primary,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}
+                >
+                  <Text
+                    style={{ 
+                      color: "#fff", 
+                      fontSize: 11, 
+                      fontWeight: "700",
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    PERMITIR
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </BlurView>
+
+          {/* Out of area warning overlay */}
+          {showOutOfAreaWarning && (
+            <Animated.View
+              style={[
+                {
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                  justifyContent: "center",
+                  alignItems: "center",
+                },
+                outOfAreaStyle,
+              ]}
+            >
+              <View
+                style={{
+                  backgroundColor: "rgba(239, 68, 68, 0.9)",
+                  borderRadius: 12,
+                  borderWidth: 2,
+                  borderColor: "#ef4444",
+                  padding: 16,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ fontSize: 28 }}>🎯</Text>
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 14,
+                    fontWeight: "700",
+                    marginTop: 4,
+                  }}
+                >
+                  FORA DA ÁREA
+                </Text>
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 12,
+                    fontWeight: "600",
+                    marginTop: 2,
+                    textAlign: "center",
+                  }}
+                >
+                  Posicione o código dentro do quadrado verde
+                </Text>
+              </View>
+            </Animated.View>
+          )}
+
+          {/* Last scanned feedback overlay */}
+          {showFeedback && lastScanned && lastBadge && (
+            <Animated.View
+              style={[
+                {
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(16,185,129,0.08)",
+                  justifyContent: "center",
+                  alignItems: "center",
+                },
+                feedbackStyle,
+              ]}
+            >
+              <View
+                style={{
+                  backgroundColor: colors.surface2,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: colors.success,
+                  padding: 16,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ fontSize: 28 }}>✅</Text>
+                <Text
+                  style={{
+                    color: colors.success,
+                    fontSize: 14,
+                    fontWeight: "700",
+                    marginTop: 4,
+                  }}
+                >
+                  ESCANEADO
+                </Text>
+                <View
+                  style={{
+                    backgroundColor: lastBadge.bg,
+                    borderRadius: 6,
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    marginTop: 6,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: lastBadge.text,
+                      fontSize: 11,
+                      fontWeight: "700",
+                    }}
+                  >
+                    {packageTypeLabel(lastScanned.type)}
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    color: colors.primary,
+                    fontSize: responsive.fontSize.lg,
+                    fontWeight: "800",
+                    marginTop: 8,
+                  }}
+                >
+                  R$ {(lastScanned.value || 0).toFixed(2)}
+                </Text>
+              </View>
+            </Animated.View>
+          )}
+        </View>
+
+        {/* Manual Input Bar */}
+        <View
+          style={{
+            backgroundColor: colors.surface,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+            display: "none", // Sempre oculto em modo fullscreen automático
+          }}
+        >
+          {/* Toggle Header */}
+          <TouchableOpacity
+            onPress={() => setManualInputExpanded(!manualInputExpanded)}
+            activeOpacity={0.7}
+            style={{
+              paddingHorizontal: responsive.padding.md,
+              paddingVertical: responsive.padding.md,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                color: colors.textMuted,
+                fontSize: responsive.fontSize.xs,
+                fontWeight: "600",
+                letterSpacing: 0.5,
+              }}
+            >
+              ⌨️ ENTRADA MANUAL
+            </Text>
+            <Text
+              style={{
+                color: colors.primary,
+                fontSize: responsive.fontSize.md,
+                fontWeight: "700",
+              }}
+            >
+              {manualInputExpanded ? "−" : "+"}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Expanded Content */}
+          {manualInputExpanded && (
+            <View
+              style={{
+                padding: responsive.padding.md,
+                paddingTop: responsive.padding.sm,
+                flexDirection: "row",
+                gap: responsive.spacing.sm,
+                alignItems: "center",
+                flexWrap: "wrap",
+                borderTopWidth: 1,
+                borderTopColor: colors.border2,
+              }}
+            >
+              <TextInput
+                value={manualCode}
+                onChangeText={setManualCode}
+                placeholder="Inserir código manualmente..."
+                placeholderTextColor={colors.textMuted}
+                returnKeyType="done"
+                onSubmitEditing={handleManualSubmit}
+                autoCapitalize="characters"
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.surface2,
+                  borderWidth: 1,
+                  borderColor: colors.textMuted,
+                  borderRadius: responsive.borderRadius.md,
+                  padding: responsive.padding.md,
+                  color: colors.text,
+                  fontSize: responsive.fontSize.md,
+                  fontFamily: "SpaceMono-Regular",
+                  minHeight: responsive.fontSize.lg * 2,
+                }}
+              />
+              <TouchableOpacity
+                onPress={handleManualSubmit}
+                activeOpacity={0.85}
+                style={{
+                  backgroundColor: colors.primary,
+                  borderRadius: responsive.borderRadius.md,
+                  padding: responsive.padding.md,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minWidth: responsive.fontSize.lg * 2,
+                  minHeight: responsive.fontSize.lg * 2,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: responsive.fontSize.md,
+                    fontWeight: "800",
+                  }}
+                >
+                  +
                 </Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
 
-        {/* Last scanned feedback overlay */}
-        {showFeedback && lastScanned && lastBadge && (
-          <Animated.View style={{
-            position: 'absolute',
-            top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(16,185,129,0.08)',
-            justifyContent: 'center',
-            alignItems: 'center',
-            opacity: feedbackAnim,
-          }}>
-            <View style={{
-              backgroundColor: '#052e16',
-              borderRadius: 12,
+        {manualError ? (
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+            }}
+          >
+            <Text
+              style={{ color: colors.danger, fontSize: 13, fontWeight: "700" }}
+            >
+              {manualError}
+            </Text>
+          </View>
+        ) : null}
+
+        {/* End Session Button */}
+        <View
+          style={{
+            backgroundColor: colors.surface,
+            paddingHorizontal: responsive.padding.md,
+            paddingBottom: responsive.padding.md,
+            paddingTop: responsive.padding.xs,
+            display: "none", // Sempre oculto em modo fullscreen automático
+          }}
+        >
+          <TouchableOpacity
+            onPress={onEndSession}
+            activeOpacity={0.85}
+            style={{
+              backgroundColor: colors.surface2,
+              borderRadius: responsive.borderRadius.md,
+              padding: responsive.padding.md,
+              alignItems: "center",
               borderWidth: 1,
-              borderColor: theme.colors.success,
-              padding: 16,
-              alignItems: 'center',
-            }}>
-              <Text style={{ fontSize: 28 }}>✅</Text>
-              <Text style={{ color: theme.colors.success, fontSize: 14, fontWeight: '700', marginTop: 4 }}>
-                ESCANEADO
-              </Text>
-              <View style={{
-                backgroundColor: lastBadge.bg, borderRadius: 6,
-                paddingHorizontal: 10, paddingVertical: 4, marginTop: 6,
-              }}>
-                <Text style={{ color: lastBadge.text, fontSize: 11, fontWeight: '700' }}>
-                  {packageTypeLabel(lastScanned.type)}
+              borderColor: colors.textMuted,
+            }}
+          >
+            <Text
+              style={{
+                color: colors.primary,
+                fontSize: responsive.fontSize.sm,
+                fontWeight: "700",
+                letterSpacing: 0.5,
+              }}
+            >
+              ⏹ ENCERRAR SESSÃO
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Per‑type limit warning modal */}
+        {limitVisible && (
+          <Modal visible transparent animationType="fade">
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: "rgba(0,0,0,0.6)",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 20,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: colors.bg,
+                  borderRadius: 16,
+                  padding: 24,
+                  alignItems: "center",
+                  width: "100%",
+                  maxWidth: 400,
+                }}
+              >
+                {/* warning icon */}
+                <View
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 32,
+                    backgroundColor: colors.danger,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 16,
+                  }}
+                >
+                  <Text style={{ fontSize: 36 }}>⚠️</Text>
+                </View>
+                <Text
+                  style={{
+                    color: colors.danger,
+                    fontSize: 20,
+                    fontWeight: "800",
+                    letterSpacing: 1,
+                    textAlign: "center",
+                  }}
+                >
+                  LIMITE ATINGIDO
                 </Text>
+                <Text
+                  style={{
+                    color: colors.textMuted,
+                    fontSize: 14,
+                    textAlign: "center",
+                    marginTop: 8,
+                  }}
+                >
+                  Quantidade declarada de {limitLabel} ({limitValue}) já foi
+                  escaneada.
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setLimitVisible(false)}
+                  activeOpacity={0.85}
+                  style={{
+                    backgroundColor: colors.primary,
+                    borderRadius: 12,
+                    padding: 16,
+                    width: "100%",
+                    alignItems: "center",
+                    marginTop: 24,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: colors.secondary,
+                      fontSize: 16,
+                      fontWeight: "800",
+                      letterSpacing: 1,
+                    }}
+                  >
+                    ENTENDI
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
-          </Animated.View>
+          </Modal>
         )}
-      </View>
-
-      {/* Manual Input Bar */}
-      <View style={{
-        backgroundColor: theme.colors.surface,
-        borderTopWidth: 1,
-        borderTopColor: theme.colors.border,
-        padding: 16,
-        flexDirection: 'row',
-        gap: 10,
-        alignItems: 'center',
-      }}>
-        <TextInput
-          value={manualCode}
-          onChangeText={setManualCode}
-          placeholder="Inserir código manualmente..."
-          placeholderTextColor="#334155"
-          returnKeyType="done"
-          onSubmitEditing={handleManualSubmit}
-          autoCapitalize="characters"
-          style={{
-            flex: 1,
-            backgroundColor: '#1e293b',
-            borderWidth: 1,
-            borderColor: '#334155',
-            borderRadius: 10,
-            padding: 12,
-            color: '#fff',
-            fontSize: 15,
-            fontFamily: 'SpaceMono-Regular',
-          }}
-        />
-        <TouchableOpacity
-          onPress={handleManualSubmit}
-          activeOpacity={0.85}
-          accessibilityLabel="Adicionar código manualmente"
-          style={{
-            backgroundColor: theme.colors.primary,
-            borderRadius: 10,
-            padding: 13,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Text style={{ color: '#fff', fontSize: 16, fontWeight: '800' }}>+</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* End Session Button */}
-      <View style={{
-        backgroundColor: theme.colors.surface,
-        paddingHorizontal: 16,
-        paddingBottom: 16,
-        paddingTop: 4,
-      }}>
-        <TouchableOpacity
-          onPress={onEndSession}
-          activeOpacity={isLoading ? 1 : 0.85}
-          disabled={isLoading}
-          accessibilityLabel={isLoading ? "Salvando sessão" : "Encerrar sessão"}
-          style={{
-            backgroundColor: isLoading ? '#334155' : '#1e293b',
-            borderRadius: 10,
-            padding: 13,
-            alignItems: 'center',
-            borderWidth: 1,
-            borderColor: '#334155',
-          }}
-        >
-          <Text style={{ color: isLoading ? '#64748b' : theme.colors.primary, fontSize: 14, fontWeight: '700', letterSpacing: 0.5 }}>
-            {isLoading ? '⏳ SALVANDO...' : '⏹ ENCERRAR SESSÃO'}
-          </Text>
-        </TouchableOpacity>
       </View>
     </View>
   );

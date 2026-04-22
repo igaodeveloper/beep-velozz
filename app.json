@@ -1,28 +1,42 @@
 {
   "expo": {
-    "name": "test-tempo",
-    "slug": "test-tempo",
-    "version": "1.0.0",
+    "name": "Beep Velozz",
+    "slug": "beep-velozz",
+    "version": "2.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "jsEngine": "hermes",
+    "platforms": ["ios", "android", "web"],
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true,
-      "infoPlist": {
-        "NSCameraUsageDescription": "Precisamos de acesso à câmera para ler QR Codes e códigos de barras."
-      }
-    },
     "android": {
+      "package": "com.shopiii2025.beepvelozz",
+      "versionCode": 200,
+      "compileSdkVersion": 34,
+      "targetSdkVersion": 34,
+      "buildToolsVersion": "34.0.0",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "icon": "./assets/images/icon.png",
+      "splash": {
+        "image": "./assets/images/splash-icon.png",
+        "resizeMode": "contain",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "CAMERA"
-      ],
-      "package": "com.igaonamikaze.testtempo"
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.VIBRATE",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.ACCESS_WIFI_STATE",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.shopiii2025.beepvelozz",
+      "buildNumber": "2.0.0",
+      "supportsTablet": false
     },
     "web": {
       "bundler": "metro",
@@ -32,25 +46,53 @@
     "plugins": [
       "expo-router",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
       ],
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-secure-store",
+      [
+        "@sentry/react-native",
+        {
+          "org": "igaonamikaze",
+          "project": "beep-velozz"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
     },
+    "assetBundlePatterns": ["**/*"],
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "f4819179-45f8-4d20-af4d-6ccc206ab57f"
-      }
-    }
+        "projectId": "6c8f82da-9e01-4276-a3ee-1d413458d4d4"
+      },
+      "sentry": {
+        "org": "igaonamikaze",
+        "project": "beep-velozz"
+      },
+      "firebaseApiKey": "AIzaSyAqS_rWdY5yhXwBLXL48Nooc-xfHpi5f5c",
+      "firebaseAuthDomain": "beepvelozz.firebaseapp.com",
+      "firebaseProjectId": "beepvelozz",
+      "firebaseStorageBucket": "beepvelozz.firebasestorage.app",
+      "firebaseMessagingSenderId": "418888118827",
+      "firebaseAppId": "1:418888118827:web:155021bed2f6cf095c706e",
+      "measurementId": "G-PVB66RW3B7"
+    },
+    "owner": "shopiii2025"
   }
 }

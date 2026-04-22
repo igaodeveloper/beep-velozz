@@ -1,29 +1,88 @@
 {
-  "name": "test-tempo",
+  "name": "beep-velozz",
+  "version": "2.0.0",
+  "description": "Professional barcode scanning app for logistics and package management with advanced features",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "author": "Beep Velozz Team",
+  "license": "MIT",
+  "keywords": [
+    "barcode",
+    "scanner",
+    "logistics",
+    "package-tracking",
+    "react-native",
+    "expo",
+    "mobile-app"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/beep-velozz.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/beep-velozz/issues"
+  },
+  "homepage": "https://github.com/your-org/beep-velozz#readme",
   "scripts": {
     "start": "expo start",
+    "start:clean": "if exist metro.config.cjs move metro.config.cjs metro.config.cjs.backup && expo start --clear || expo start --clear",
+    "start:default": "copy metro.config.default.cjs metro.config.cjs && expo start",
+    "start:basic": "copy metro.config.basic.cjs metro.config.cjs && expo start",
+    "start:minimal": "copy metro.config.minimal.cjs metro.config.cjs && expo start",
+    "start:simple": "copy metro.config.simple.cjs metro.config.cjs && expo start",
+    "start:windows": "copy metro.config.windows.cjs metro.config.cjs && expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
-    "test": "jest --watchAll",
     "lint": "expo lint",
+    "lint:fix": "expo lint --fix",
+    "type-check": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "build:development": "eas build --platform all --profile development",
+    "build:preview": "eas build --platform all --profile preview",
+    "build:production": "eas build --platform all --profile production",
+    "submit:production": "eas submit --platform all --profile production",
+    "prebuild": "expo prebuild --clean",
     "postinstall": "patch-package"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "collectCoverageFrom": [
+      "**/*.{ts,tsx}",
+      "!**/node_modules/**",
+      "!**/coverage/**",
+      "!**/*.d.ts"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.(ts|tsx|js)",
+      "**/*.(test|spec).(ts|tsx|js)"
+    ],
+    "moduleNameMapper": {
+      "@/(.*)": "<rootDir>/$1"
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg))"
+    ]
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
-    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/blur": "^4.4.1",
+    "@react-native-picker/picker": "2.11.1",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
+    "@sentry/react-native": "~7.2.0",
     "autoprefixer": "^10.4.20",
+    "axios": "^1.13.6",
     "expo": "^54.0.25",
     "expo-atlas": "^0.4.0",
     "expo-av": "~16.0.8",
+    "expo-background-fetch": "~14.0.9",
     "expo-blur": "~15.0.7",
     "expo-camera": "~17.0.10",
     "expo-clipboard": "~8.0.8",
@@ -31,22 +90,38 @@
     "expo-font": "~14.0.9",
     "expo-haptics": "~15.0.8",
     "expo-image": "~3.0.10",
+    "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.9",
+    "expo-location": "~19.0.8",
+    "expo-notifications": "~0.32.16",
+    "expo-print": "~15.0.8",
     "expo-router": "~6.0.15",
+    "expo-secure-store": "~15.0.8",
     "expo-splash-screen": "~31.0.11",
     "expo-status-bar": "~3.0.8",
     "expo-symbols": "~1.0.7",
     "expo-system-ui": "~6.0.8",
+    "expo-task-manager": "~14.0.9",
+    "expo-updates": "~29.0.16",
     "expo-web-browser": "~15.0.9",
-    "lightningcss": "^1.29.2",
+    "firebase": "^12.10.0",
+    "i18next": "^23.0.0",
+    "lightningcss": "1.29.2",
     "lucide-react-native": "^0.479.0",
     "nativewind": "^4.1.23",
     "postcss": "^8.5.3",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-i18next": "^14.0.0",
     "react-native": "0.81.5",
+    "react-native-css-interop": "^0.2.3",
+    "react-native-device-info": "^13.0.0",
     "react-native-gesture-handler": "~2.28.0",
+    "react-native-interactable": "^2.0.1",
+    "react-native-localize": "^3.2.0",
+    "react-native-magic-move": "^0.6.6",
     "react-native-reanimated": "~4.1.1",
+    "react-native-restart": "^0.0.27",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
     "react-native-svg": "15.12.1",
@@ -57,17 +132,38 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
-    "@types/jest": "^29.5.12",
+    "@testing-library/jest-native": "^5.4.0",
+    "@testing-library/react-native": "^12.0.0",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^25.3.3",
     "@types/react": "~19.1.10",
-    "@types/react-test-renderer": "^18.3.0",
-    "eslint": "^9.0.0",
+    "eslint": "^8.57.0",
     "eslint-config-expo": "~10.0.0",
+    "eslint-plugin-testing-library": "^6.0.0",
     "expo-module-scripts": "^55.0.2",
-    "jest": "^29.2.1",
-    "jest-expo": "~54.0.13",
+    "jest": "^29.7.0",
+    "jest-expo": "^54.0.1",
     "patch-package": "^8.0.0",
-    "react-test-renderer": "18.3.1",
+    "postinstall-postinstall": "^2.1.0",
+    "ts-node": "^10.9.2",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-restart"
+        ],
+        "listUnknownPackages": false
+      }
+    },
+    "install": {
+      "exclude": []
+    }
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
 }

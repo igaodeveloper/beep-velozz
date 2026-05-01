@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { captureMessage } from '../utils/sentry';
 
 export interface CacheItem<T = any> {
   data: T;
@@ -32,7 +31,7 @@ export class CacheService {
       // Store in persistent storage
       await AsyncStorage.setItem(`cache_${key}`, JSON.stringify(item));
     } catch (error) {
-      captureMessage('Cache set failed', 'error', { key, error });
+      console.error('Cache set error:', error);
     }
   }
 
@@ -61,7 +60,7 @@ export class CacheService {
       await this.delete(key);
       return null;
     } catch (error) {
-      captureMessage('Cache get failed', 'error', { key, error });
+      console.error('Cache get error:', error);
       return null;
     }
   }
@@ -71,7 +70,7 @@ export class CacheService {
       this.memoryCache.delete(key);
       await AsyncStorage.removeItem(`cache_${key}`);
     } catch (error) {
-      captureMessage('Cache delete failed', 'error', { key, error });
+      console.error('Cache delete error:', error);
     }
   }
 
@@ -82,7 +81,7 @@ export class CacheService {
       const cacheKeys = keys.filter(key => key.startsWith('cache_'));
       await AsyncStorage.multiRemove(cacheKeys);
     } catch (error) {
-      captureMessage('Cache clear failed', 'error', { error });
+      console.error('Cache clear error:', error);
     }
   }
 
@@ -101,7 +100,7 @@ export class CacheService {
         }
       }
     } catch (error) {
-      captureMessage('Cache cleanup failed', 'error', { error });
+      console.error('Cache cleanup error:', error);
     }
   }
 

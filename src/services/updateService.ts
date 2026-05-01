@@ -1,5 +1,4 @@
 import * as Updates from 'expo-updates';
-import { captureMessage } from '../utils/sentry';
 import { analytics } from './analyticsService';
 
 export class UpdateService {
@@ -26,7 +25,6 @@ export class UpdateService {
 
       return { available: false };
     } catch (error) {
-      captureMessage('Update check failed', 'error', { error });
       return { available: false, error };
     }
   }
@@ -52,7 +50,6 @@ export class UpdateService {
 
       return { success: false, reason: 'No update available' };
     } catch (error) {
-      captureMessage('Update installation failed', 'error', { error });
       return { success: false, error };
     }
   }

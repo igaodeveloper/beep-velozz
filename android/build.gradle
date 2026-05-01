@@ -1,13 +1,5 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
-ext {
-  buildToolsVersion = "36.0.0"
-  minSdkVersion = 24
-  compileSdkVersion = 36
-  targetSdkVersion = 36
-  ndkVersion = "27.1.12297006"
-}
-
 buildscript {
   repositories {
     google()
@@ -17,9 +9,6 @@ buildscript {
     classpath('com.android.tools.build:gradle')
     classpath('com.facebook.react:react-native-gradle-plugin')
     classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
-    classpath('org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20')
-    // Add Maven plugin for legacy support
-    classpath 'org.apache.maven.plugins:maven-plugin:3.8.6'
   }
 }
 
@@ -28,73 +17,6 @@ allprojects {
     google()
     mavenCentral()
     maven { url 'https://www.jitpack.io' }
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-  }
-  
-  // Fix for deprecated Kotlin options in all projects
-  tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    compilerOptions {
-      jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-      freeCompilerArgs.addAll([
-        "-opt-in=kotlin.RequiresOptIn"
-      ])
-    }
-  }
-}
-
-subprojects {
-  afterEvaluate { project ->
-    if (project.hasProperty("android")) {
-      android {
-        compileSdkVersion rootProject.ext.compileSdkVersion
-        buildToolsVersion rootProject.ext.buildToolsVersion
-        
-        defaultConfig {
-          minSdkVersion rootProject.ext.minSdkVersion
-          targetSdkVersion rootProject.ext.targetSdkVersion
-        }
-      }
-    }
-    
-    // Fix deprecated kotlinOptions warnings - use compilerOptions DSL
-    project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-      compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-      }
-    }
-    
-    // Fix Maven plugin issue for expo-task-manager
-    if (project.name == 'expo-task-manager') {
-      project.buildscript {
-        repositories {
-          google()
-          mavenCentral()
-        }
-        dependencies {
-          classpath 'com.android.tools.build:gradle'
-        }
-      }
-      
-      // Apply maven plugin if needed - use legacy plugin application
-      project.apply plugin: 'maven'
-      
-      // Also try applying as Android library plugin if needed
-      if (project.hasProperty('android')) {
-        project.android {
-          // Ensure proper configuration
-        }
-      }
-    }
-    
-    // Fix for any other projects that might need Maven plugin
-    if (project.hasProperty('android') && project.name.startsWith('expo-')) {
-      project.buildscript {
-        repositories {
-          google()
-          mavenCentral()
-        }
-      }
-    }
   }
 }
 

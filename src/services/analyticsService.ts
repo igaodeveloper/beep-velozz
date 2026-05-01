@@ -1,5 +1,3 @@
-import { captureMessage } from '../utils/sentry';
-
 export interface AnalyticsEvent {
   name: string;
   properties?: Record<string, any>;
@@ -30,8 +28,6 @@ export class AnalyticsService {
         await this.sendEvent(event);
       }
     }
-
-    captureMessage('Analytics initialized', 'info', { userProperties });
   }
 
   async trackEvent(event: AnalyticsEvent) {
@@ -76,10 +72,7 @@ export class AnalyticsService {
       //   headers: { 'Content-Type': 'application/json' },
       //   body: JSON.stringify(payload),
       // });
-
-      captureMessage(`Analytics event: ${event.name}`, 'info', event.properties);
     } catch (error) {
-      captureMessage('Analytics error', 'error', { error, event });
     }
   }
 

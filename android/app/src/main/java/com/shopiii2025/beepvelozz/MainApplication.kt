@@ -1,4 +1,4 @@
-package com.igaonamikaze.beepvelozz
+package com.shopiii2025.beepvelozz
 
 import android.app.Application
 import android.content.res.Configuration

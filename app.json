@@ -63,14 +63,7 @@
       ],
       "expo-font",
       "expo-web-browser",
-      "expo-secure-store",
-      [
-        "@sentry/react-native",
-        {
-          "org": "igaonamikaze",
-          "project": "beep-velozz"
-        }
-      ]
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
@@ -80,10 +73,6 @@
       "router": {},
       "eas": {
         "projectId": "6c8f82da-9e01-4276-a3ee-1d413458d4d4"
-      },
-      "sentry": {
-        "org": "igaonamikaze",
-        "project": "beep-velozz"
       },
       "firebaseApiKey": "AIzaSyAqS_rWdY5yhXwBLXL48Nooc-xfHpi5f5c",
       "firebaseAuthDomain": "beepvelozz.firebaseapp.com",

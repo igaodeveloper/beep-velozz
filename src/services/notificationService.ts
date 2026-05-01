@@ -2,7 +2,6 @@ import * as Notifications from 'expo-notifications';
 import { NotificationTriggerInput, SchedulableTriggerInputTypes } from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
 import * as BackgroundFetch from 'expo-background-fetch';
-import { captureMessage } from '../utils/sentry';
 
 // Configure notification handler
 Notifications.setNotificationHandler({
@@ -30,7 +29,6 @@ TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, async () => {
 
     return BackgroundFetch.BackgroundFetchResult.NewData;
   } catch (error) {
-    captureMessage('Background notification task failed', 'error', { error });
     return BackgroundFetch.BackgroundFetchResult.Failed;
   }
 });

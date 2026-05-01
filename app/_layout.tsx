@@ -18,31 +18,31 @@ import {
 } from "../utils/themeContext";
 import { lightTheme, darkTheme } from "../utils/theme";
 import { getDeviceInfo } from "../utils/orientationUtils";
-import { SplashScreen as CustomSplashScreen } from "../components/SplashScreen";
 import { FastSplashScreen } from "../components/FastSplashScreen";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 function RootLayoutContent() {
   const { isDark } = useTheme();
-  const [loaded] = useFonts({
+  const [loaded, setLoaded] = useState(false);
+  const [deviceInfo, setDeviceInfo] = useState(getDeviceInfo());
+
+  // Carrega apenas as fonts essenciais
+  const [_fontLoaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
-  const [deviceInfo, setDeviceInfo] = useState(getDeviceInfo());
-  const [appReady, setAppReady] = useState(false);
-
-  // Toggle this to use animated splash (true) or fast splash (false)
-  const useAnimatedSplash = false;
 
   useEffect(() => {
-    if (loaded) {
-      // Hide native splash immediately when fonts are loaded
-      SplashScreen.hideAsync();
-      // Mark app as ready without additional delay
-      setAppReady(true);
+    if (_fontLoaded) {
+      // Esconde splash nativo imediatamente quando fonts carregam
+      SplashScreen.hideAsync().catch(() => {
+        // Ignora erros se splash já foi escondido
+      });
+      setLoaded(true);
     }
-  }, [loaded]);
+  }, [_fontLoaded]);
 
   useEffect(() => {
     const subscription = Dimensions.addEventListener("change", () => {
@@ -51,13 +51,9 @@ function RootLayoutContent() {
     return () => subscription?.remove();
   }, []);
 
-  // Show splash screen while app is loading
-  if (!appReady) {
-    return useAnimatedSplash ? (
-      <CustomSplashScreen onAnimationComplete={() => {}} />
-    ) : (
-      <FastSplashScreen onAnimationComplete={() => {}} />
-    );
+  // Mostra splash enquanto carrega
+  if (!loaded) {
+    return <FastSplashScreen onAnimationComplete={() => {}} />;
   }
 
   const navTheme = isDark
@@ -101,10 +97,12 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <CustomThemeProvider>
-        <RootLayoutContent />
-      </CustomThemeProvider>
-    </GestureHandlerRootView>
+    <ErrorBoundary>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <CustomThemeProvider>
+          <RootLayoutContent />
+        </CustomThemeProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 }

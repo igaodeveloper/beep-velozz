@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useColorScheme } from "react-native";
+import { useColorScheme, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ThemeName, themePresets, getTheme } from "./theme";
 
@@ -70,22 +70,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  if (!isLoaded) {
-    return null;
-  }
+  // Always provide a theme context, even if still loading
+  const contextValue = {
+    themeName,
+    setThemeName,
+    colorScheme,
+    setColorScheme,
+    isDark,
+    colors: currentTheme.colors,
+    theme: currentTheme,
+  };
 
   return (
-    <ThemeContext.Provider
-      value={{
-        themeName,
-        setThemeName,
-        colorScheme,
-        setColorScheme,
-        isDark,
-        colors: currentTheme.colors,
-        theme: currentTheme,
-      }}
-    >
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );

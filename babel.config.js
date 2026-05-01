@@ -13,6 +13,13 @@ module.exports = function (api) {
           relativeSourceLocation: true,
         },
       ],
+      // Transformer para ignorar módulos problemáticos do browser
+      [
+        "@babel/plugin-transform-runtime",
+        {
+          useESModules: false,
+        },
+      ],
     ],
   };
 };

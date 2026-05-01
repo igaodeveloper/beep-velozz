@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useTheme } from "../utils/themeContext";
 import { LinearGradient } from "expo-linear-gradient";
+import { darkTheme, lightTheme } from "../utils/theme";
 
 interface FastSplashScreenProps {
   onAnimationComplete?: () => void;
@@ -152,6 +153,3 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 });
-
-// Import themes
-import { darkTheme, lightTheme } from "../utils/theme";

@@ -53,13 +53,6 @@ export function getAuthInstance() {
   return authInstance;
 }
 
-// For backward compatibility, export as a getter
-export const auth = {
-  get current() {
-    return getAuthInstance();
-  }
-};
-
 // --- Network Status Management ---
 let isOnline = true;
 let networkErrorCount = 0;
@@ -339,19 +332,19 @@ export async function deleteDriver(driverId: string) {
 // --------------------------------------------------
 
 export function onAuthStateChange(callback: (user: User | null) => void) {
-  return onAuthStateChanged(auth, callback);
+  return onAuthStateChanged(getAuthInstance(), callback);
 }
 
 export async function loginOperator(
   email: string,
   password: string,
 ): Promise<User> {
-  const res = await signInWithEmailAndPassword(auth, email, password);
+  const res = await signInWithEmailAndPassword(getAuthInstance(), email, password);
   return res.user;
 }
 
 export async function logout(): Promise<void> {
-  await signOut(auth);
+  await signOut(getAuthInstance());
 }
 
 // --- Network Status Utilities ---

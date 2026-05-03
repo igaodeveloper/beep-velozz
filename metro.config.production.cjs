@@ -10,6 +10,35 @@ const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
+const PROBLEMATIC_MODULES = [
+  'idb',
+  'indexeddb',
+  'localforage',
+  'level',
+  'rlp',
+  'web-encoding',
+  'openindexeddb',
+];
+
+// Custom resolver
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (PROBLEMATIC_MODULES.includes(moduleName)) {
+    return {
+      filePath: path.resolve(__dirname, 'mocks/idb.js'),
+      type: 'sourceFile',
+    };
+  }
+  return context.resolveRequest(context, moduleName, platform);
+};
+
+if (!config.resolver.extraNodeModules) {
+  config.resolver.extraNodeModules = {};
+}
+config.resolver.extraNodeModules['idb'] = path.resolve(
+  __dirname,
+  'mocks/idb.js'
+);
+
 // Extend the defaults with production settings
 module.exports = {
   ...config,

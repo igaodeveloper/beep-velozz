@@ -8,7 +8,6 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { useTheme } from "../utils/themeContext";
-import { LinearGradient } from "expo-linear-gradient";
 import { darkTheme, lightTheme } from "../utils/theme";
 
 interface FastSplashScreenProps {
@@ -37,15 +36,16 @@ export const FastSplashScreen: React.FC<FastSplashScreenProps> = ({
   const taglineSize = Math.min(width * 0.04, 14); // Max 14px
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
-      <LinearGradient
-        colors={
-          isDark
-            ? ["#000000", "#0a0a0a", "#1a1a1a"]
-            : ["#ffffff", "#f9fafb", "#f3f4f6"]
-        }
-        style={styles.gradient}
+    <View style={styles.container}>
+      {/* Imagem de fundo fullscreen */}
+      <Image
+        source={require("../assets/images/splash-icon.png")}
+        style={styles.backgroundImage}
+        resizeMode="cover"
       />
+
+      {/* Overlay para melhorar legibilidade do texto */}
+      <View style={styles.overlay} />
 
       <View style={styles.content}>
         {/* Logo com imagem do projeto */}
@@ -56,6 +56,7 @@ export const FastSplashScreen: React.FC<FastSplashScreenProps> = ({
               width: logoSize * 1.2,
               height: logoSize * 1.2,
               borderRadius: (logoSize * 1.2) / 2,
+              backgroundColor: "rgba(255, 255, 255, 0.9)", // Fundo branco semi-transparente para melhor contraste
             },
           ]}
         >
@@ -77,7 +78,7 @@ export const FastSplashScreen: React.FC<FastSplashScreenProps> = ({
           style={[
             styles.appName,
             {
-              color: theme.colors.text,
+              color: "#000000", // Preto para melhor contraste sobre imagem
               fontSize: fontSize,
               marginTop: height * 0.03,
             },
@@ -89,7 +90,7 @@ export const FastSplashScreen: React.FC<FastSplashScreenProps> = ({
           style={[
             styles.tagline,
             {
-              color: theme.colors.textMuted,
+              color: "#333333", // Cinza escuro para legibilidade
               fontSize: taglineSize,
             },
           ]}
@@ -113,12 +114,22 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 9999,
   },
-  gradient: {
+  backgroundImage: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
+    width: "100%",
+    height: "100%",
+  },
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.1)", // Leve overlay para melhorar contraste
   },
   content: {
     alignItems: "center",

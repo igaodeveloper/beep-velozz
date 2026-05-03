@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
 import {
   getFirestore,
   collection,
@@ -24,66 +25,40 @@ import {
   User,
 } from "firebase/auth";
 import * as SecureStore from "expo-secure-store";
+import { FIREBASE_CONFIG, validateFirebaseConfig } from "../src/config/firebaseConfig";
 
-// the values below should be provided through Expo config (app.json/app.config.js) or
-// environment variables (EXPO_PUBLIC_FIREBASE_*). during development you can also
-// inject them via `expo start --config` or by reading from Constants.manifest.extra.
-import Constants from "expo-constants";
+// Import the functions you need from the SDKs you need
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-function getExpoValue(key: string): string | undefined {
-  // Expo SDK 48+ uses expoConfig whereas older releases use manifest.
-  const config: any = Constants.expoConfig || Constants.manifest || {};
-  const extra = config.extra || {};
-  // as a last resort, try reading from app.json directly (build-time constant)
-  if (!extra[key]) {
-    try {
-      const appJson = require("../app.json");
-      if (appJson.expo && appJson.expo.extra) {
-        return appJson.expo.extra[key];
-      }
-    } catch {
-      // ignore
-    }
-  }
-  return extra[key] as string | undefined;
-}
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = FIREBASE_CONFIG;
 
-const firebaseConfig = {
-  apiKey:
-    process.env.EXPO_PUBLIC_FIREBASE_API_KEY || getExpoValue("firebaseApiKey"),
-  authDomain:
-    process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN ||
-    getExpoValue("firebaseAuthDomain"),
-  projectId:
-    process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID ||
-    getExpoValue("firebaseProjectId"),
-  storageBucket:
-    process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET ||
-    getExpoValue("firebaseStorageBucket"),
-  messagingSenderId:
-    process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ||
-    getExpoValue("firebaseMessagingSenderId"),
-  appId:
-    process.env.EXPO_PUBLIC_FIREBASE_APP_ID || getExpoValue("firebaseAppId"),
-};
+// Validate Firebase configuration
+validateFirebaseConfig(firebaseConfig);
 
-// initialize once
-function ensureFirebaseConfig(cfg: Record<string, any>) {
-  const missing = Object.entries(cfg)
-    .filter(([, v]) => !v)
-    .map(([k]) => k);
-  if (missing.length) {
-    throw new Error(
-      `Missing Firebase configuration keys: ${missing.join(", ")}. ` +
-        `Set EXPO_PUBLIC_FIREBASE_<KEY> env vars or add the values under expo.extra ` +
-        `in app.json (firebaseApiKey, firebaseProjectId, etc.).`,
-    );
-  }
-}
-ensureFirebaseConfig(firebaseConfig);
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 export const db = getFirestore(app);
-export const auth = getAuth(app);
+
+// Lazy-initialize auth to avoid "Component auth has not been registered yet" error
+let authInstance: any = null;
+
+export function getAuthInstance() {
+  if (!authInstance) {
+    authInstance = getAuth(app);
+  }
+  return authInstance;
+}
+
+// For backward compatibility, export as a getter
+export const auth = {
+  get current() {
+    return getAuthInstance();
+  }
+};
 
 // --- Network Status Management ---
 let isOnline = true;

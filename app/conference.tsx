@@ -17,26 +17,14 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAppTheme } from "@/utils/useAppTheme";
 import { useResponsive } from "@/utils/useResponsive";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Driver } from "@/services/firestore";
+import { Driver, db } from "@/services/firestore";
 import DriversSelector from "@/components/DriversSelector";
 import { advancedHaptics } from "@/utils/advancedHaptics";
 import { 
   addDoc, 
   collection, 
-  serverTimestamp, 
-  getFirestore 
+  serverTimestamp
 } from "firebase/firestore";
-import { initializeApp } from "firebase/app";
-
-// Firebase config from app.json
-const firebaseConfig = {
-  apiKey: "AIzaSyDummyKeyForDevelopment",
-  authDomain: "beep-velozz.firebaseapp.com",
-  projectId: "beep-velozz",
-  storageBucket: "beep-velozz.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef"
-};
 
 export default function ConferenceScreen() {
   const router = useRouter();
@@ -86,10 +74,7 @@ export default function ConferenceScreen() {
         avulso: Number(avulsoCount) || 0,
       };
 
-      // Initialize Firebase and create session
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      
+      // Create session using already initialized Firebase
       const sessionData = {
         operatorName: operatorName.trim(),
         driverName,

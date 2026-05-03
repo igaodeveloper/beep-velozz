@@ -37,15 +37,20 @@ const firebaseConfig = FIREBASE_CONFIG;
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Analytics
+// Initialize Analytics (Web only)
 let analytics: Analytics | null = null;
-try {
-  analytics = getAnalytics(app);
-} catch (error) {
-  console.warn(
-    "Analytics initialization warning (may be expected in development):",
-    error
-  );
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  try {
+    analytics = getAnalytics(app);
+  } catch (error) {
+    console.warn(
+      "Analytics initialization warning (may be expected in development):",
+      error
+    );
+  }
+} else {
+  // React Native environment - Analytics not available
+  console.debug("Firebase Analytics skipped (React Native environment)");
 }
 
 // Export Firebase instances for use throughout the app

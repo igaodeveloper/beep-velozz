@@ -1,5 +1,4 @@
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import {
   getFirestore,
   collection,
@@ -40,7 +39,7 @@ validateFirebaseConfig(firebaseConfig);
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
 export const db = getFirestore(app);
 
 // Lazy-initialize auth to avoid "Component auth has not been registered yet" error

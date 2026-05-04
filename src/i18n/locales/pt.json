@@ -1,0 +1,75 @@
+{
+  "common": {
+    "appName": "Beep Velozz",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "finish": "Finalizar",
+    "retry": "Tentar novamente",
+    "close": "Fechar"
+  },
+  "scanner": {
+    "title": "Scanner",
+    "scanning": "Escaneando...",
+    "scanCode": "Escaneie o código",
+    "manualInput": "Entrada manual",
+    "invalidCode": "Código inválido",
+    "duplicateCode": "Código duplicado",
+    "codeAccepted": "Código aceito",
+    "sessionComplete": "Sessão completa",
+    "limitReached": "Limite atingido",
+    "types": {
+      "shopee": "Shopee",
+      "mercado_livre": "Mercado Livre",
+      "avulso": "Avulso"
+    }
+  },
+  "session": {
+    "newSession": "Nova Sessão",
+    "startSession": "Iniciar Sessão",
+    "endSession": "Finalizar Sessão",
+    "sessionActive": "Sessão ativa",
+    "sessionEnded": "Sessão finalizada",
+    "declaredCount": "Quantidade declarada",
+    "scannedCount": "Quantidade escaneada",
+    "remainingCount": "Restante",
+    "divergence": "Divergência",
+    "divergenceMessage": "Há uma diferença entre a quantidade declarada e escaneada. Deseja prosseguir?"
+  },
+  "history": {
+    "title": "Histórico",
+    "noHistory": "Nenhum histórico encontrado",
+    "totalSessions": "Total de sessões",
+    "totalPackages": "Total de pacotes",
+    "today": "Hoje",
+    "yesterday": "Ontem",
+    "thisWeek": "Esta semana",
+    "thisMonth": "Este mês"
+  },
+  "settings": {
+    "title": "Configurações",
+    "theme": "Tema",
+    "language": "Idioma",
+    "notifications": "Notificações",
+    "sound": "Som",
+    "vibration": "Vibração",
+    "about": "Sobre",
+    "version": "Versão",
+    "privacy": "Privacidade",
+    "terms": "Termos de uso"
+  },
+  "errors": {
+    "cameraPermission": "Permissão da câmera necessária",
+    "networkError": "Erro de conexão",
+    "serverError": "Erro do servidor",
+    "unknownError": "Erro desconhecido",
+    "invalidInput": "Entrada inválida"
+  }
+}

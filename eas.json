@@ -6,16 +6,61 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "20.18.2",
+      "channel": "development",
+      "env": {
+        "NPM_CONFIG_FETCH_TIMEOUT": "600000",
+        "NPM_CONFIG_FETCH_RETRIES": "5"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "20.18.2",
+      "channel": "preview",
+      "env": {
+        "NPM_CONFIG_FETCH_TIMEOUT": "600000",
+        "NPM_CONFIG_FETCH_RETRIES": "5"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "node": "20.18.2",
+      "channel": "production",
+      "env": {
+        "NPM_CONFIG_FETCH_TIMEOUT": "600000",
+        "NPM_CONFIG_FETCH_RETRIES": "5"
+      },
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      },
+      "ios": {
+        "buildConfiguration": "Release"
+      }
+    },
+    "apk": {
+      "autoIncrement": false,
+      "node": "20.18.2",
+      "channel": "apk",
+      "env": {
+        "NPM_CONFIG_FETCH_TIMEOUT": "600000",
+        "NPM_CONFIG_FETCH_RETRIES": "5"
+      },
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "track": "production"
+      },
+      "ios": {
+        "ascAppId": "YOUR_APPLE_ID"
+      }
+    }
   }
 }

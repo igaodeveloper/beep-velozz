@@ -1,9 +1,15 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Session, ScannedPackage } from '../types/session';
-import { addSession, loadSessions } from '../utils/storage';
-import { generateId } from '../utils/session';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { Session, ScannedPackage } from "../types/session";
+import { addSession, loadSessions } from "../utils/storage";
+import { generateId } from "../utils/session";
 
-type AppScreen = 'scanning' | 'report' | 'history';
+type AppScreen = "scanning" | "report" | "history";
 
 interface SessionContextType {
   // State
@@ -22,7 +28,11 @@ interface SessionContextType {
 
   // Actions
   setScreen: (screen: AppScreen) => void;
-  handleStartSession: (operatorName: string, driverName: string, declaredCounts: { shopee: number; mercadoLivre: number; avulso: number }) => void;
+  handleStartSession: (
+    operatorName: string,
+    driverName: string,
+    declaredCounts: { shopee: number; mercadoLivre: number; avulso: number },
+  ) => void;
   handleScan: (pkg: ScannedPackage) => void;
   handleDuplicate: (code: string) => void;
   handleEndSession: () => void;
@@ -39,7 +49,7 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 export const useSession = () => {
   const context = useContext(SessionContext);
   if (!context) {
-    throw new Error('useSession must be used within a SessionProvider');
+    throw new Error("useSession must be used within a SessionProvider");
   }
   return context;
 };
@@ -48,26 +58,41 @@ interface SessionProviderProps {
   children: ReactNode;
 }
 
-export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) => {
-  const [screen, setScreen] = useState<AppScreen>('scanning');
+export const SessionProvider: React.FC<SessionProviderProps> = ({
+  children,
+}) => {
+  const [screen, setScreen] = useState<AppScreen>("scanning");
   const [showInitModal, setShowInitModal] = useState(true);
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [packageListExpanded, setPackageListExpanded] = useState(false);
   const [lastScanned, setLastScanned] = useState<ScannedPackage | null>(null);
   const [duplicateVisible, setDuplicateVisible] = useState(false);
-  const [duplicateCode, setDuplicateCode] = useState('');
-  const [duplicateOriginal, setDuplicateOriginal] = useState<ScannedPackage | undefined>();
+  const [duplicateCode, setDuplicateCode] = useState("");
+  const [duplicateOriginal, setDuplicateOriginal] = useState<
+    ScannedPackage | undefined
+  >();
   const [divergenceVisible, setDivergenceVisible] = useState(false);
-  const [completedSession, setCompletedSession] = useState<Session | null>(null);
+  const [completedSession, setCompletedSession] = useState<Session | null>(
+    null,
+  );
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    loadSessions().then(setSessions).catch(() => setSessions([]));
+    loadSessions()
+      .then(setSessions)
+      .catch(() => setSessions([]));
   }, []);
 
-  const handleStartSession = (operatorName: string, driverName: string, declaredCounts: { shopee: number; mercadoLivre: number; avulso: number }) => {
-    const totalDeclared = declaredCounts.shopee + declaredCounts.mercadoLivre + declaredCounts.avulso;
+  const handleStartSession = (
+    operatorName: string,
+    driverName: string,
+    declaredCounts: { shopee: number; mercadoLivre: number; avulso: number },
+  ) => {
+    const totalDeclared =
+      declaredCounts.shopee +
+      declaredCounts.mercadoLivre +
+      declaredCounts.avulso;
     const session: Session = {
       id: generateId(),
       operatorName,
@@ -80,7 +105,7 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
     };
     setCurrentSession(session);
     setShowInitModal(false);
-    setScreen('scanning');
+    setScreen("scanning");
     setLastScanned(null);
     setPackageListExpanded(false);
   };
@@ -102,7 +127,7 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
 
   const handleDuplicate = (code: string) => {
     if (!currentSession) return;
-    const original = currentSession.packages.find(p => p.code === code);
+    const original = currentSession.packages.find((p) => p.code === code);
     setDuplicateCode(code);
     setDuplicateOriginal(original);
     setDuplicateVisible(true);
@@ -133,13 +158,13 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
       const updated = await loadSessions();
       setSessions(updated);
     } catch (error) {
-      console.error('Failed to save session:', error);
+      console.error("Failed to save session:", error);
       // TODO: Show error to user
     } finally {
       setIsLoading(false);
     }
     setDivergenceVisible(false);
-    setScreen('report');
+    setScreen("report");
   };
 
   const handleDivergenceCancel = () => {
@@ -151,11 +176,11 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
     setCompletedSession(null);
     setLastScanned(null);
     setShowInitModal(true);
-    setScreen('scanning');
+    setScreen("scanning");
   };
 
   const handleViewHistory = () => {
-    setScreen('history');
+    setScreen("history");
   };
 
   const value: SessionContextType = {
@@ -185,8 +210,6 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
   };
 
   return (
-    <SessionContext.Provider value={value}>
-      {children}
-    </SessionContext.Provider>
+    <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
   );
 };

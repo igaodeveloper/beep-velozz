@@ -1,0 +1,10 @@
+// Ignore list for modules that are not compatible with React Native
+// These modules should be excluded from bundling
+
+idb
+indexeddb
+localforage
+level
+rlp
+web-encoding
+openindexeddb

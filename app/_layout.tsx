@@ -1,4 +1,5 @@
 import {
+  DarkTheme,
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
@@ -6,45 +7,102 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Dimensions } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import "../global.css";
-import { SessionProvider } from "../contexts/SessionContext";
+import {
+  ThemeProvider as CustomThemeProvider,
+  useTheme,
+} from "../utils/themeContext";
+import { lightTheme, darkTheme } from "../utils/theme";
+import { getDeviceInfo } from "../utils/orientationUtils";
+import { FastSplashScreen } from "../components/FastSplashScreen";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+function RootLayoutContent() {
+  const { isDark } = useTheme();
+  const [loaded, setLoaded] = useState(false);
+  const [deviceInfo, setDeviceInfo] = useState(getDeviceInfo());
+
+  // Carrega apenas as fonts essenciais
+  const [_fontLoaded] = useFonts({
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
   useEffect(() => {
-    if (error) {
-      console.warn('Font loading error:', error);
-      // Hide splash screen even if font fails to load
-      SplashScreen.hideAsync();
-    } else if (loaded) {
-      SplashScreen.hideAsync();
+    if (_fontLoaded) {
+      // Esconde splash nativo imediatamente quando fonts carregam
+      SplashScreen.hideAsync().catch(() => {
+        // Ignora erros se splash já foi escondido
+      });
+      setLoaded(true);
     }
-  }, [loaded, error]);
+  }, [_fontLoaded]);
 
-  if (!loaded && !error) {
-    return null;
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener("change", () => {
+      setDeviceInfo(getDeviceInfo());
+    });
+    return () => subscription?.remove();
+  }, []);
+
+  // Mostra splash enquanto carrega
+  if (!loaded) {
+    return <FastSplashScreen onAnimationComplete={() => {}} />;
   }
 
+  const navTheme = isDark
+    ? {
+        ...DarkTheme,
+        colors: {
+          ...DarkTheme.colors,
+          primary: darkTheme.colors.primary,
+          background: darkTheme.colors.bg,
+          card: darkTheme.colors.surface,
+          text: darkTheme.colors.text,
+          border: darkTheme.colors.border,
+        },
+      }
+    : {
+        ...DefaultTheme,
+        colors: {
+          ...DefaultTheme.colors,
+          primary: lightTheme.colors.primary,
+          background: lightTheme.colors.bg,
+          card: lightTheme.colors.surface,
+          text: lightTheme.colors.text,
+          border: lightTheme.colors.border,
+        },
+      };
+
   return (
-    <SessionProvider>
-      <ThemeProvider value={DefaultTheme}>
-        <Stack
-          screenOptions={({ route }) => ({
-            headerShown: !route.name.startsWith("tempobook"),
-          })}
-        >
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </SessionProvider>
+    <ThemeProvider value={navTheme}>
+      <Stack
+        screenOptions={({ route }) => ({
+          headerShown: !route.name.startsWith("tempobook"),
+        })}
+      >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="new-session" options={{ headerShown: false }} />
+      </Stack>
+      <StatusBar backgroundColor={isDark ? "#1a1a1a" : "#ffffff"} />
+    </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ErrorBoundary>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <CustomThemeProvider>
+          <RootLayoutContent />
+        </CustomThemeProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 }

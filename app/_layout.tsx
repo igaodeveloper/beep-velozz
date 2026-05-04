@@ -15,17 +15,21 @@ import { SessionProvider } from "../contexts/SessionContext";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded] = useFonts({
+  const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
   useEffect(() => {
-    if (loaded) {
+    if (error) {
+      console.warn('Font loading error:', error);
+      // Hide splash screen even if font fails to load
+      SplashScreen.hideAsync();
+    } else if (loaded) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, error]);
 
-  if (!loaded) {
+  if (!loaded && !error) {
     return null;
   }
 
